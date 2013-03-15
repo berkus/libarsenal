@@ -119,12 +119,10 @@ namespace endian2
   template <class T>
   inline T reorder(const T& x)
   {
-    T tmp;
     std::reverse(
       reinterpret_cast<const char*>(&x),
-      reinterpret_cast<const char*>(&x) + sizeof(T),
-      reinterpret_cast<char*>(&tmp));
-    return tmp;
+      reinterpret_cast<const char*>(&x) + sizeof(T));
+    return x;
   }
 
   template <class T>
