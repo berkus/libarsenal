@@ -16,17 +16,17 @@ class __endian_conversion
     T representation;
 
 public:
-    __endian_conversion() : representation(reorder(T())) {}
-    __endian_conversion(const T& t) : representation(reorder(t)) { }
-    operator T() const { return reorder(representation); }
+    inline __endian_conversion() : representation(reorder(T())) {}
+    inline __endian_conversion(const T& t) : representation(reorder(t)) { }
+    inline operator T() const { return reorder(representation); }
 
-    __endian_conversion& operator=(const T& rhs)
+    inline __endian_conversion& operator=(const T& rhs)
     {
         representation = reorder(rhs);
         return *this;
     }
 
-    __endian_conversion& operator=(const __endian_conversion& rhs)
+    inline __endian_conversion& operator=(const __endian_conversion& rhs)
     {
         representation = rhs.representation;
         return *this;
