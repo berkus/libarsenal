@@ -9,6 +9,7 @@
 #pragma once
 
 #include <boost/endian/conversion2.hpp>
+#include <functional> // for std::hash
 
 template <typename T, T (*reorder)(const T&)>
 class __endian_conversion
@@ -56,3 +57,16 @@ typedef __endian_conversion<uint16_t, boost::endian2::little> little_uint16_t;
 typedef __endian_conversion<uint32_t, boost::endian2::little> little_uint32_t;
 typedef __endian_conversion<uint64_t, boost::endian2::little> little_uint64_t;
 
+// Hash function specialization to use endian-types in std collections.
+namespace std {
+
+template <>
+struct hash<big_uint32_t>
+{
+    std::size_t operator()(big_uint32_t const& value) const
+    {
+        return std::hash<uint32_t>()(value.operator uint32_t());
+    }
+};
+
+} // std namespace
