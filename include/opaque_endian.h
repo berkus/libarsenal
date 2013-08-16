@@ -8,6 +8,8 @@
 //
 #pragma once
 
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
 #include <boost/endian/conversion2.hpp>
 #include <functional> // for std::hash
 
@@ -33,6 +35,17 @@ public:
         return *this;
     }
 
+    // boost.serialization support
+    friend class boost::serialization::access;
+    template<class Archive>
+    void load(Archive &ar, const unsigned int) {
+        ar >> representation;
+    }
+    template<class Archive>
+    void save(Archive &ar, const unsigned int) const {
+        ar << representation;
+    }
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 } __attribute__((packed));
 
 /* Create big-endian versions of the stdint.h exact size data types. */
