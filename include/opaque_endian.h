@@ -48,6 +48,26 @@ public:
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 } __attribute__((packed));
 
+// Disable versioning for all these classes.
+// from http://www.boost.org/doc/libs/1_54_0/libs/serialization/doc/traits.html 
+// section Template Serialization Traits
+namespace boost {
+namespace serialization {
+
+template <typename T, T (*reorder)(const T&)>
+struct implementation_level<__endian_conversion<T, reorder>>
+{
+    typedef mpl::integral_c_tag tag;
+    typedef mpl::int_<object_serializable> type;
+    BOOST_STATIC_CONSTANT(
+        int,
+        value = implementation_level::type::value
+    );
+};
+
+} // serialization namespace
+} // boost namespace
+
 /* Create big-endian versions of the stdint.h exact size data types. */
 typedef int8_t big_int8_t;
 typedef __endian_conversion<int16_t, boost::endian2::big> big_int16_t;
