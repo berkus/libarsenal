@@ -36,7 +36,7 @@ public:
         char r = 'R';
         char e = 'E';
         char k = 'K'; // isn't it a bit... ridiculous?
-        size_t size = data.size();
+        uint64_t size = data.size();
         oa << t << r << e << k << size << data;
     }
     ~file_dump() { m.unlock(); }
