@@ -13,6 +13,9 @@
 #include <boost/endian/conversion2.hpp>
 #include <functional> // for std::hash
 
+/*
+ * Idea based on sortix wrapper class.
+ */
 template <typename T, T (*reorder)(const T&)>
 class __endian_conversion
 {
