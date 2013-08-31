@@ -30,6 +30,12 @@ byte_array::byte_array(const char* data, size_t size)
 	: value(data, data+size)
 {}
 
+byte_array::byte_array(std::initializer_list<uint8_t> data)
+{
+	resize(data.size());
+	uninitialized_copy(data.begin(), data.end(), value.begin());
+}
+
 byte_array::~byte_array()
 {}
 

@@ -27,6 +27,7 @@ public:
     byte_array(const std::vector<char>&);
     byte_array(const char* str);
     byte_array(const char* data, size_t size);
+    byte_array(std::initializer_list<uint8_t> data);
     explicit byte_array(size_t size) { resize(size); }
 
     template <typename T, size_t N>
