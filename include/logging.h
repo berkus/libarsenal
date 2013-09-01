@@ -13,7 +13,7 @@
 #include <iomanip>
 #include <mutex>
 #include <thread>
-#include <boost/archive/binary_oarchive.hpp>
+#include "msgpack_specializations.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace logger { // logger::debug()
@@ -31,13 +31,7 @@ public:
     file_dump(const T& data) {
         m.lock();
         std::ofstream out("dump.bin", std::ios::out|std::ios::app|std::ios::binary);
-        boost::archive::binary_oarchive oa(out, boost::archive::no_header);
-        char t = 'T';
-        char r = 'R';
-        char e = 'E';
-        char k = 'K'; // isn't it a bit... ridiculous?
-        uint64_t size = data.size();
-        oa << t << r << e << k << size << data;
+        msgpack::pack(out, data);
     }
     ~file_dump() { m.unlock(); }
 };
