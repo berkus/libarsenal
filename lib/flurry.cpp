@@ -374,12 +374,39 @@ void oarchive::pack_array_header(size_t count)
 
 void oarchive::pack_map_header(size_t count)
 {
-
+    if (count < 16) {
+        os_ << uint8_t(to_underlying(TAGS::FIXMAP_FIRST) | count);
+    } else if (count < 65536) {
+        os_ << to_underlying(TAGS::MAP16);
+        auto big = big_uint16_t(count);
+        os_.write(repr(big), 2);
+    } else if (count < (1ULL<<32)) {
+        os_ << to_underlying(TAGS::MAP32);
+        auto big = big_uint32_t(count);
+        os_.write(repr(big), 4);
+    } else {
+        throw unsupported_type();
+    }
 }
 
 void oarchive::pack_ext_header(uint8_t type, size_t bytes)
 {
-
+    if (bytes == 1) {
+    } else if (bytes == 2) {
+    } else if (bytes == 4) {
+    } else if (bytes == 8) {
+    } else if (bytes == 16) {
+    }
+    // FIXEXT1 = 0xd4,
+    // FIXEXT2 = 0xd5,
+    // FIXEXT4 = 0xd6,
+    // FIXEXT8 = 0xd7,
+    // FIXEXT16 = 0xd8,
+    // EXT8 = 0xc7,
+    // EXT16 = 0xc8,
+    // EXT32 = 0xc9,
+    os_ << type;
+    // Todo: client should write the data using pack_raw_data()
 }
 
 
