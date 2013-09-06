@@ -149,6 +149,12 @@ inline void oarchive::save(byte_array value)
     pack_blob(value.data(), value.size());
 }
 
+template <>
+inline void oarchive::save(std::string value)
+{
+    pack_string(value.data(), value.size());
+}
+
 // Default deserializer implementation for types supported out-of-the-box.
 template <typename T>
 inline iarchive& operator >> (iarchive& in, T& value)

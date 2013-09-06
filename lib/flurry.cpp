@@ -53,7 +53,7 @@ enum class TAGS : uint8_t {
     MAP32 = 0xdf
 };
 
-}
+} // anonymous namespace
 
 void oarchive::pack_nil()
 {
@@ -324,9 +324,23 @@ void oarchive::pack_blob(const char* data, size_t bytes)
     os_.write(data, bytes);
 }
 
+// Since we use blob and str interchangeably, is there any need for such differentiation?
 void oarchive::pack_string(const char* data, size_t bytes)
 {
-
+    if (bytes < 32) {
+        os_ << uint8_t(to_underlying(TAGS::FIXSTR_FIRST) | bytes);
+    } else if (bytes < 256) {
+        os_ << to_underlying(TAGS::STR8) << uint8_t(bytes);
+    } else if (bytes < 65536) {
+        os_ << to_underlying(TAGS::STR16);
+        auto big = big_uint16_t(bytes);
+        os_.write(repr(big), 2);
+    } else {
+        os_ << to_underlying(TAGS::STR32);
+        auto big = big_uint32_t(bytes);
+        os_.write(repr(big), 4);
+    }
+    os_.write(data, bytes);
 }
 
 void oarchive::pack_array_header(size_t count)

@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(serialize_basic_types)
         double pi_2 = 3.1415926;
         write.archive() << pi << pi_2;
 
-        write.archive() << byte_array({'a','b','c','d','e'});
+        write.archive() << byte_array({'a','b','c','d','e'}) << string("Testing testing one two 3!");
     }
     logger::file_dump out(data);
     {
