@@ -11,8 +11,9 @@ namespace flurry {
 
 class iarchive
 {
+    std::istream& is_;
 public:
-    iarchive(std::istream& in);
+    inline iarchive(std::istream& in) : is_(in) {}
 
     template <typename T>
     void load(T& value);
@@ -22,7 +23,7 @@ class oarchive
 {
     std::ostream& os_;
 public:
-    oarchive(std::ostream& out) : os_(out) {}
+    inline oarchive(std::ostream& out) : os_(out) {}
 
     template <typename T>
     void save(T value);
