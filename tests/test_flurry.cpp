@@ -11,7 +11,7 @@
 
 #include "flurry.h"
 #include "logging.h"
-#include "archive_helper.h"
+#include "byte_array_wrap.h"
 
 using namespace std;
 using namespace flurry;
