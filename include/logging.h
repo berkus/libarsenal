@@ -13,8 +13,8 @@
 #include <iomanip>
 #include <mutex>
 #include <thread>
-#include "msgpack_specializations.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include "flurry.h"
 
 namespace logger { // logger::debug()
 
@@ -31,7 +31,8 @@ public:
     file_dump(const T& data) {
         m.lock();
         std::ofstream out("dump.bin", std::ios::out|std::ios::app|std::ios::binary);
-        msgpack::pack(out, data);
+        flurry::oarchive oa(out);
+        oa << data;
     }
     ~file_dump() { m.unlock(); }
 };
