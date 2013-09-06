@@ -10,7 +10,13 @@
 
 namespace flurry {
 
-class unsupported_type : std::exception
+class encode_error : public std::exception
+{};
+
+class decode_error : public std::exception
+{};
+
+class unsupported_type : public std::exception
 {};
 
 class iarchive
