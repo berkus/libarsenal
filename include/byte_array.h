@@ -20,6 +20,9 @@ class byte_array
     friend bool operator ==(const byte_array& a, const byte_array& b);
     std::vector<char> value; // XXX make implicitly shared cow?
 public:
+    typedef std::vector<char>::iterator iterator;
+    typedef std::vector<char>::const_iterator const_iterator;
+
     byte_array();
     byte_array(const byte_array&);
     byte_array(const std::vector<char>&);
@@ -79,6 +82,11 @@ public:
 
     std::vector<char>& as_vector() { return value; }
     const std::vector<char>& as_vector() const { return value; }
+
+    inline iterator begin() { return value.begin(); }
+    inline const_iterator begin() const { return value.begin(); }
+    inline iterator end() { return value.end(); }
+    inline const_iterator end() const { return value.end(); }
 };
 
 // Hash specialization for byte_array
