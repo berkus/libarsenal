@@ -47,6 +47,9 @@ BOOST_AUTO_TEST_CASE(serialize_basic_types)
         write.archive() << pi << pi_2;
 
         write.archive() << byte_array({'a','b','c','d','e'}) << string("Testing testing one two 3!");
+
+        // std::vector<int> vec_1 {99,98,97,96,95,94};
+        // write.archive() << vec_1;
     }
     logger::file_dump out(data);
     {

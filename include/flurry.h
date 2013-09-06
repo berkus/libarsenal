@@ -174,14 +174,14 @@ inline void oarchive::save(std::string value)
 }
 
 // @todo generalize for STL container types...
-template <typename T>
-inline void oarchive::save(std::vector<T> value)
-{
-    pack_array_header(value.size());
-    for (auto x : value) {
-        *this << x;
-    }
-}
+// template <typename T>
+// inline void oarchive::save(std::vector<T> value)
+// {
+//     pack_array_header(value.size());
+//     for (auto x : value) {
+//         *this << x;
+//     }
+// }
 
 // Default deserializer implementation for types supported out-of-the-box.
 template <typename T>
