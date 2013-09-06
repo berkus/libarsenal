@@ -324,12 +324,14 @@ void oarchive::pack_blob(const char* data, size_t bytes)
         os_ << to_underlying(TAGS::BLOB16);
         auto big = big_uint16_t(bytes);
         os_.write(repr(big), 2);
-    } else {
+    } else if (bytes < (1ULL<<32)) {
         os_ << to_underlying(TAGS::BLOB32);
         auto big = big_uint32_t(bytes);
         os_.write(repr(big), 4);
+    } else {
+        throw unsupported_type();
     }
-    os_.write(data, bytes);
+    pack_raw_data(data, bytes);
 }
 
 // Since we use blob and str interchangeably, is there any need for such differentiation?
@@ -343,12 +345,14 @@ void oarchive::pack_string(const char* data, size_t bytes)
         os_ << to_underlying(TAGS::STR16);
         auto big = big_uint16_t(bytes);
         os_.write(repr(big), 2);
-    } else {
+    } else if (bytes < (1ULL<<32)) {
         os_ << to_underlying(TAGS::STR32);
         auto big = big_uint32_t(bytes);
         os_.write(repr(big), 4);
+    } else {
+        throw unsupported_type();
     }
-    os_.write(data, bytes);
+    pack_raw_data(data, bytes);
 }
 
 void oarchive::pack_array_header(size_t count)
