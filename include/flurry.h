@@ -60,38 +60,79 @@ protected:
 // These types are basic building blocks for serializing other, more complex types.
 //
 template <>
-inline void oarchive::save<int>(int value)
+inline void oarchive::save(int8_t value)
+{
+    pack_int8(value);
+}
+
+template <>
+inline void oarchive::save(int16_t value)
+{
+    pack_int16(value);
+}
+
+template <>
+inline void oarchive::save(int32_t value)
+{
+    pack_int32(value);
+}
+
+template <>
+inline void oarchive::save(int64_t value)
 {
     pack_int64(value);
 }
 
 template <>
-inline void oarchive::save<long>(long value)
+inline void oarchive::save(uint8_t value)
+{
+    pack_uint8(value);
+}
+
+template <>
+inline void oarchive::save(uint16_t value)
+{
+    pack_uint16(value);
+}
+
+template <>
+inline void oarchive::save(uint32_t value)
+{
+    pack_uint32(value);
+}
+
+template <>
+inline void oarchive::save(uint64_t value)
+{
+    pack_uint64(value);
+}
+
+template <>
+inline void oarchive::save(int value)
 {
     pack_int64(value);
 }
 
 template <>
-inline void oarchive::save<bool>(bool value)
+inline void oarchive::save(long value)
+{
+    pack_int64(value);
+}
+
+template <>
+inline void oarchive::save(bool value)
 {
     if (value) pack_true();
     else       pack_false();
 }
 
 template <>
-inline void oarchive::save<std::nullptr_t>(std::nullptr_t)
+inline void oarchive::save(std::nullptr_t)
 {
     pack_nil();
 }
 
-// Deserializer conforms to this signature:
-// template<class Input, typename T>
-// Input& operator >> (Input& in, T& value)
-// {
-//     return in;
-// }
-
-// Default implementation for values supported out-of-the-box.
+// Default deserializer implementation for types supported out-of-the-box.
 template <typename T>
 inline iarchive& operator >> (iarchive& in, T& value)
 {
@@ -99,6 +140,7 @@ inline iarchive& operator >> (iarchive& in, T& value)
     return in;
 }
 
+// Default serializer implementation for types supported out-of-the-box.
 template <typename T>
 inline oarchive& operator << (oarchive& out, const T& value)
 {
