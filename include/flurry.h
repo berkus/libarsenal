@@ -108,12 +108,6 @@ inline void oarchive::save(uint64_t value)
 }
 
 template <>
-inline void oarchive::save(int value)
-{
-    pack_int64(value);
-}
-
-template <>
 inline void oarchive::save(long value)
 {
     pack_int64(value);
