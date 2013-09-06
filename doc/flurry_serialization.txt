@@ -16,7 +16,7 @@ fixmap, up to 16 elements
 0x8f
 0x90
 .
-fixarray
+fixarray, up to 16 elements
 .
 0x9f
 0xa0
