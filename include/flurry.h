@@ -6,8 +6,12 @@
 #pragma once
 
 #include <iostream>
+#include "byte_array.h"
 
 namespace flurry {
+
+class unsupported_type : std::exception
+{};
 
 class iarchive
 {
@@ -137,6 +141,12 @@ template <>
 inline void oarchive::save(std::nullptr_t)
 {
     pack_nil();
+}
+
+template <>
+inline void oarchive::save(byte_array value)
+{
+    pack_blob(value.data(), value.size());
 }
 
 // Default deserializer implementation for types supported out-of-the-box.
