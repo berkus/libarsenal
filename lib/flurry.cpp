@@ -289,10 +289,20 @@ void oarchive::pack_uint64(uint64_t d)
 
 void oarchive::pack_real(float d)
 {
+    union { float f; uint32_t i; } mem;
+    mem.f = d;
+    auto big = big_uint32_t(mem.i);
+    os_ << to_underlying(TAGS::FLOAT);
+    os_.write(repr(big), 4);
 }
 
 void oarchive::pack_real(double d)
 {
+    union { double f; uint64_t i; } mem;
+    mem.f = d;
+    auto big = big_uint64_t(mem.i);
+    os_ << to_underlying(TAGS::DOUBLE);
+    os_.write(repr(big), 8);
 }
 
 void oarchive::pack_blob(const char* data, size_t size)

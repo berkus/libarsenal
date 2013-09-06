@@ -109,6 +109,18 @@ inline void oarchive::save(uint64_t value)
 }
 
 template <>
+inline void oarchive::save(float value)
+{
+    pack_real(value);
+}
+
+template <>
+inline void oarchive::save(double value)
+{
+    pack_real(value);
+}
+
+template <>
 inline void oarchive::save(long value)
 {
     pack_int64(value);
