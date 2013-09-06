@@ -48,6 +48,9 @@ BOOST_AUTO_TEST_CASE(serialize_basic_types)
 
         write.archive() << byte_array({'a','b','c','d','e'}) << string("Testing testing one two 3!");
 
+        enum class Testing : int { CHECK=1, UNCHECK=2} e_1 = Testing::CHECK, e_2 = Testing::UNCHECK;
+        write.archive() << e_1 << e_2;
+
         // std::vector<int> vec_1 {99,98,97,96,95,94};
         // write.archive() << vec_1;
     }

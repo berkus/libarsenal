@@ -13,8 +13,10 @@
  */
 #pragma once
 
+#include <type_traits>
 #include <iostream>
 #include "byte_array.h"
+#include "underlying.h"
 
 namespace flurry {
 
@@ -43,8 +45,17 @@ class oarchive
 public:
     inline oarchive(std::ostream& out) : os_(out) {}
 
+    // For enums...
     template <typename T>
-    void save(T value);
+    inline typename std::enable_if<std::is_enum<T>::value>::type
+    save(T value)
+    {
+        *this << to_underlying(value);
+    }
+
+    // ...and the rest.
+    template <typename T>
+    typename std::enable_if<!std::is_enum<T>::value>::type save(T value);
 
 protected:
     // Actual serialization functions.
