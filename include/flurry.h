@@ -43,7 +43,7 @@ public:
     inline typename std::enable_if<std::is_enum<T>::value>::type
     load(T& value)
     {
-        int read;
+        int read; // @fixme This is not very robust.
         load(read);
         value = T(read);
     }
