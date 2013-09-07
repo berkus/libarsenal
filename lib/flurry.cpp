@@ -579,7 +579,7 @@ byte_array iarchive::unpack_blob()
 
         case to_underlying(TAGS::BLOB8): {
             uint8_t size;
-            is_ >> size;
+            is_.read(repr(size), 1);
             bytes = size;
             break;
         }
