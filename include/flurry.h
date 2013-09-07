@@ -18,6 +18,7 @@
 #include <iostream>
 #include "byte_array.h"
 #include "underlying.h"
+#include "opaque_endian.h"
 
 namespace flurry {
 
@@ -42,6 +43,10 @@ public:
 
     template <typename T>
     inline void load(boost::optional<T>& value)
+    {}
+
+    template <typename T, T (*Func)(const T&)>
+    inline void load(__endian_conversion<T,Func>& value)
     {}
 
 protected:
