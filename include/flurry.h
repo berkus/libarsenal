@@ -45,6 +45,7 @@ public:
     {}
 
 protected:
+    bool unpack_boolean();
     byte_array unpack_blob();
     void unpack_raw_data(byte_array& buf);
 };
@@ -107,6 +108,12 @@ protected:
 // 
 // These types are basic building blocks for serializing other, more complex types.
 //
+template <>
+inline void iarchive::load(bool& value)
+{
+    value = unpack_boolean();
+}
+
 template <>
 inline void iarchive::load(byte_array& value)
 {

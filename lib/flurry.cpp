@@ -426,6 +426,18 @@ void oarchive::pack_ext_header(uint8_t type, size_t bytes)
     // the inline type-specific wrappers handle that.
 }
 
+bool iarchive::unpack_boolean()
+{
+    uint8_t type{0};
+    is_ >> type;
+    // Todo: handle EOF
+    if (type == to_underlying(TAGS::BOOLEAN_TRUE))
+        return true;
+    if (type == to_underlying(TAGS::BOOLEAN_FALSE))
+        return false;
+    throw decode_error();
+}
+
 byte_array iarchive::unpack_blob()
 {
     uint8_t type{0};
