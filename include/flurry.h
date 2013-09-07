@@ -230,7 +230,7 @@ inline void oarchive::save(std::string value)
 template <typename T>
 inline iarchive& operator >> (iarchive& in, T& value)
 {
-    in.load<T>(value);
+    in.load(value);
     return in;
 }
 
@@ -238,7 +238,7 @@ inline iarchive& operator >> (iarchive& in, T& value)
 template <typename T>
 inline oarchive& operator << (oarchive& out, const T& value)
 {
-    out.save<T>(value);
+    out.save(value);
     return out;
 }
 
