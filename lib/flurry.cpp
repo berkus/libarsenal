@@ -392,21 +392,30 @@ void oarchive::pack_map_header(size_t count)
 void oarchive::pack_ext_header(uint8_t type, size_t bytes)
 {
     if (bytes == 1) {
+        os_ << to_underlying(TAGS::FIXEXT1);
     } else if (bytes == 2) {
+        os_ << to_underlying(TAGS::FIXEXT2);
     } else if (bytes == 4) {
+        os_ << to_underlying(TAGS::FIXEXT4);
     } else if (bytes == 8) {
+        os_ << to_underlying(TAGS::FIXEXT8);
     } else if (bytes == 16) {
+        os_ << to_underlying(TAGS::FIXEXT16);
+    } else if (bytes < 256) {
+        os_ << to_underlying(TAGS::EXT8);
+        os_ << uint8_t(bytes);
+    } else if (bytes < 65536) {
+        os_ << to_underlying(TAGS::EXT16);
+        auto big = big_uint16_t(bytes);
+        os_.write(repr(big), 2);
+    } else {
+        os_ << to_underlying(TAGS::EXT32);
+        auto big = big_uint32_t(bytes);
+        os_.write(repr(big), 4);
     }
-    // FIXEXT1 = 0xd4,
-    // FIXEXT2 = 0xd5,
-    // FIXEXT4 = 0xd6,
-    // FIXEXT8 = 0xd7,
-    // FIXEXT16 = 0xd8,
-    // EXT8 = 0xc7,
-    // EXT16 = 0xc8,
-    // EXT32 = 0xc9,
     os_ << type;
-    // Todo: client should write the data using pack_raw_data()
+    // Todo: client should write the data using pack_raw_data(),
+    // the inline type-specific wrappers handle that.
 }
 
 
