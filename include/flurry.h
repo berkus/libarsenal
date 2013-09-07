@@ -51,7 +51,27 @@ public:
 
 protected:
     bool unpack_boolean();
+
+    int8_t  unpack_int8();
+    int16_t unpack_int16();
+    int32_t unpack_int32();
+    int64_t unpack_int64();
+
+    uint8_t  unpack_uint8();
+    uint16_t unpack_uint16();
+    uint32_t unpack_uint32();
+    uint64_t unpack_uint64();
+
+    float unpack_float();
+    double unpack_double();
+
     byte_array unpack_blob();
+    std::string unpack_string();
+
+    void pack_array_header(size_t size);
+    void pack_map_header(size_t size);
+    void pack_ext_header(uint8_t type, size_t size);
+
     void unpack_raw_data(byte_array& buf);
 };
 
@@ -113,6 +133,72 @@ protected:
 // 
 // These types are basic building blocks for serializing other, more complex types.
 //
+template <>
+inline void iarchive::load(int8_t& value)
+{
+    value = unpack_int8();
+}
+
+template <>
+inline void iarchive::load(int16_t& value)
+{
+    value = unpack_int16();
+}
+
+template <>
+inline void iarchive::load(int32_t& value)
+{
+    value = unpack_int32();
+}
+
+template <>
+inline void iarchive::load(int64_t& value)
+{
+    value = unpack_int64();
+}
+
+template <>
+inline void iarchive::load(uint8_t& value)
+{
+    value = unpack_uint8();
+}
+
+template <>
+inline void iarchive::load(uint16_t& value)
+{
+    value = unpack_uint16();
+}
+
+template <>
+inline void iarchive::load(uint32_t& value)
+{
+    value = unpack_uint32();
+}
+
+template <>
+inline void iarchive::load(uint64_t& value)
+{
+    value = unpack_uint64();
+}
+
+template <>
+inline void iarchive::load(float& value)
+{
+    value = unpack_float();
+}
+
+template <>
+inline void iarchive::load(double& value)
+{
+    value = unpack_double();
+}
+
+template <>
+inline void iarchive::load(long& value)
+{
+    value = unpack_int64();
+}
+
 template <>
 inline void iarchive::load(bool& value)
 {

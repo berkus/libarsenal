@@ -29,6 +29,8 @@ char* repr(T& val)
 }
 
 enum class TAGS : uint8_t {
+    POSITIVE_INT_FIRST = 0x00,
+    POSITIVE_INT_LAST = 0x7f,
     FIXMAP_FIRST = 0x80,
     FIXMAP_LAST = 0x8f,
     FIXARRAY_FIRST = 0x90,
@@ -66,7 +68,9 @@ enum class TAGS : uint8_t {
     ARRAY16 = 0xdc,
     ARRAY32 = 0xdd,
     MAP16 = 0xde,
-    MAP32 = 0xdf
+    MAP32 = 0xdf,
+    NEGATIVE_INT_FIRST = 0xe0,
+    NEGATIVE_INT_LAST = 0xff
 };
 
 } // anonymous namespace
@@ -457,6 +461,43 @@ bool iarchive::unpack_boolean()
         return false;
     throw decode_error();
 }
+
+//=================================================================================================
+// integer types
+//=================================================================================================
+
+uint32_t iarchive::unpack_uint32()
+{
+    uint8_t type{0};
+    is_ >> type;
+    // Todo: handle EOF
+    switch (type) {
+        case to_underlying(TAGS::POSITIVE_INT_FIRST) ... to_underlying(TAGS::POSITIVE_INT_LAST): {
+            uint8_t value = type & 0x7f;
+            return value;
+        }
+        case to_underlying(TAGS::UINT8): {
+            uint8_t value;
+            is_ >> value;
+            return value;
+        }
+        case to_underlying(TAGS::UINT16): {
+            big_uint16_t value;
+            is_.read(repr(value), 2);
+            return value;
+        }
+        case to_underlying(TAGS::UINT32): {
+            big_uint32_t value;
+            is_.read(repr(value), 4);
+            return value;
+        }
+    }
+    throw decode_error();
+}
+
+//=================================================================================================
+// floating-point types
+//=================================================================================================
 
 //=================================================================================================
 // array and blob types
