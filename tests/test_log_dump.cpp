@@ -18,8 +18,8 @@ int main()
     std::ifstream in("dump.bin", std::ios::in|std::ios::binary);
     flurry::iarchive ia(in);
 
-    while (!in.eof() and !in.fail()) {
-        ia >> data;
-        cout << "Found blob with " << data.size() << " bytes." << endl;
+    while (ia >> data) {
+        cout << "*** BLOB " << data.size() << " bytes ***" << endl;
+        hexdump(data);
     }
 }

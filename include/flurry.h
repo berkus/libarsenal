@@ -35,6 +35,7 @@ class iarchive
     std::istream& is_;
 public:
     inline iarchive(std::istream& in) : is_(in) {}
+    explicit inline operator bool() const { return (bool)is_; }
 
     template <typename T>
     void load(T& value);
