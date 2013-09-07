@@ -69,11 +69,15 @@ public:
 
     template <typename T, size_t N>
     inline void load(boost::array<T,N>& value)
-    {}
+    {
+        assert(0 and "Loading boost::array fail");
+    }
 
     template <typename T, T (*Func)(const T&)>
     inline void load(__endian_conversion<T,Func>& value)
-    {}
+    {
+        assert(0 and "Loading __endian_conversion fail - this call is not needed, remove!");
+    }
 
     template <typename T>
     inline void load(std::vector<T>& value)
