@@ -8,8 +8,6 @@
 //
 #pragma once
 
-#include <boost/archive/binary_iarchive.hpp>//?
-#include <boost/archive/binary_oarchive.hpp>//?
 #include <boost/endian/conversion2.hpp>
 #include <functional> // for std::hash
 
@@ -37,39 +35,7 @@ public:
         representation = rhs.representation;
         return *this;
     }
-
-    // boost.serialization support
-    friend class boost::serialization::access;
-    template<class Archive>
-    void load(Archive &ar, const unsigned int) {
-        ar >> representation;
-    }
-    template<class Archive>
-    void save(Archive &ar, const unsigned int) const {
-        ar << representation;
-    }
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
 } __attribute__((packed));
-
-// Disable versioning for all these classes.
-// from http://www.boost.org/doc/libs/1_54_0/libs/serialization/doc/traits.html 
-// section Template Serialization Traits
-namespace boost {
-namespace serialization {
-
-template <typename T, T (*reorder)(const T&)>
-struct implementation_level<__endian_conversion<T, reorder>>
-{
-    typedef mpl::integral_c_tag tag;
-    typedef mpl::int_<object_serializable> type;
-    BOOST_STATIC_CONSTANT(
-        int,
-        value = implementation_level::type::value
-    );
-};
-
-} // serialization namespace
-} // boost namespace
 
 /* Create big-endian versions of the stdint.h exact size data types. */
 typedef int8_t big_int8_t;
