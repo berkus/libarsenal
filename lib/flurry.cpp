@@ -466,6 +466,57 @@ bool iarchive::unpack_boolean()
 // integer types
 //=================================================================================================
 
+int32_t iarchive::unpack_int32()
+{
+    uint8_t type{0};
+    is_ >> type;
+    // Todo: handle EOF
+    switch (type) {
+        case to_underlying(TAGS::POSITIVE_INT_FIRST) ... to_underlying(TAGS::POSITIVE_INT_LAST): {
+            int8_t value = type;
+            return value;
+        }
+        case to_underlying(TAGS::NEGATIVE_INT_FIRST) ... to_underlying(TAGS::NEGATIVE_INT_LAST): {
+            int8_t value = type;
+            return value;
+        }
+        case to_underlying(TAGS::UINT8): {
+            uint8_t value;
+            is_ >> value;
+            return value;
+        }
+        case to_underlying(TAGS::UINT16): {
+            big_uint16_t value;
+            is_.read(repr(value), 2);
+            return value;
+        }
+        case to_underlying(TAGS::UINT32): {
+            big_uint32_t value;
+            is_.read(repr(value), 4);
+            if (value > 0x7fffffff)
+                throw unsupported_type();
+            return value;
+        }
+        case to_underlying(TAGS::INT8): {
+            int8_t value;
+            is_ >> value;
+            return value;
+        }
+        case to_underlying(TAGS::INT16): {
+            big_int16_t value;
+            is_.read(repr(value), 2);
+            return value;
+        }
+        case to_underlying(TAGS::INT32): {
+            big_int32_t value;
+            is_.read(repr(value), 4);
+            return value;
+        }
+    }
+    throw decode_error();
+}
+
+
 uint32_t iarchive::unpack_uint32()
 {
     uint8_t type{0};
@@ -547,6 +598,35 @@ byte_array iarchive::unpack_blob()
     unpack_raw_data(out);
 
     return out;
+}
+
+size_t iarchive::unpack_array_header()
+{
+    uint8_t type{0};
+    size_t count{0};
+
+    is_ >> type;
+    switch (type) {
+        case to_underlying(TAGS::FIXARRAY_FIRST) ... to_underlying(TAGS::FIXARRAY_LAST):
+            count = type & 0x0f;
+            break;
+        case to_underlying(TAGS::ARRAY16): {
+            big_uint16_t size;
+            is_.read(repr(size), 2);
+            count = size;
+            break;
+        }
+        case to_underlying(TAGS::ARRAY32): {
+            big_uint32_t size;
+            is_.read(repr(size), 4);
+            count = size;
+            break;
+        }
+        default:
+            throw decode_error();
+    }
+
+    return count;
 }
 
 // Read as many bytes as buf has in capacity.

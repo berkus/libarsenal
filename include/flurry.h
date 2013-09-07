@@ -38,16 +38,42 @@ public:
     inline iarchive(std::istream& in) : is_(in) {}
     explicit inline operator bool() const { return (bool)is_; }
 
+    // For enums...
     template <typename T>
-    void load(T& value);
+    inline typename std::enable_if<std::is_enum<T>::value>::type
+    load(T& value)
+    {
+        int read;
+        load(read);
+        value = T(read);
+    }
+
+    // ...and the rest.
+    template <typename T>
+    typename std::enable_if<!std::is_enum<T>::value>::type load(T& value);
 
     template <typename T>
     inline void load(boost::optional<T>& value)
     {}
 
+    template <typename T, size_t N>
+    inline void load(boost::array<T,N>& value)
+    {}
+
     template <typename T, T (*Func)(const T&)>
     inline void load(__endian_conversion<T,Func>& value)
     {}
+
+    template <typename T>
+    inline void load(std::vector<T>& value)
+    {
+        size_t size = unpack_array_header();
+        value.resize(size);
+        for (auto it = value.begin(); it != value.end(); ++it)
+        {
+            *this >> *it;
+        }
+    }
 
 protected:
     bool unpack_boolean();
@@ -68,9 +94,9 @@ protected:
     byte_array unpack_blob();
     std::string unpack_string();
 
-    void pack_array_header(size_t size);
-    void pack_map_header(size_t size);
-    void pack_ext_header(uint8_t type, size_t size);
+    size_t unpack_array_header();
+    size_t unpack_map_header();
+    size_t unpack_ext_header(uint8_t& type);
 
     void unpack_raw_data(byte_array& buf);
 };
