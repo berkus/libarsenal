@@ -119,7 +119,7 @@ void oarchive::pack_int16(int16_t d)
             os_.write(repr(big), 2);
         } else {
             /* signed 8 */
-            os_ << to_underlying(TAGS::INT8) << d;
+            os_ << to_underlying(TAGS::INT8) << int8_t(d);
         }
     } else if(d < (1<<7)) {
         /* fixnum */
@@ -152,7 +152,7 @@ void oarchive::pack_int32(int32_t d)
             os_.write(repr(big), 2);
         } else {
             /* signed 8 */
-            os_ << to_underlying(TAGS::INT8) << d;
+            os_ << to_underlying(TAGS::INT8) << int8_t(d);
         }
     } else if(d < (1<<7)) {
         /* fixnum */
@@ -198,7 +198,7 @@ void oarchive::pack_int64(int64_t d)
                 os_.write(repr(big), 2);
             } else {
                 /* signed 8 */
-                os_ << to_underlying(TAGS::INT8) << d;
+                os_ << to_underlying(TAGS::INT8) << int8_t(d);
             }
         }
     } else if(d < (1<<7)) {
