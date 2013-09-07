@@ -37,6 +37,9 @@ public:
 
     template <typename T>
     void load(T& value);
+
+protected:
+    byte_array unpack_blob();
 };
 
 class oarchive
@@ -93,6 +96,12 @@ protected:
 // 
 // These types are basic building blocks for serializing other, more complex types.
 //
+template <>
+inline void iarchive::load(byte_array& value)
+{
+    value = unpack_blob();
+}
+
 template <>
 inline void oarchive::save(int8_t value)
 {

@@ -418,5 +418,9 @@ void oarchive::pack_ext_header(uint8_t type, size_t bytes)
     // the inline type-specific wrappers handle that.
 }
 
+byte_array iarchive::unpack_blob()
+{
+    return byte_array();
+}
 
 } // flurry namespace
