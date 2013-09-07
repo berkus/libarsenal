@@ -13,6 +13,7 @@
  */
 #pragma once
 
+#include <boost/optional/optional.hpp>
 #include <type_traits>
 #include <iostream>
 #include "byte_array.h"
@@ -38,6 +39,10 @@ public:
     template <typename T>
     void load(T& value);
 
+    template <typename T>
+    inline void load(boost::optional<T>& value)
+    {}
+
 protected:
     byte_array unpack_blob();
 };
@@ -59,6 +64,10 @@ public:
     // ...and the rest.
     template <typename T>
     typename std::enable_if<!std::is_enum<T>::value>::type save(T value);
+
+    template <typename T>
+    inline void save(boost::optional<T> value)
+    {}
 
 protected:
     // Actual serialization functions.
