@@ -14,10 +14,18 @@ namespace flurry {
 
 namespace {
 
+// For writing.
 template<typename T>
-const char* repr(T& val)
+char const* repr(const T& val)
 {
-    return reinterpret_cast<const char*>(&val);
+    return reinterpret_cast<char const*>(&val);
+}
+
+// For reading.
+template<typename T>
+char* repr(T& val)
+{
+    return reinterpret_cast<char*>(&val);
 }
 
 enum class TAGS : uint8_t {
