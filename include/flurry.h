@@ -13,6 +13,8 @@
  */
 #pragma once
 
+#include <boost/serialization/serialization.hpp> // for constructing optionals
+#include <boost/serialization/detail/stack_constructor.hpp> // for constructing optionals
 #include <boost/optional/optional.hpp>
 #include <type_traits>
 #include <iostream>
@@ -54,7 +56,16 @@ public:
 
     template <typename T>
     inline void load(boost::optional<T>& value)
-    {}
+    {
+        bool empty = unpack_nil();
+        if (empty) {
+            value.reset();
+        } else {
+            boost::serialization::detail::stack_construct<iarchive, T> aux(*this, 0);
+            *this >> aux.reference();
+            value.reset(aux.reference());
+        }
+    }
 
     template <typename T, size_t N>
     inline void load(boost::array<T,N>& value)
@@ -76,6 +87,12 @@ public:
     }
 
 protected:
+    /**
+     * Semantics of unpack_nil are a bit different.
+     * It peeks to see if the next byte denotes nil type, and if so consumes it and returns true;
+     * otherwise it returns false and leaves the stream untouched.
+     */
+    bool unpack_nil();
     bool unpack_boolean();
 
     int8_t  unpack_int8();
@@ -240,11 +257,6 @@ template <>
 inline void iarchive::load(byte_array& value)
 {
     value = unpack_blob();
-}
-
-template <>
-inline void iarchive::load(boost::optional<unsigned>& value)
-{
 }
 
 template <>
