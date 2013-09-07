@@ -84,18 +84,23 @@ public:
     // For enums...
     template <typename T>
     inline typename std::enable_if<std::is_enum<T>::value>::type
-    save(T value)
+    save(T const& value)
     {
         *this << to_underlying(value);
     }
 
     // ...and the rest.
     template <typename T>
-    typename std::enable_if<!std::is_enum<T>::value>::type save(T value);
+    typename std::enable_if<!std::is_enum<T>::value>::type save(T const& value);
 
     template <typename T>
-    inline void save(boost::optional<T> value)
-    {}
+    inline void save(boost::optional<T> const& value);
+
+    template <typename T, size_t N>
+    inline void save(boost::array<T,N> const& value);
+
+    template <typename T>
+    inline void save(std::vector<T> const& value);
 
 protected:
     // Actual serialization functions.
@@ -212,105 +217,129 @@ inline void iarchive::load(byte_array& value)
 }
 
 template <>
-inline void oarchive::save(int8_t value)
+inline void iarchive::load(boost::optional<unsigned>& value)
+{
+}
+
+template <>
+inline void oarchive::save(int8_t const& value)
 {
     pack_int8(value);
 }
 
 template <>
-inline void oarchive::save(int16_t value)
+inline void oarchive::save(int16_t const& value)
 {
     pack_int16(value);
 }
 
 template <>
-inline void oarchive::save(int32_t value)
+inline void oarchive::save(int32_t const& value)
 {
     pack_int32(value);
 }
 
 template <>
-inline void oarchive::save(int64_t value)
+inline void oarchive::save(int64_t const& value)
 {
     pack_int64(value);
 }
 
 template <>
-inline void oarchive::save(uint8_t value)
+inline void oarchive::save(uint8_t const& value)
 {
     pack_uint8(value);
 }
 
 template <>
-inline void oarchive::save(uint16_t value)
+inline void oarchive::save(uint16_t const& value)
 {
     pack_uint16(value);
 }
 
 template <>
-inline void oarchive::save(uint32_t value)
+inline void oarchive::save(uint32_t const& value)
 {
     pack_uint32(value);
 }
 
 template <>
-inline void oarchive::save(uint64_t value)
+inline void oarchive::save(uint64_t const& value)
 {
     pack_uint64(value);
 }
 
 template <>
-inline void oarchive::save(float value)
+inline void oarchive::save(float const& value)
 {
     pack_real(value);
 }
 
 template <>
-inline void oarchive::save(double value)
+inline void oarchive::save(double const& value)
 {
     pack_real(value);
 }
 
 template <>
-inline void oarchive::save(long value)
+inline void oarchive::save(long const& value)
 {
     pack_int64(value);
 }
 
 template <>
-inline void oarchive::save(bool value)
+inline void oarchive::save(bool const& value)
 {
     if (value) pack_true();
     else       pack_false();
 }
 
 template <>
-inline void oarchive::save(std::nullptr_t)
+inline void oarchive::save(std::nullptr_t const&)
 {
     pack_nil();
 }
 
 template <>
-inline void oarchive::save(byte_array value)
+inline void oarchive::save(byte_array const& value)
 {
     pack_blob(value.data(), value.size());
 }
 
 template <>
-inline void oarchive::save(std::string value)
+inline void oarchive::save(std::string const& value)
 {
     pack_string(value.data(), value.size());
 }
 
+template <typename T>
+inline void oarchive::save(boost::optional<T> const& value)
+{
+    if (value.is_initialized()) {
+        *this << *value;
+    } else {
+        pack_nil();
+    }
+}
+
+template <typename T, size_t N>
+inline void oarchive::save(boost::array<T,N> const& value)
+{
+    pack_array_header(N);
+    for (auto x : value) {
+        *this << x;
+    }
+}
+
 // @todo generalize for STL container types...
-// template <typename T>
-// inline void oarchive::save(std::vector<T> value)
-// {
-//     pack_array_header(value.size());
-//     for (auto x : value) {
-//         *this << x;
-//     }
-// }
+template <typename T>
+inline void oarchive::save(std::vector<T> const& value)
+{
+    pack_array_header(value.size());
+    for (auto x : value) {
+        *this << x;
+    }
+}
 
 // Default deserializer implementation for types supported out-of-the-box.
 template <typename T>
@@ -322,7 +351,14 @@ inline iarchive& operator >> (iarchive& in, T& value)
 
 // Default serializer implementation for types supported out-of-the-box.
 template <typename T>
-inline oarchive& operator << (oarchive& out, const T& value)
+inline oarchive& operator << (oarchive& out, T const& value)
+{
+    out.save(value);
+    return out;
+}
+
+template <typename T, size_t N>
+inline oarchive& operator << (oarchive& out, boost::array<T,N> const& value)
 {
     out.save(value);
     return out;
