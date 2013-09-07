@@ -46,6 +46,7 @@ public:
 
 protected:
     byte_array unpack_blob();
+    void unpack_raw_data(byte_array& buf);
 };
 
 class oarchive

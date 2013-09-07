@@ -428,7 +428,55 @@ void oarchive::pack_ext_header(uint8_t type, size_t bytes)
 
 byte_array iarchive::unpack_blob()
 {
-    return byte_array();
+    uint8_t type{0};
+    size_t bytes{0};
+
+    is_ >> type;
+    switch (type) {
+        case to_underlying(TAGS::FIXSTR_FIRST) ... to_underlying(TAGS::FIXSTR_LAST):
+            bytes = type & 0x1f;
+            break;
+
+        case to_underlying(TAGS::BLOB8): {
+            uint8_t size;
+            is_ >> size;
+            bytes = size;
+            break;
+        }
+
+        case to_underlying(TAGS::BLOB16): {
+            big_uint16_t size;
+            is_.read(repr(size), 2);
+            bytes = size;
+            break;
+        }
+
+        case to_underlying(TAGS::BLOB32): {
+            big_uint32_t size;
+            is_.read(repr(size), 4);
+            bytes = size;
+            break;
+        }
+
+        default:
+            if (is_.eof())
+                return byte_array();
+
+            throw decode_error();
+    }
+
+    byte_array out;
+    out.resize(bytes);
+    unpack_raw_data(out);
+
+    return out;
+}
+
+// Read as many bytes as buf has in capacity.
+// This makes sure we never read into unallocated memory.
+void iarchive::unpack_raw_data(byte_array& buf)
+{
+    is_.read(buf.data(), buf.size());//hmm, what about using capacity()?
 }
 
 } // flurry namespace
