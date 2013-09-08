@@ -110,11 +110,11 @@ bool operator == (const byte_array& a, const byte_array& b)
 	return a.value == b.value;
 }
 
-std::ostream& operator << (std::ostream& os, const byte_array& a)
+std::ostream& operator << (std::ostream& os, byte_array const& a)
 {
 	for (size_t s = 0; s < a.size(); ++s)
 	{
-		os << hex(a.at(s)) << ' ';
+		os << std::setfill('0') << std::hex << std::setw(2) << (int)(unsigned char)(a.at(s)) << ' ';
 	}
 	return os;
 }
