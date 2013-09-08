@@ -35,7 +35,7 @@ public:
     byte_array(const boost::array<T, N>& in) : value(in.begin(), in.begin() + N) {}
 
     ~byte_array();
-    byte_array& operator = (const byte_array& other);
+    byte_array& operator = (byte_array const& other);
     byte_array& operator = (byte_array&& other);
 
     inline bool is_empty() const { return size() == 0; }
