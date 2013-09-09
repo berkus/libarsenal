@@ -24,14 +24,31 @@
 
 namespace flurry {
 
-class encode_error : public std::exception
-{};
+//=================================================================================================
+// exceptions
+//=================================================================================================
 
-class decode_error : public std::exception
-{};
+class encode_error : public std::runtime_error
+{
+public:
+    explicit inline encode_error() : std::runtime_error("encoding error") {}
+};
 
-class unsupported_type : public std::exception
-{};
+class decode_error : public std::runtime_error
+{
+public:
+    explicit inline decode_error() : std::runtime_error("decoding error") {}
+};
+
+class unsupported_type : public std::runtime_error
+{
+public:
+    explicit inline unsupported_type() : std::runtime_error("invalid type encountered") {}
+};
+
+//=================================================================================================
+// loading archive
+//=================================================================================================
 
 class iarchive
 {

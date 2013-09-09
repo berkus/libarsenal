@@ -506,7 +506,7 @@ int32_t iarchive::unpack_int32()
             big_uint32_t value;
             is_.read(repr(value), 4);
             if (value > 0x7fffffff)
-                throw unsupported_type();
+                throw std::out_of_range("int32 representation invalid");
             return value;
         }
         case to_underlying(TAGS::INT8): {
