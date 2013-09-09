@@ -139,6 +139,10 @@ protected:
     void unpack_raw_data(byte_array& buf);
 };
 
+//=================================================================================================
+// saving archive
+//=================================================================================================
+
 class oarchive
 {
     std::ostream& os_;
@@ -197,11 +201,16 @@ protected:
     }
 };
 
-//
+//=================================================================================================
 // Specializations for flurry serializable types.
 // 
 // These types are basic building blocks for serializing other, more complex types.
-//
+//=================================================================================================
+
+//=================================================================================================
+// load overloads
+//=================================================================================================
+
 template <>
 inline void iarchive::load(int8_t& value)
 {
@@ -279,6 +288,16 @@ inline void iarchive::load(byte_array& value)
 {
     value = unpack_blob();
 }
+
+template <>
+inline void iarchive::load(std::string& value)
+{
+    value = unpack_string();
+}
+
+//=================================================================================================
+// save overloads
+//=================================================================================================
 
 template <>
 inline void oarchive::save(int8_t const& value)

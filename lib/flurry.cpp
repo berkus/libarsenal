@@ -478,6 +478,69 @@ bool iarchive::unpack_boolean()
 // integer types
 //=================================================================================================
 
+int8_t iarchive::unpack_int8()
+{
+    uint8_t type{0};
+    is_ >> type;
+    // Todo: handle EOF
+    switch (type) {
+        case to_underlying(TAGS::POSITIVE_INT_FIRST) ... to_underlying(TAGS::POSITIVE_INT_LAST): {
+            int8_t value = type;
+            return value;
+        }
+        case to_underlying(TAGS::NEGATIVE_INT_FIRST) ... to_underlying(TAGS::NEGATIVE_INT_LAST): {
+            int8_t value = type;
+            return value;
+        }
+        case to_underlying(TAGS::INT8): {
+            int8_t value;
+            is_ >> value;
+            return value;
+        }
+    }
+    throw decode_error();
+}
+
+int16_t iarchive::unpack_int16()
+{
+    uint8_t type{0};
+    is_ >> type;
+    // Todo: handle EOF
+    switch (type) {
+        case to_underlying(TAGS::POSITIVE_INT_FIRST) ... to_underlying(TAGS::POSITIVE_INT_LAST): {
+            int16_t value = type;
+            return value;
+        }
+        case to_underlying(TAGS::NEGATIVE_INT_FIRST) ... to_underlying(TAGS::NEGATIVE_INT_LAST): {
+            int16_t value = type; // FIXME: bad negative unpack?
+            return value;
+        }
+        case to_underlying(TAGS::UINT8): {
+            uint8_t value;
+            is_ >> value;
+            return value;
+        }
+        case to_underlying(TAGS::UINT16): {
+            big_uint16_t value;
+            is_.read(repr(value), 2);
+            if (value > 0x7fff)
+                throw std::out_of_range("int16 representation invalid");
+            return value;
+        }
+        case to_underlying(TAGS::INT8): {
+            int8_t value;
+            is_ >> value;
+            return value;
+        }
+        case to_underlying(TAGS::INT16): {
+            big_int16_t value;
+            is_.read(repr(value), 2);
+            return value;
+        }
+    }
+    throw decode_error();
+}
+
 int32_t iarchive::unpack_int32()
 {
     uint8_t type{0};
@@ -528,6 +591,65 @@ int32_t iarchive::unpack_int32()
     throw decode_error();
 }
 
+int64_t iarchive::unpack_int64()
+{
+    uint8_t type{0};
+    is_ >> type;
+    // Todo: handle EOF
+    switch (type) {
+        case to_underlying(TAGS::POSITIVE_INT_FIRST) ... to_underlying(TAGS::POSITIVE_INT_LAST): {
+            int8_t value = type;
+            return value;
+        }
+        case to_underlying(TAGS::NEGATIVE_INT_FIRST) ... to_underlying(TAGS::NEGATIVE_INT_LAST): {
+            int8_t value = type;
+            return value;
+        }
+        case to_underlying(TAGS::UINT8): {
+            uint8_t value;
+            is_ >> value;
+            return value;
+        }
+        case to_underlying(TAGS::UINT16): {
+            big_uint16_t value;
+            is_.read(repr(value), 2);
+            return value;
+        }
+        case to_underlying(TAGS::UINT32): {
+            big_uint32_t value;
+            is_.read(repr(value), 4);
+            return value;
+        }
+        case to_underlying(TAGS::UINT64): {
+            big_uint64_t value;
+            is_.read(repr(value), 8);
+            if (value > 0x7fffffffffffffff)
+                throw std::out_of_range("int64 representation invalid");
+            return value;
+        }
+        case to_underlying(TAGS::INT8): {
+            int8_t value;
+            is_ >> value;
+            return value;
+        }
+        case to_underlying(TAGS::INT16): {
+            big_int16_t value;
+            is_.read(repr(value), 2);
+            return value;
+        }
+        case to_underlying(TAGS::INT32): {
+            big_int32_t value;
+            is_.read(repr(value), 4);
+            return value;
+        }
+        case to_underlying(TAGS::INT64): {
+            big_int64_t value;
+            is_.read(repr(value), 8);
+            return value;
+        }
+    }
+    throw decode_error();
+}
 
 uint32_t iarchive::unpack_uint32()
 {
@@ -561,6 +683,36 @@ uint32_t iarchive::unpack_uint32()
 //=================================================================================================
 // floating-point types
 //=================================================================================================
+
+float iarchive::unpack_float()
+{
+    uint8_t type{0};
+    is_ >> type;
+    if (type != to_underlying(TAGS::FLOAT))
+        throw decode_error();
+
+    big_uint32_t value;
+    is_.read(repr(value), 4);
+
+    union { float f; uint32_t i; } mem;
+    mem.i = value;
+    return mem.f;
+}
+
+double iarchive::unpack_double()
+{
+    uint8_t type{0};
+    is_ >> type;
+    if (type != to_underlying(TAGS::DOUBLE))
+        throw decode_error();
+
+    big_uint64_t value;
+    is_.read(repr(value), 8);
+
+    union { double f; uint64_t i; } mem;
+    mem.i = value;
+    return mem.f;
+}
 
 //=================================================================================================
 // array and blob types
@@ -610,6 +762,52 @@ byte_array iarchive::unpack_blob()
     unpack_raw_data(out);
 
     return out;
+}
+
+std::string iarchive::unpack_string()
+{
+    uint8_t type{0};
+    size_t bytes{0};
+
+    is_ >> type;
+    switch (type) {
+        case to_underlying(TAGS::FIXSTR_FIRST) ... to_underlying(TAGS::FIXSTR_LAST):
+            bytes = type & 0x1f;
+            break;
+
+        case to_underlying(TAGS::STR8): {
+            uint8_t size;
+            is_.read(repr(size), 1);
+            bytes = size;
+            break;
+        }
+
+        case to_underlying(TAGS::STR16): {
+            big_uint16_t size;
+            is_.read(repr(size), 2);
+            bytes = size;
+            break;
+        }
+
+        case to_underlying(TAGS::STR32): {
+            big_uint32_t size;
+            is_.read(repr(size), 4);
+            bytes = size;
+            break;
+        }
+
+        default:
+            if (is_.eof())
+                return std::string();
+
+            throw decode_error();
+    }
+
+    byte_array out;
+    out.resize(bytes);
+    unpack_raw_data(out);
+
+    return std::string(out.begin(), out.end());
 }
 
 size_t iarchive::unpack_array_header()
