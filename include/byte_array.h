@@ -92,11 +92,19 @@ public:
 // Hash specialization for byte_array
 namespace std {
 
-template<> struct hash<byte_array> : public std::unary_function<byte_array, size_t>
+template<>
+struct hash<byte_array> : public std::unary_function<byte_array, size_t>
 {
-    inline size_t operator()(const byte_array& /*a*/) const noexcept
+    inline size_t operator()(const byte_array& a) const noexcept
     {
-        size_t seed = 0;
+        // return std::hash_combine_range(a.begin(), a.end()); -- hopefully in c++1y
+        // VEEERY bad implementation for now. @fixme
+        size_t seed = 0xdeadbeef;
+        for (auto x : a)
+        {
+            seed ^= x;
+            seed <<= 3;
+        }
         return seed;
     }
 };
