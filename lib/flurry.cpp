@@ -651,6 +651,24 @@ int64_t iarchive::unpack_int64()
     throw decode_error();
 }
 
+uint8_t iarchive::unpack_uint8()
+{
+    uint8_t type{0};
+    is_ >> type;
+    // Todo: handle EOF
+    switch (type) {
+        case to_underlying(TAGS::POSITIVE_INT_FIRST) ... to_underlying(TAGS::POSITIVE_INT_LAST): {
+            return type;
+        }
+        case to_underlying(TAGS::UINT8): {
+            uint8_t value;
+            is_ >> value;
+            return value;
+        }
+    }
+    throw decode_error();
+}
+
 uint32_t iarchive::unpack_uint32()
 {
     uint8_t type{0};
