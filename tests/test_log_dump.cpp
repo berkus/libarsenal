@@ -16,6 +16,7 @@ using namespace std;
 inline char printable(char c)
 {
     if (c < 32) return '.';
+    if (c > 126) return '.'; // 127 = DEL
     return c;
 }
 
