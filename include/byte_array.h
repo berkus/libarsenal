@@ -18,6 +18,7 @@
 class byte_array
 {
     friend bool operator ==(const byte_array& a, const byte_array& b);
+    friend bool operator !=(const byte_array& a, const byte_array& b);
     std::vector<char> value; // XXX make implicitly shared cow?
 public:
     typedef std::vector<char>::iterator iterator;
@@ -112,6 +113,7 @@ struct hash<byte_array> : public std::unary_function<byte_array, size_t>
 } // namespace std
 
 bool operator ==(const byte_array& a, const byte_array& b);
+bool operator !=(const byte_array& a, const byte_array& b);
 
 std::ostream& operator << (std::ostream& os, const byte_array& a);
 
