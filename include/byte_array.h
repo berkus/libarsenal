@@ -68,6 +68,10 @@ public:
         value.push_back(c);
     }
 
+    inline void append(byte_array const& c) {
+        value.insert(value.end(), c.begin(), c.end());
+    }
+
     /**
      * Fill entire array to char @a ch.
      * If the size is specified, resizes the array beforehand.
