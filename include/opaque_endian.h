@@ -20,7 +20,8 @@ class __endian_conversion
     T representation;
 
 public:
-    inline __endian_conversion() : representation(reorder(T())) {}
+    inline __endian_conversion() = default;
+    // inline __endian_conversion() : representation(reorder(T())) {}
     inline __endian_conversion(const T& t) : representation(reorder(t)) { }
     inline operator T() const { return reorder(representation); }
 
