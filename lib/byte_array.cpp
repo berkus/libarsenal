@@ -119,7 +119,7 @@ std::ostream& operator << (std::ostream& os, byte_array const& a)
 {
 	for (size_t s = 0; s < a.size(); ++s)
 	{
-		os << std::setfill('0') << std::hex << std::setw(2) << (int)(unsigned char)(a.at(s)) << ' ';
+		os << std::setfill('0') << std::hex << std::setw(2) << (int)(unsigned char)(a.at(s));
 	}
 	return os;
 }
