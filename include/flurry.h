@@ -107,7 +107,6 @@ public:
         }
     }
 
-protected:
     /**
      * Semantics of unpack_nil are a bit different.
      * It peeks to see if the next byte denotes nil type, and if so consumes it and returns true;
@@ -170,7 +169,6 @@ public:
     template <typename T>
     inline void save(std::vector<T> const& value);
 
-protected:
     // Actual serialization functions.
     void pack_nil();
     void pack_true();
