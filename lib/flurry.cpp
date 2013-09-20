@@ -898,4 +898,15 @@ void iarchive::unpack_raw_data(byte_array& buf)
     is_.read(buf.data(), buf.size());//hmm, what about using capacity()?
 }
 
+// Read and discard given number of bytes
+void iarchive::skip_raw_data(size_t bytes)
+{
+    char buf[512];
+    while (bytes > 512) {
+        is_.read(buf, 512);
+        bytes -= 512;
+    }
+    is_.read(buf, bytes);
+}
+
 } // flurry namespace

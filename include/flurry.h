@@ -136,6 +136,7 @@ public:
     size_t unpack_ext_header(uint8_t& type);
 
     void unpack_raw_data(byte_array& buf);
+    void skip_raw_data(size_t bytes);
 };
 
 //=================================================================================================
