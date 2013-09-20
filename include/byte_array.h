@@ -20,6 +20,7 @@ class byte_array
     friend bool operator ==(const byte_array& a, const byte_array& b);
     friend bool operator !=(const byte_array& a, const byte_array& b);
     std::vector<char> value; // XXX make implicitly shared cow?
+
 public:
     typedef std::vector<char>::iterator iterator;
     typedef std::vector<char>::const_iterator const_iterator;
@@ -78,6 +79,17 @@ public:
      */
     byte_array& fill(char ch, int size = -1);
 
+    template <typename T>
+    T* as() {
+        return reinterpret_cast<T*>(data());
+    }
+
+    template <typename T>
+    T const* as() const {
+        return reinterpret_cast<T const*>(data());
+    }
+
+
     /**
      * Unlike Qt's fromRawData current implementation of
      * wrap does not actually wrap the data, it creates
@@ -122,18 +134,19 @@ bool operator !=(const byte_array& a, const byte_array& b);
 std::ostream& operator << (std::ostream& os, const byte_array& a);
 
 /**
+// Copy-on-write implementation:
 struct BigArray{
-       BigArray():m_data(new int[10000000]){}
-       int  operator[](size_t i)const{return (*m_data)[i];}
-       int& operator[](size_t i){
-          if(!m_data.unique()){//"detach"
+   BigArray():m_data(new int[10000000]){}
+   int  operator[](size_t i)const{return (*m_data)[i];}
+   int& operator[](size_t i){
+        if(!m_data.unique()){//"detach"
             shared_ptr<int> _tmp(new int[10000000]);
             memcpy(_tmp.get(),m_data.get(),10000000);
             m_data=_tmp;
-          }
-          return (*m_data)[i];
-       }
-    private:
-       shared_ptr<int> m_data;
-    };
+        }
+        return (*m_data)[i];
+    }
+private:
+    shared_ptr<int> m_data;
+};
 */
