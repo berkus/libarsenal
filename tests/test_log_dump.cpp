@@ -30,7 +30,7 @@ void hexdump(byte_array data)
         cout << boost::format("%08x  ") % offset;
         size_t stride = remain < 16 ? remain : 16;
 
-        for(int i = 0; i < stride; ++i)
+        for(size_t i = 0; i < stride; ++i)
         {
             cout << boost::format("%02x ") % (int)(unsigned char)(data[i+offset]);
             if (i == 7)
@@ -40,11 +40,11 @@ void hexdump(byte_array data)
         {
             if(stride < 8)
                 cout << ' ';
-            for(int i = 0; i < 16 - stride; ++i)
+            for(size_t i = 0; i < 16 - stride; ++i)
                 cout << "   ";
         }
         cout << " |";
-        for(int i = 0; i < stride; ++i)
+        for(size_t i = 0; i < stride; ++i)
         {
             cout << boost::format("%c") % printable(data[i+offset]);
         }
