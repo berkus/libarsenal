@@ -11,6 +11,7 @@
 #include <vector>
 #include <utility>
 #include <boost/array.hpp>
+#include "hash_combine.h"
 
 /**
  * Class mimicking Qt's QByteArray behavior using STL containers.
@@ -117,10 +118,8 @@ struct hash<byte_array> : public std::unary_function<byte_array, size_t>
         // return std::hash_combine_range(a.begin(), a.end()); -- hopefully in c++1y
         // VEEERY bad implementation for now. @fixme
         size_t seed = 0xdeadbeef;
-        for (auto x : a)
-        {
-            seed ^= x;
-            seed <<= 3;
+        for (auto x : a) {
+            stdext::hash_combine(seed, x);
         }
         return seed;
     }
