@@ -13,7 +13,7 @@
 // Return true if container c contains key k
 // Container must be a collection with type Key for keys - @todo express constraint in code
 template <typename Key, typename Container>
-inline bool contains(Container& c, Key& k)
+inline bool contains(Container const& c, Key const& k)
 {
     return c.find(k) != end(c);
 }
