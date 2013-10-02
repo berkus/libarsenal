@@ -92,6 +92,24 @@ char& byte_array::operator[](int i)
 	return value[i];
 }
 
+byte_array byte_array::left(size_t new_size) const
+{
+	new_size = std::min(new_size, size());
+	return byte_array(const_data(), new_size);
+}
+
+byte_array byte_array::mid(int pos, size_t new_size) const
+{
+	new_size = std::min(new_size, size() - pos);
+	return byte_array(const_data() + pos, new_size);
+}
+
+byte_array byte_array::right(size_t new_size) const
+{
+	new_size = std::min(new_size, size());
+	return byte_array(const_data() + size() - new_size, new_size);
+}
+
 byte_array& byte_array::fill(char ch, int size)
 {
 	if (size != -1)

@@ -74,6 +74,10 @@ public:
         value.insert(value.end(), c.begin(), c.end());
     }
 
+    byte_array left(size_t size) const;
+    byte_array mid(int pos, size_t size = ~0) const;
+    byte_array right(size_t size) const;
+
     /**
      * Fill entire array to char @a ch.
      * If the size is specified, resizes the array beforehand.
