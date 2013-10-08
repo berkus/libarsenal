@@ -28,9 +28,9 @@ class file_dump
     static std::mutex m;
 public:
     template <typename T>
-    file_dump(const T& data) {
+    file_dump(T const& data, std::string const& filename = "dump.bin") {
         m.lock();
-        std::ofstream out("dump.bin", std::ios::out|std::ios::app|std::ios::binary);
+        std::ofstream out(filename, std::ios::out|std::ios::app|std::ios::binary);
         flurry::oarchive oa(out);
         oa << data;
     }
