@@ -1,4 +1,5 @@
 #include "settings_provider.h"
+#include "Plist.hpp"
 
 namespace {
 static std::string organization_name{"defaultOrg"};
@@ -23,7 +24,12 @@ void settings_provider::set_application_name(std::string const& app_name)
 
 std::shared_ptr<settings_provider> settings_provider::instance()
 {
-    return std::make_shared<settings_provider>();
+    return std::make_shared<settings_provider>(private_tag{});
+}
+
+settings_provider::settings_provider(settings_provider::private_tag)
+{
+
 }
 
 bool settings_provider::enter_section(std::string const& name)

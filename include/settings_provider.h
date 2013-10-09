@@ -31,7 +31,11 @@ class settings_provider
     bool enter_section(std::string const& name);
     void leave_section();
 
+    struct private_tag{};
+
 public:
+    settings_provider(private_tag);
+
     // Call these functions before instantiating settings_provider.
     static void set_organization_name(std::string const& org_name);
     static void set_organization_domain(std::string const& org_domain);
