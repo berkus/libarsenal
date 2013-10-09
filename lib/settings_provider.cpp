@@ -29,7 +29,7 @@ void settings_provider::set_application_name(std::string const& app_name)
 
 std::shared_ptr<settings_provider> settings_provider::instance()
 {
-    return std::make_shared<settings_provider>(private_tag{});
+    return std::make_shared<settings_provider>(private_tag{});// @todo Return single instance!
 }
 
 settings_provider::settings_provider(settings_provider::private_tag)
@@ -47,46 +47,32 @@ bool settings_provider::enter_section(std::string const& name)
 void settings_provider::leave_section()
 {}
 
-void settings_provider::set(std::string const& key, std::string const& value)
+template <typename T>
+void settings_provider::set(std::string const& key, T const& value)
 {
     data[key] = value;
+}
+
+template void settings_provider::set<int8_t>(std::string const& key, int8_t const& value);
+template void settings_provider::set<int16_t>(std::string const& key, int16_t const& value);
+template void settings_provider::set<int32_t>(std::string const& key, int32_t const& value);
+template void settings_provider::set<int64_t>(std::string const& key, int64_t const& value);
+template void settings_provider::set<uint8_t>(std::string const& key, uint8_t const& value);
+template void settings_provider::set<uint16_t>(std::string const& key, uint16_t const& value);
+template void settings_provider::set<uint32_t>(std::string const& key, uint32_t const& value);
+template void settings_provider::set<uint64_t>(std::string const& key, uint64_t const& value);
+
+void settings_provider::sync()
+{
     Plist::writePlistBinary("someFileName.plist", data);
 }
 
-void settings_provider::set(std::string const& key, byte_array const& value)
+boost::any settings_provider::get(std::string const& key)
 {
-    data[key] = value;
-    Plist::writePlistBinary("someFileName.plist", data);
-}
-
-void settings_provider::set(std::string const& key, size_t value)
-{
-    data[key] = value;
-    Plist::writePlistBinary("someFileName.plist", data);
-}
-
-void settings_provider::set(std::string const& key, ssize_t value)
-{
-    data[key] = value;
-    Plist::writePlistBinary("someFileName.plist", data);
-}
-
-std::string settings_provider::get_string(std::string const& key)
-{
-    return boost::any_cast<std::string>(data[key]);
+    return data[key];
 }
 
 byte_array settings_provider::get_byte_array(std::string const& key)
 {
-    return byte_array();//boost::any_cast<std::vector>(data[key]);
-}
-
-size_t settings_provider::get_uint(std::string const& key)
-{
-    return boost::any_cast<size_t>(data[key]);
-}
-
-ssize_t settings_provider::get_int(std::string const& key)
-{
-    return boost::any_cast<ssize_t>(data[key]);
+    return std::move(boost::any_cast<std::vector<char>>(data[key]));
 }

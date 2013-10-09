@@ -58,13 +58,14 @@ public:
         }
     };
 
-    void set(std::string const& key, std::string const& value);
-    void set(std::string const& key, byte_array const& value);
-    void set(std::string const& key, size_t value); // @todo various int overloads...
-    void set(std::string const& key, ssize_t value);
+    template <typename T>
+    void set(std::string const& key, T const& value);
 
-    std::string get_string(std::string const& key);
+    /**
+     * Persist modified settings to disk.
+     */
+    void sync();
+
+    boost::any get(std::string const& key);
     byte_array get_byte_array(std::string const& key);
-    size_t get_uint(std::string const& key);
-    ssize_t get_int(std::string const& key);
 };
