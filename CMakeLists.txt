@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 
-include(cmake/setup.cmake)
+if (NOT BUILD_IN_METTANODE)
+    include(cmake/setup.cmake)
+endif()
 
 # Additional unofficial boost libraries
 include_directories(../../mettanode/3rdparty/endian)
