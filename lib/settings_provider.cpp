@@ -79,5 +79,8 @@ boost::any settings_provider::get(std::string const& key)
 
 byte_array settings_provider::get_byte_array(std::string const& key)
 {
-    return std::move(boost::any_cast<std::vector<char>>(data[key]));
+    auto& v = data[key];
+    if (v.empty())
+        return byte_array();
+    return std::move(boost::any_cast<std::vector<char>>(v));
 }
