@@ -1,5 +1,8 @@
-// Binary literals.
+//
+// Binary literals as an UDL.
 // 1110_b or 1010101_b etc
+// In C++14 use 0b010101 instead!
+//
 #pragma once
 
 template< char FIRST, char... REST > struct binary
