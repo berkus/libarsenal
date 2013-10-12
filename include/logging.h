@@ -48,14 +48,16 @@ class logging
 {
     static std::mutex m;
 protected:
+    static std::ostream& out_stream;
+
     logging() {
         m.lock();
 	}
-    ~logging() { std::clog << std::endl; m.unlock(); }
+    ~logging() { out_stream << std::endl; m.unlock(); }
 
 public:
     template <typename T>
-    std::ostream& operator << (const T& v) { std::clog << v; return std::clog; }
+    std::ostream& operator << (const T& v) { out_stream << v; return std::clog; }
 };
 
 class debug : public logging
