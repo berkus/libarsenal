@@ -56,6 +56,8 @@ protected:
     ~logging() { out_stream << std::endl; m.unlock(); }
 
 public:
+    // inline static void redirect_output_to(std::ostream& stream) { out_stream = stream; }
+
     template <typename T>
     std::ostream& operator << (const T& v) { out_stream << v; return std::clog; }
 };
@@ -65,7 +67,7 @@ class debug : public logging
 public:
     debug() : logging() {
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-        std::clog << "[DEBUG] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
+        out_stream << "[DEBUG] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
     }
 };
 
@@ -74,7 +76,7 @@ class info : public logging
 public:
     info() : logging() {
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-        std::clog << "[INFO ] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
+        out_stream << "[INFO ] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
     }
 };
 
@@ -83,7 +85,7 @@ class warning : public logging
 public:
     warning() : logging() {
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-        std::clog << "[WARN ] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
+        out_stream << "[WARN ] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
     }
 };
 
@@ -92,7 +94,7 @@ class fatal : public logging
 public:
     fatal() : logging() {
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-        std::clog << "[FATAL] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
+        out_stream << "[FATAL] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
     }
     ~fatal() { std::abort(); }
 };
