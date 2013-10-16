@@ -493,7 +493,7 @@ int8_t iarchive::unpack_int8()
             return value;
         }
         case to_underlying(TAGS::INT8): {
-            int8_t value;
+            int8_t value{0};
             is_ >> value;
             return value;
         }
@@ -516,24 +516,24 @@ int16_t iarchive::unpack_int16()
             return value;
         }
         case to_underlying(TAGS::UINT8): {
-            uint8_t value;
+            uint8_t value{0};
             is_ >> value;
             return value;
         }
         case to_underlying(TAGS::UINT16): {
-            big_uint16_t value;
+            big_uint16_t value{0};
             is_.read(repr(value), 2);
             if (value > 0x7fff)
                 throw std::out_of_range("int16 representation invalid");
             return value;
         }
         case to_underlying(TAGS::INT8): {
-            int8_t value;
+            int8_t value{0};
             is_ >> value;
             return value;
         }
         case to_underlying(TAGS::INT16): {
-            big_int16_t value;
+            big_int16_t value{0};
             is_.read(repr(value), 2);
             return value;
         }
@@ -556,34 +556,34 @@ int32_t iarchive::unpack_int32()
             return value;
         }
         case to_underlying(TAGS::UINT8): {
-            uint8_t value;
+            uint8_t value{0};
             is_ >> value;
             return value;
         }
         case to_underlying(TAGS::UINT16): {
-            big_uint16_t value;
+            big_uint16_t value{0};
             is_.read(repr(value), 2);
             return value;
         }
         case to_underlying(TAGS::UINT32): {
-            big_uint32_t value;
+            big_uint32_t value{0};
             is_.read(repr(value), 4);
             if (value > 0x7fffffff)
                 throw std::out_of_range("int32 representation invalid");
             return value;
         }
         case to_underlying(TAGS::INT8): {
-            int8_t value;
+            int8_t value{0};
             is_ >> value;
             return value;
         }
         case to_underlying(TAGS::INT16): {
-            big_int16_t value;
+            big_int16_t value{0};
             is_.read(repr(value), 2);
             return value;
         }
         case to_underlying(TAGS::INT32): {
-            big_int32_t value;
+            big_int32_t value{0};
             is_.read(repr(value), 4);
             return value;
         }
@@ -606,44 +606,44 @@ int64_t iarchive::unpack_int64()
             return value;
         }
         case to_underlying(TAGS::UINT8): {
-            uint8_t value;
+            uint8_t value{0};
             is_ >> value;
             return value;
         }
         case to_underlying(TAGS::UINT16): {
-            big_uint16_t value;
+            big_uint16_t value{0};
             is_.read(repr(value), 2);
             return value;
         }
         case to_underlying(TAGS::UINT32): {
-            big_uint32_t value;
+            big_uint32_t value{0};
             is_.read(repr(value), 4);
             return value;
         }
         case to_underlying(TAGS::UINT64): {
-            big_uint64_t value;
+            big_uint64_t value{0};
             is_.read(repr(value), 8);
             if (value > 0x7fffffffffffffff)
                 throw std::out_of_range("int64 representation invalid");
             return value;
         }
         case to_underlying(TAGS::INT8): {
-            int8_t value;
+            int8_t value{0};
             is_ >> value;
             return value;
         }
         case to_underlying(TAGS::INT16): {
-            big_int16_t value;
+            big_int16_t value{0};
             is_.read(repr(value), 2);
             return value;
         }
         case to_underlying(TAGS::INT32): {
-            big_int32_t value;
+            big_int32_t value{0};
             is_.read(repr(value), 4);
             return value;
         }
         case to_underlying(TAGS::INT64): {
-            big_int64_t value;
+            big_int64_t value{0};
             is_.read(repr(value), 8);
             return value;
         }
@@ -661,7 +661,7 @@ uint8_t iarchive::unpack_uint8()
             return type;
         }
         case to_underlying(TAGS::UINT8): {
-            uint8_t value;
+            uint8_t value{0};
             is_ >> value;
             return value;
         }
@@ -680,17 +680,17 @@ uint32_t iarchive::unpack_uint32()
             return value;
         }
         case to_underlying(TAGS::UINT8): {
-            uint8_t value;
+            uint8_t value{0};
             is_ >> value;
             return value;
         }
         case to_underlying(TAGS::UINT16): {
-            big_uint16_t value;
+            big_uint16_t value{0};
             is_.read(repr(value), 2);
             return value;
         }
         case to_underlying(TAGS::UINT32): {
-            big_uint32_t value;
+            big_uint32_t value{0};
             is_.read(repr(value), 4);
             return value;
         }
@@ -709,22 +709,22 @@ uint64_t iarchive::unpack_uint64()
             return value;
         }
         case to_underlying(TAGS::UINT8): {
-            uint8_t value;
+            uint8_t value{0};
             is_ >> value;
             return value;
         }
         case to_underlying(TAGS::UINT16): {
-            big_uint16_t value;
+            big_uint16_t value{0};
             is_.read(repr(value), 2);
             return value;
         }
         case to_underlying(TAGS::UINT32): {
-            big_uint32_t value;
+            big_uint32_t value{0};
             is_.read(repr(value), 4);
             return value;
         }
         case to_underlying(TAGS::UINT64): {
-            big_uint64_t value;
+            big_uint64_t value{0};
             is_.read(repr(value), 8);
             return value;
         }
@@ -743,7 +743,7 @@ float iarchive::unpack_float()
     if (type != to_underlying(TAGS::FLOAT))
         throw decode_error();
 
-    big_uint32_t value;
+    big_uint32_t value{0};
     is_.read(repr(value), 4);
 
     union { float f; uint32_t i; } mem;
@@ -758,7 +758,7 @@ double iarchive::unpack_double()
     if (type != to_underlying(TAGS::DOUBLE))
         throw decode_error();
 
-    big_uint64_t value;
+    big_uint64_t value{0};
     is_.read(repr(value), 8);
 
     union { double f; uint64_t i; } mem;
@@ -782,21 +782,21 @@ byte_array iarchive::unpack_blob()
             break;
 
         case to_underlying(TAGS::BLOB8): {
-            uint8_t size;
+            uint8_t size{0};
             is_.read(repr(size), 1);
             bytes = size;
             break;
         }
 
         case to_underlying(TAGS::BLOB16): {
-            big_uint16_t size;
+            big_uint16_t size{0};
             is_.read(repr(size), 2);
             bytes = size;
             break;
         }
 
         case to_underlying(TAGS::BLOB32): {
-            big_uint32_t size;
+            big_uint32_t size{0};
             is_.read(repr(size), 4);
             bytes = size;
             break;
@@ -828,21 +828,21 @@ std::string iarchive::unpack_string()
             break;
 
         case to_underlying(TAGS::STR8): {
-            uint8_t size;
+            uint8_t size{0};
             is_.read(repr(size), 1);
             bytes = size;
             break;
         }
 
         case to_underlying(TAGS::STR16): {
-            big_uint16_t size;
+            big_uint16_t size{0};
             is_.read(repr(size), 2);
             bytes = size;
             break;
         }
 
         case to_underlying(TAGS::STR32): {
-            big_uint32_t size;
+            big_uint32_t size{0};
             is_.read(repr(size), 4);
             bytes = size;
             break;
@@ -873,13 +873,13 @@ size_t iarchive::unpack_array_header()
             count = type & 0x0f;
             break;
         case to_underlying(TAGS::ARRAY16): {
-            big_uint16_t size;
+            big_uint16_t size{0};
             is_.read(repr(size), 2);
             count = size;
             break;
         }
         case to_underlying(TAGS::ARRAY32): {
-            big_uint32_t size;
+            big_uint32_t size{0};
             is_.read(repr(size), 4);
             count = size;
             break;
