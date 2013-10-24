@@ -18,6 +18,7 @@
 #include <boost/optional/optional.hpp>
 #include <type_traits>
 #include <iostream>
+#include <unordered_map>
 #include "byte_array.h"
 #include "underlying.h"
 #include "opaque_endian.h"
@@ -56,6 +57,10 @@ class iarchive
 public:
     inline iarchive(std::istream& in) : is_(in) {}
     explicit inline operator bool() const { return (bool)is_; }
+
+    // @todo: Replace operator bool above with call to is_good()
+    // @todo: Add bool is_good(); which would return the state of the last decode operation
+    // instead of throwing ? throwing is perhaps better here though..
 
     // For enums...
     template <typename T>
@@ -365,6 +370,12 @@ inline void oarchive::save(long const& value)
 }
 
 template <>
+inline void oarchive::save(unsigned long const& value)
+{
+    pack_uint64(value);
+}
+
+template <>
 inline void oarchive::save(bool const& value)
 {
     if (value) pack_true();
@@ -439,6 +450,30 @@ inline oarchive& operator << (oarchive& out, boost::array<T,N> const& value)
 {
     out.save(value);
     return out;
+}
+
+template <typename K, typename V>
+inline flurry::oarchive& operator << (flurry::oarchive& oa, std::unordered_map<K, V> const& map)
+{
+    oa.pack_map_header(map.size());
+    for (auto x : map) {
+        oa << x.first << x.second;
+    }
+    return oa;
+}
+
+// K must be default-constructible.
+template <typename K, typename V>
+inline flurry::iarchive& operator >> (flurry::iarchive& ia, std::unordered_map<K, V>& map)
+{
+    size_t size = ia.unpack_map_header();
+    map.reserve(size);
+    for (size_t x = 0; x < size; ++x) {
+        K key;
+        ia >> key;
+        ia >> map[key];
+    }
+    return ia;
 }
 
 } // flurry namespace

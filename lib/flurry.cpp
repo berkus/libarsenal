@@ -891,6 +891,35 @@ size_t iarchive::unpack_array_header()
     return count;
 }
 
+size_t iarchive::unpack_map_header()
+{
+    uint8_t type{0};
+    size_t count{0};
+
+    is_ >> type;
+    switch (type) {
+        case to_underlying(TAGS::FIXMAP_FIRST) ... to_underlying(TAGS::FIXMAP_LAST):
+            count = type & 0x0f;
+            break;
+        case to_underlying(TAGS::MAP16): {
+            big_uint16_t size{0};
+            is_.read(repr(size), 2);
+            count = size;
+            break;
+        }
+        case to_underlying(TAGS::MAP32): {
+            big_uint32_t size{0};
+            is_.read(repr(size), 4);
+            count = size;
+            break;
+        }
+        default:
+            throw decode_error();
+    }
+
+    return count;
+}
+
 // Read as many bytes as buf has in capacity.
 // This makes sure we never read into unallocated memory.
 void iarchive::unpack_raw_data(byte_array& buf)
