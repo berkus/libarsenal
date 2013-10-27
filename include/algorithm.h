@@ -11,7 +11,9 @@
 #include <algorithm>
 #include <type_traits>
 #include <map>
+#include <vector>
 #include <unordered_map>
+#include <unordered_set>
 
 // The map types have find() member function for finding by key.
 template<class T> struct is_map_type : public std::false_type {};
@@ -36,4 +38,16 @@ inline typename std::enable_if<!is_map_type<Container>::value, bool>::type
 contains(Container const& c, Key const& k)
 {
     return std::find(std::begin(c), std::end(c), k) != std::end(c);
+}
+
+// Convert an unordered set into a vector of the same types
+template <typename T>
+inline std::vector<T>
+set_to_vector(std::unordered_set<T> const& source)
+{
+    std::vector<T> result;
+    for (auto c : source) {
+        result.emplace_back(c);
+    }
+    return result;
 }
