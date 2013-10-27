@@ -84,6 +84,10 @@ public:
      */
     byte_array& fill(char ch, int size = -1);
 
+    /**
+     * Interpret contents of byte_array buffer as if it was some arbitrary type.
+     * Make sure byte_array has enough capacity to hold type T before calling this function.
+     */
     template <typename T>
     T* as() {
         return reinterpret_cast<T*>(data());
