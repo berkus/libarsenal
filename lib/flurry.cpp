@@ -669,6 +669,30 @@ uint8_t iarchive::unpack_uint8()
     throw decode_error();
 }
 
+uint16_t iarchive::unpack_uint16()
+{
+    uint8_t type{0};
+    is_ >> type;
+    // Todo: handle EOF
+    switch (type) {
+        case to_underlying(TAGS::POSITIVE_INT_FIRST) ... to_underlying(TAGS::POSITIVE_INT_LAST): {
+            uint8_t value = type & 0x7f;
+            return value;
+        }
+        case to_underlying(TAGS::UINT8): {
+            uint8_t value{0};
+            is_ >> value;
+            return value;
+        }
+        case to_underlying(TAGS::UINT16): {
+            big_uint16_t value{0};
+            is_.read(repr(value), 2);
+            return value;
+        }
+    }
+    throw decode_error();
+}
+
 uint32_t iarchive::unpack_uint32()
 {
     uint8_t type{0};
