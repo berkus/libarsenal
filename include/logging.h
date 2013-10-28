@@ -37,6 +37,29 @@ public:
     ~file_dump() { m.unlock(); }
 };
 
+// nulstream based on answer here:
+// http://stackoverflow.com/questions/7818371/printing-to-nowhere-with-ostream
+class nul_streambuf : public std::streambuf
+{
+    /**
+     * The buffer will avoid some unnecessary virtual function calls.
+     * On some platforms, this makes a significant difference.
+     */
+    char dummy_buffer[64];
+protected:
+    virtual int overflow(int c)
+    {
+        setp(dummy_buffer, dummy_buffer + sizeof(dummy_buffer));
+        return (c == EOF) ? 0 : c;
+    }
+};
+
+class nul_ostream : public nul_streambuf, public std::ostream
+{
+public:
+    nul_ostream() : std::ostream(this) {}
+};
+
 /**
  * Base class for logging output.
  *
@@ -47,56 +70,88 @@ public:
 class logging
 {
     static std::mutex m;
+    static int log_level;
+    int actual_level; // if log_level >= actual_level, then log.
 protected:
-    static std::ostream& out_stream;
+    static std::ostream& log_stream_;
+    static nul_ostream nul_stream_;
 
-    logging() {
+    logging(int level) : actual_level(level) {
         m.lock();
 	}
-    ~logging() { out_stream << std::endl; m.unlock(); }
+    ~logging() { stream() << std::endl; m.unlock(); }
+
+    inline std::ostream& stream() const {
+        if (log_level >= actual_level) return log_stream_;
+        return nul_stream_;
+    }
 
 public:
     // inline static void redirect_output_to(std::ostream& stream) { out_stream = stream; }
 
+    /**
+     * Set logging verbosity level.
+     * @param level Verbosity level, the higher - the more verbose.
+     * 0 - only fatal messages
+     * 1 - fatal and warnings
+     * 2 - fatal, warnings and info
+     * 3 - fatal, warnings, info and debug (spammy)
+     * Default is 255 in the debug version, so all logging is permitted.
+     * Release version defaults to 2.
+     */
+    inline static void set_verbosity(int level) { log_level = level; }
+
     template <typename T>
-    std::ostream& operator << (const T& v) { out_stream << v; return std::clog; }
+    std::ostream& operator << (const T& v) { stream() << v; return stream(); }
 };
+
+// Helpers
+enum class verbosity : int
+{
+    fatals = 0,
+    warnings = 1,
+    info = 2,
+    debug = 3
+};
+
+inline void set_verbosity(verbosity level) { logging::set_verbosity(to_underlying(level)); }
+
 
 class debug : public logging
 {
 public:
-    debug() : logging() {
+    debug() : logging(3) {
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-        out_stream << "[DEBUG] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
+        stream() << "[DEBUG] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
     }
 };
 
 class info : public logging
 {
 public:
-    info() : logging() {
+    info() : logging(2) {
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-        out_stream << "[INFO ] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
+        stream() << "[INFO ] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
     }
 };
 
 class warning : public logging
 {
 public:
-    warning() : logging() {
+    warning() : logging(1) {
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-        out_stream << "[WARN ] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
+        stream() << "[WARN ] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
     }
 };
 
 class fatal : public logging
 {
 public:
-    fatal() : logging() {
+    fatal() : logging(0) {
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-        out_stream << "[FATAL] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
+        stream() << "[FATAL] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
     }
-    ~fatal() { out_stream << std::endl; std::abort(); } // Can't call base class dtor after abort()
+    ~fatal() { stream() << std::endl; std::abort(); } // Can't call base class dtor after abort()
 };
 
 } // namespace logger

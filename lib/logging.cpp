@@ -11,5 +11,7 @@
 namespace logger {
 std::mutex file_dump::m;
 std::mutex logging::m;
-std::ostream& logging::out_stream{std::clog};
+std::ostream& logging::log_stream_{std::clog};
+nul_ostream logging::nul_stream_;
+int logging::log_level{255}; // log everything
 }
