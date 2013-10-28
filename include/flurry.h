@@ -162,9 +162,52 @@ public:
         *this << to_underlying(value);
     }
 
+    // ...longs
+    template <typename T>
+    typename std::enable_if<!std::is_enum<T>::value
+        && std::is_integral<T>::value && std::is_signed<T>::value
+        && sizeof(T)==sizeof(int32_t)>::type
+    save(T const& value)
+    {
+        pack_int32(value);
+    }
+
+    template <typename T>
+    typename std::enable_if<!std::is_enum<T>::value
+        && std::is_integral<T>::value && std::is_signed<T>::value
+        && sizeof(T)==sizeof(int64_t)>::type
+    save(T const& value)
+    {
+        pack_int64(value);
+    }
+
+    // ...unsigned longs
+    template <typename T>
+    typename std::enable_if<!std::is_enum<T>::value
+        && std::is_integral<T>::value && std::is_unsigned<T>::value
+        && sizeof(T)==sizeof(uint32_t)>::type
+    save(T const& value)
+    {
+        pack_uint32(value);
+    }
+
+    template <typename T>
+    typename std::enable_if<!std::is_enum<T>::value
+        && std::is_integral<T>::value && std::is_unsigned<T>::value
+        && sizeof(T)==sizeof(uint64_t)>::type
+    save(T const& value)
+    {
+        pack_uint64(value);
+    }
+
     // ...and the rest.
     template <typename T>
-    typename std::enable_if<!std::is_enum<T>::value>::type save(T const& value);
+    typename std::enable_if<!std::is_enum<T>::value
+        && !(std::is_integral<T>::value && (std::is_signed<T>::value || std::is_unsigned<T>::value)
+        && ((sizeof(T)==sizeof(uint64_t)) || (sizeof(T)==sizeof(uint32_t))
+             || (sizeof(T)==sizeof(int64_t)) || (sizeof(T)==sizeof(int32_t))))
+        >::type
+    save(T const& value);
 
     template <typename T>
     inline void save(boost::optional<T> const& value);
@@ -276,12 +319,6 @@ inline void iarchive::load(double& value)
 }
 
 template <>
-inline void iarchive::load(long& value)
-{
-    value = unpack_int64();
-}
-
-template <>
 inline void iarchive::load(bool& value)
 {
     value = unpack_boolean();
@@ -316,18 +353,6 @@ inline void oarchive::save(int16_t const& value)
 }
 
 template <>
-inline void oarchive::save(int32_t const& value)
-{
-    pack_int32(value);
-}
-
-template <>
-inline void oarchive::save(int64_t const& value)
-{
-    pack_int64(value);
-}
-
-template <>
 inline void oarchive::save(uint8_t const& value)
 {
     pack_uint8(value);
@@ -340,18 +365,6 @@ inline void oarchive::save(uint16_t const& value)
 }
 
 template <>
-inline void oarchive::save(uint32_t const& value)
-{
-    pack_uint32(value);
-}
-
-template <>
-inline void oarchive::save(uint64_t const& value)
-{
-    pack_uint64(value);
-}
-
-template <>
 inline void oarchive::save(float const& value)
 {
     pack_real(value);
@@ -361,18 +374,6 @@ template <>
 inline void oarchive::save(double const& value)
 {
     pack_real(value);
-}
-
-template <>
-inline void oarchive::save(long const& value)
-{
-    pack_int64(value);
-}
-
-template <>
-inline void oarchive::save(unsigned long const& value)
-{
-    pack_uint64(value);
 }
 
 template <>
