@@ -96,7 +96,7 @@ public:
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
         out_stream << "[FATAL] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
     }
-    ~fatal() { std::abort(); }
+    ~fatal() { out_stream << std::endl; std::abort(); } // Can't call base class dtor after abort()
 };
 
 } // namespace logger
