@@ -10,11 +10,12 @@ cd boost_1_54_0
 cat <<EOF > user-config.jam
 using clang-linux : : /usr/bin/clang++ ;
 EOF
-./bootstrap.sh --prefix=/usr --libdir=/usr/lib64 \
+export BOOST_DIR=/usr/local/opt/boost
+./bootstrap.sh --prefix=$BOOST_DIR --libdir=$BOOST_DIR/lib64 \
 	--with-toolset=clang \
 	--with-libraries=system,date_time,program_options,test \
 	--without-icu
-sudo ./b2 --prefix=/usr --libdir=/usr/lib64 -d2 -j2 --layout=system \
+sudo ./b2 --prefix=$BOOST_DIR --libdir=$BOOST_DIR/lib64 -d2 -j2 --layout=system \
 	--user-config=user-config.jam threading=multi install toolset=clang \
 	cxxflags=-std=c++11 cxxflags=-stdlib=libc++ cxxflags=-fPIC cxxflags=-m64 \
 	linkflags=-stdlib=libc++ linkflags=-m64
