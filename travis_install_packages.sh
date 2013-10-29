@@ -6,10 +6,11 @@ sudo add-apt-repository -y ppa:28msec/utils
 sudo apt-get update
 sudo apt-get install -qq --fix-missing libpulse-dev clang-3.4 cmake libboost-all-dev
 
-which clang
-/usr/bin/clang --version
-/usr/bin/clang-check
+# which clang
+# /usr/bin/clang --version
 
+# Default clang installation is in /usr/local/bin/clang
+#
 # clang-3.4 installs the following binaries:
 # /usr/bin/clang
 # /usr/bin/clang-check
