@@ -15,7 +15,7 @@ export BOOST_DIR=/usr/local/opt/boost
 	--with-toolset=clang \
 	--with-libraries=system,date_time,program_options,test \
 	--without-icu
-sudo ./b2 --prefix=$BOOST_DIR --libdir=$BOOST_DIR/lib64 -d2 -j2 --layout=system \
+sudo ./b2 --prefix=$BOOST_DIR --libdir=$BOOST_DIR/lib64 -d0 -j6 --layout=system \
 	--user-config=user-config.jam threading=multi install toolset=clang \
 	cxxflags=-std=c++11 cxxflags=-stdlib=libc++ cxxflags=-fPIC cxxflags=-m64 \
 	linkflags=-stdlib=libc++ linkflags=-m64
