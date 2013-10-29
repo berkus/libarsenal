@@ -8,7 +8,7 @@ wget -O boost_1_54_0.tar.bz2 http://sourceforge.net/projects/boost/files/boost/1
 tar xjf boost_1_54_0.tar.bz2
 cd boost_1_54_0
 cat <<EOF > user-config.jam
-using clang-linux : : /usr/bin/clang++-3.3 ;
+using clang-linux : : /usr/bin/clang++-3.4 ;
 EOF
 ./bootstrap.sh --prefix=/usr --libdir=/usr/lib64 \
 	--with-toolset=clang \
