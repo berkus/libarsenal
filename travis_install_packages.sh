@@ -5,3 +5,5 @@ sudo add-apt-repository -y 'deb http://llvm.org/apt/precise/ llvm-toolchain-prec
 sudo add-apt-repository -y ppa:28msec/utils
 sudo apt-get update
 sudo apt-get install -qq --fix-missing libpulse-dev clang-3.4 cmake libboost-all-dev
+clang --version
+clang-3.4 --version
