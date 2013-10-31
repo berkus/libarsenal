@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# Build a c++11 libc++ based boost libraries we need for linux.
+# Build a 64-bit c++11 libc++ based boost libraries we need for linux.
 # Based on brew recipe.
 
 set -x
