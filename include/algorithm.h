@@ -14,6 +14,7 @@
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <boost/tr1/array.hpp>
 
 // The map types have find() member function for finding by key.
 template<class T> struct is_map_type : public std::false_type {};
@@ -51,3 +52,11 @@ set_to_vector(std::unordered_set<T> const& source)
     }
     return result;
 }
+
+// Specialize tuple_size for boost::array<T,N>
+namespace std {
+template< class T, size_t N >
+class tuple_size< boost::array<T, N> > :
+    public integral_constant<size_t, N>
+{ };
+} // std namespace
