@@ -35,7 +35,10 @@ public:
     explicit byte_array(size_t size) { resize(size); }
 
     template <typename T, size_t N>
-    byte_array(const boost::array<T, N>& in) : value(in.begin(), in.begin() + N) {}
+    byte_array(boost::array<T, N> const& in) : value(in.begin(), in.begin() + N) {}
+
+    template <typename T, size_t N>
+    byte_array(std::array<T, N> const& in) : value(in.begin(), in.begin() + N) {}
 
     ~byte_array();
     byte_array& operator = (byte_array const& other);
