@@ -8,6 +8,8 @@
 //
 #pragma once
 
+#include <functional>
+
 namespace stdext {
 
 //
