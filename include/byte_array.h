@@ -10,7 +10,7 @@
 
 #include <vector>
 #include <utility>
-#include <boost/array.hpp>
+#include <boost/tr1/array.hpp>
 #include "hash_combine.h"
 
 /**
