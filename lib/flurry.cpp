@@ -341,7 +341,7 @@ void oarchive::pack_real(double d)
 // array and blob types
 //=================================================================================================
 
-void oarchive::pack_blob(const char* data, size_t bytes)
+void oarchive::pack_blob(const char* data, uint64_t bytes)
 {
     if (bytes < 32) {
         // Since we use blob and str interchangeably, is there any need for such differentiation?
@@ -363,7 +363,7 @@ void oarchive::pack_blob(const char* data, size_t bytes)
 }
 
 // Since we use blob and str interchangeably, is there any need for such differentiation?
-void oarchive::pack_string(const char* data, size_t bytes)
+void oarchive::pack_string(const char* data, uint64_t bytes)
 {
     if (bytes < 32) {
         os_ << uint8_t(to_underlying(TAGS::FIXSTR_FIRST) | bytes);
@@ -383,7 +383,7 @@ void oarchive::pack_string(const char* data, size_t bytes)
     pack_raw_data(data, bytes);
 }
 
-void oarchive::pack_array_header(size_t count)
+void oarchive::pack_array_header(uint64_t count)
 {
     if (count < 16) {
         os_ << uint8_t(to_underlying(TAGS::FIXARRAY_FIRST) | count);
@@ -400,7 +400,7 @@ void oarchive::pack_array_header(size_t count)
     }
 }
 
-void oarchive::pack_map_header(size_t count)
+void oarchive::pack_map_header(uint64_t count)
 {
     if (count < 16) {
         os_ << uint8_t(to_underlying(TAGS::FIXMAP_FIRST) | count);

@@ -236,11 +236,11 @@ public:
     void pack_real(float d);
     void pack_real(double d);
 
-    void pack_blob(const char* data, size_t size);
-    void pack_string(const char* data, size_t size);
+    void pack_blob(const char* data, uint64_t size);
+    void pack_string(const char* data, uint64_t size);
 
-    void pack_array_header(size_t size);
-    void pack_map_header(size_t size);
+    void pack_array_header(uint64_t size);
+    void pack_map_header(uint64_t size);
     void pack_ext_header(uint8_t type, size_t size);
 
     inline void pack_raw_data(const char* data, size_t bytes) {
