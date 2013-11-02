@@ -357,7 +357,7 @@ void oarchive::pack_blob(const char* data, uint64_t bytes)
         auto big = big_uint32_t(bytes);
         os_.write(repr(big), 4);
     } else {
-        throw unsupported_type();
+        throw unsupported_type("blob size too big (over 4Gib)");
     }
     pack_raw_data(data, bytes);
 }
@@ -378,7 +378,7 @@ void oarchive::pack_string(const char* data, uint64_t bytes)
         auto big = big_uint32_t(bytes);
         os_.write(repr(big), 4);
     } else {
-        throw unsupported_type();
+        throw unsupported_type("string size too big (over 4Gib)");
     }
     pack_raw_data(data, bytes);
 }
@@ -396,7 +396,7 @@ void oarchive::pack_array_header(uint64_t count)
         auto big = big_uint32_t(count);
         os_.write(repr(big), 4);
     } else {
-        throw unsupported_type();
+        throw unsupported_type("array size too big (over 4Gib)");
     }
 }
 
@@ -413,7 +413,7 @@ void oarchive::pack_map_header(uint64_t count)
         auto big = big_uint32_t(count);
         os_.write(repr(big), 4);
     } else {
-        throw unsupported_type();
+        throw unsupported_type("map size too big (over 4Gib)");
     }
 }
 
@@ -471,7 +471,7 @@ bool iarchive::unpack_boolean()
         return true;
     if (type == to_underlying(TAGS::BOOLEAN_FALSE))
         return false;
-    throw decode_error();
+    throw decode_error("invalid boolean tag");
 }
 
 //=================================================================================================
@@ -498,7 +498,7 @@ int8_t iarchive::unpack_int8()
             return value;
         }
     }
-    throw decode_error();
+    throw decode_error("invalid int8 tag");
 }
 
 int16_t iarchive::unpack_int16()
@@ -538,7 +538,7 @@ int16_t iarchive::unpack_int16()
             return value;
         }
     }
-    throw decode_error();
+    throw decode_error("invalid int16 tag");
 }
 
 int32_t iarchive::unpack_int32()
@@ -588,7 +588,7 @@ int32_t iarchive::unpack_int32()
             return value;
         }
     }
-    throw decode_error();
+    throw decode_error("invalid int32 tag");
 }
 
 int64_t iarchive::unpack_int64()
@@ -648,7 +648,7 @@ int64_t iarchive::unpack_int64()
             return value;
         }
     }
-    throw decode_error();
+    throw decode_error("invalid int64 tag");
 }
 
 uint8_t iarchive::unpack_uint8()
@@ -666,7 +666,7 @@ uint8_t iarchive::unpack_uint8()
             return value;
         }
     }
-    throw decode_error();
+    throw decode_error("invalid uint8 tag");
 }
 
 uint16_t iarchive::unpack_uint16()
@@ -690,7 +690,7 @@ uint16_t iarchive::unpack_uint16()
             return value;
         }
     }
-    throw decode_error();
+    throw decode_error("invalid uint16 tag");
 }
 
 uint32_t iarchive::unpack_uint32()
@@ -719,7 +719,7 @@ uint32_t iarchive::unpack_uint32()
             return value;
         }
     }
-    throw decode_error();
+    throw decode_error("invalid uint32 tag");
 }
 
 uint64_t iarchive::unpack_uint64()
@@ -753,7 +753,7 @@ uint64_t iarchive::unpack_uint64()
             return value;
         }
     }
-    throw decode_error();
+    throw decode_error("invalid uint64 tag");
 }
 
 //=================================================================================================
@@ -765,7 +765,7 @@ float iarchive::unpack_float()
     uint8_t type{0};
     is_ >> type;
     if (type != to_underlying(TAGS::FLOAT))
-        throw decode_error();
+        throw decode_error("invalid float tag");
 
     big_uint32_t value{0};
     is_.read(repr(value), 4);
@@ -780,7 +780,7 @@ double iarchive::unpack_double()
     uint8_t type{0};
     is_ >> type;
     if (type != to_underlying(TAGS::DOUBLE))
-        throw decode_error();
+        throw decode_error("invalid double tag");
 
     big_uint64_t value{0};
     is_.read(repr(value), 8);
@@ -830,7 +830,7 @@ byte_array iarchive::unpack_blob()
             if (is_.eof())
                 return byte_array();
 
-            throw decode_error();
+            throw decode_error("invalid blob tag");
     }
 
     byte_array out;
@@ -876,7 +876,7 @@ std::string iarchive::unpack_string()
             if (is_.eof())
                 return std::string();
 
-            throw decode_error();
+            throw decode_error("invalid string tag");
     }
 
     byte_array out;
@@ -909,7 +909,7 @@ size_t iarchive::unpack_array_header()
             break;
         }
         default:
-            throw decode_error();
+            throw decode_error("invalid array tag");
     }
 
     return count;
@@ -938,7 +938,7 @@ size_t iarchive::unpack_map_header()
             break;
         }
         default:
-            throw decode_error();
+            throw decode_error("invalid map tag");
     }
 
     return count;

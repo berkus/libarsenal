@@ -32,19 +32,25 @@ namespace flurry {
 class encode_error : public std::runtime_error
 {
 public:
-    explicit inline encode_error() : std::runtime_error("encoding error") {}
+    explicit inline encode_error(std::string const& msg)
+        : std::runtime_error("flurry encoding error - " + msg)
+    {}
 };
 
 class decode_error : public std::runtime_error
 {
 public:
-    explicit inline decode_error() : std::runtime_error("decoding error") {}
+    explicit inline decode_error(std::string const& msg)
+        : std::runtime_error("flurry decoding error - " + msg)
+    {}
 };
 
 class unsupported_type : public std::runtime_error
 {
 public:
-    explicit inline unsupported_type() : std::runtime_error("invalid type encountered") {}
+    explicit inline unsupported_type(std::string const& msg)
+        : std::runtime_error("invalid flurry type encountered - " + msg)
+    {}
 };
 
 //=================================================================================================
