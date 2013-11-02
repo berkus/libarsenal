@@ -14,11 +14,11 @@ byte_array::byte_array()
 	: value()
 {}
 
-byte_array::byte_array(const byte_array& other)
+byte_array::byte_array(byte_array const& other)
 	: value(other.value)
 {}
 
-byte_array::byte_array(const std::vector<char>& v)
+byte_array::byte_array(std::vector<char> const& v)
 	: value(v)
 {}
 

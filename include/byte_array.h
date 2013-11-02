@@ -27,8 +27,8 @@ public:
     typedef std::vector<char>::const_iterator const_iterator;
 
     byte_array();
-    byte_array(const byte_array&);
-    byte_array(const std::vector<char>&);
+    byte_array(byte_array const&);
+    byte_array(std::vector<char> const&);
     byte_array(const char* str);
     byte_array(const char* data, size_t size);
     byte_array(std::initializer_list<uint8_t> data);
