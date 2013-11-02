@@ -90,3 +90,18 @@ BOOST_AUTO_TEST_CASE(serialize_basic_types)
     BOOST_CHECK(out_e_2 == in_e_2);
     BOOST_CHECK(out_vec_1 == in_vec_1);
 }
+
+BOOST_AUTO_TEST_CASE(serialize_mismatch)
+{
+    byte_array data;
+    int8_t in_i8_1 = -122;
+    uint8_t out_u8_1;
+    {
+        byte_array_owrap<flurry::oarchive> write(data);
+        write.archive() << in_i8_1;
+    }
+    BOOST_CHECK_THROW({
+        byte_array_iwrap<flurry::iarchive> read(data);
+        read.archive() >> out_u8_1;
+    }, flurry::decode_error);
+}
