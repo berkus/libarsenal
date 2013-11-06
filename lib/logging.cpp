@@ -9,8 +9,8 @@
 #include "logging.h"
 
 namespace logger {
-std::mutex file_dump::m;
-std::mutex logging::m;
+boost::mutex file_dump::m;
+boost::mutex logging::m;
 std::ostream& logging::log_stream_{std::clog};
 nul_ostream logging::nul_stream_;
 int logging::log_level{255}; // log everything

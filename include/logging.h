@@ -13,6 +13,7 @@
 #include <iomanip>
 #include <mutex>
 #include <thread>
+#include <boost/thread/mutex.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "flurry.h"
 
@@ -25,7 +26,7 @@ namespace logger { // logger::debug()
  */
 class file_dump
 {
-    static std::mutex m; // @todo Try with boost::mutex for windows build.
+    static boost::mutex m;
 public:
     template <typename T>
     file_dump(T const& data, std::string const& filename = "dump.bin") {
@@ -69,7 +70,7 @@ public:
  */
 class logging
 {
-    static std::mutex m;
+    static boost::mutex m;
     static int log_level;
     int actual_level; // if log_level >= actual_level, then log.
 protected:
