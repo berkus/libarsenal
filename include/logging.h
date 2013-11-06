@@ -25,7 +25,7 @@ namespace logger { // logger::debug()
  */
 class file_dump
 {
-    static std::mutex m;
+    static std::mutex m; // @todo Try with boost::mutex for windows build.
 public:
     template <typename T>
     file_dump(T const& data, std::string const& filename = "dump.bin") {
