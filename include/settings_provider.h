@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <string>
+#include <boost/any.hpp>
 #include "byte_array.h"
 
 /**
