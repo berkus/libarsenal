@@ -20,15 +20,16 @@ class byte_array
 {
     friend bool operator ==(const byte_array& a, const byte_array& b);
     friend bool operator !=(const byte_array& a, const byte_array& b);
-    std::vector<char> value; // XXX make implicitly shared cow?
+    std::vector<char> value;
 
 public:
-    typedef std::vector<char>::iterator iterator;
-    typedef std::vector<char>::const_iterator const_iterator;
+    typedef std::vector<char> container;
+    typedef container::iterator iterator;
+    typedef container::const_iterator const_iterator;
 
     byte_array();
     byte_array(byte_array const&);
-    byte_array(std::vector<char> const&);
+    byte_array(container const&);
     byte_array(const char* str);
     byte_array(const char* data, size_t size);
     byte_array(std::initializer_list<uint8_t> data);
@@ -109,8 +110,8 @@ public:
      */
     static byte_array wrap(const char* data, size_t size);
 
-    std::vector<char>& as_vector() { return value; }
-    const std::vector<char>& as_vector() const { return value; }
+    container& as_vector() { return value; }
+    container const& as_vector() const { return value; }
 
     inline iterator begin() { return value.begin(); }
     inline const_iterator begin() const { return value.begin(); }
