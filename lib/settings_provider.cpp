@@ -13,9 +13,13 @@
 
 using namespace std;
 
+// Generate file name for settings file, this is platform-dependent.
+// @todo Make more complex structure allowing to share some data at org level and some per-app.
+std::string settings_file_name(std::string orgname, std::string orgdomain, std::string appname);
+
 namespace {
-static std::string organization_name{"defaultOrg"};
-static std::string organization_domain{"defaultDomain"};
+static std::string organization_name{"defaultOrganization"};
+static std::string organization_domain{"org.default"};
 static std::string application_name{"defaultApp"};
 static map<string, boost::any> data;
 } // anonymous namespace
@@ -42,7 +46,9 @@ std::shared_ptr<settings_provider> settings_provider::instance()
 
 settings_provider::settings_provider(settings_provider::private_tag)
 {
-    std::ifstream stream("someFileName.plist", std::ios::binary);
+    std::ifstream stream(
+        settings_file_name(organization_name, organization_domain, application_name),
+        std::ios::binary);
     if(stream)
         Plist::readPlist(stream, data);
 }
@@ -77,7 +83,9 @@ template<> void settings_provider::set<byte_array>(std::string const& key, byte_
 
 void settings_provider::sync()
 {
-    Plist::writePlistBinary("someFileName.plist", data);
+    Plist::writePlistBinary(
+        settings_file_name(organization_name, organization_domain, application_name),
+        data);
 }
 
 boost::any settings_provider::get(std::string const& key)
