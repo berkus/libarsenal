@@ -18,9 +18,9 @@ using namespace std;
 std::string settings_file_name(std::string orgname, std::string orgdomain, std::string appname);
 
 namespace {
-static std::string organization_name{"defaultOrganization"};
-static std::string organization_domain{"org.default"};
-static std::string application_name{"defaultApp"};
+static std::string organization_name{"Atta"};
+static std::string organization_domain{"net.atta-metta"};
+static std::string application_name{"MettaNode"};
 static map<string, boost::any> data;
 } // anonymous namespace
 
