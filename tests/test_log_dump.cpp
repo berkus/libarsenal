@@ -63,7 +63,11 @@ int main()
     flurry::iarchive ia(in);
 
     while (ia >> data) {
-        cout << "*** BLOB " << data.size() << " bytes ***" << endl;
-        hexdump(data);
+        std::string what, stamp;
+        byte_array blob;
+        byte_array_iwrap<flurry::iarchive> read(data);
+        read.archive() >> what >> stamp >> blob;
+        cout << "*** BLOB " << blob.size() << " bytes *** " << stamp << ": " << what << endl;
+        hexdump(blob);
     }
 }
