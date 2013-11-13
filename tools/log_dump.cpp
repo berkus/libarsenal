@@ -6,12 +6,17 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See file LICENSE_1_0.txt or a copy at http://www.boost.org/LICENSE_1_0.txt)
 //
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/variables_map.hpp>
+#include <boost/program_options/positional_options.hpp>
 #include <boost/format.hpp>
 #include "flurry.h"
 #include "logging.h"
 #include "byte_array_wrap.h"
 
 using namespace std;
+namespace po = boost::program_options;
 
 inline char printable(char c)
 {
@@ -56,10 +61,30 @@ void hexdump(byte_array data)
     cout << boost::format("%08x") % offset << endl;
 }
 
-int main()
+int main(int argc, char** argv)
 {
+    std::string filename;
+
+    po::options_description desc("Log file dumper");
+    desc.add_options()
+        ("filename,f", po::value<std::string>(&filename)->default_value("dump.bin"),
+            "Name of the log dump file")
+        ("help,h",
+            "Print this help message");
+    po::positional_options_description p;
+    p.add("filename", -1);
+    po::variables_map vm;
+    po::store(po::command_line_parser(argc, argv).
+          options(desc).positional(p).run(), vm);
+    po::notify(vm);
+
+    if (vm.count("help")) {
+        std::cout << desc << "\n";
+        return 1;
+    }
+
     byte_array data;
-    std::ifstream in("dump.bin", std::ios::in|std::ios::binary);
+    std::ifstream in(filename, std::ios::in|std::ios::binary);
     flurry::iarchive ia(in);
 
     while (ia >> data) {
