@@ -1,1 +1,4 @@
-create_test(log_dump LIBS support NO_CTEST)
+add_executable(log_dump log_dump.cpp)
+target_link_libraries(log_dump support ${Boost_LIBRARIES})
+install(TARGETS log_dump
+    RUNTIME DESTINATION tools)
