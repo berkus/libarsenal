@@ -4,9 +4,9 @@
 
 set -x
 
-wget -O boost_1_54_0.tar.bz2 http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.tar.bz2/download
-tar xjf boost_1_54_0.tar.bz2
-cd boost_1_54_0
+wget -O boost_1_55_0.tar.bz2 http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.bz2/download
+tar xjf boost_1_55_0.tar.bz2
+cd boost_1_55_0
 cat <<EOF > user-config.jam
 using clang-linux : : /usr/bin/clang++ ;
 EOF
