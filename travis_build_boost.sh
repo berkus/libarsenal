@@ -13,7 +13,7 @@ EOF
 export BOOST_DIR=/usr/local/opt/boost
 ./bootstrap.sh --prefix=$BOOST_DIR --libdir=$BOOST_DIR/lib64 \
 	--with-toolset=clang \
-	--with-libraries=system,date_time,program_options,test,thread \
+	--with-libraries=system,date_time,program_options,test,thread,filesystem \
 	--without-icu
 sudo ./b2 --prefix=$BOOST_DIR --libdir=$BOOST_DIR/lib64 -d0 -j6 --layout=system \
 	--user-config=user-config.jam threading=multi install toolset=clang \
