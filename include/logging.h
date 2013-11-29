@@ -79,10 +79,10 @@ public:
  */
 class logging
 {
-    static boost::mutex m;
     static int log_level;
     int actual_level; // if log_level >= actual_level, then log.
 protected:
+    static boost::mutex m;
     static std::ostream& log_stream_;
     static nul_ostream nul_stream_;
 
@@ -161,7 +161,7 @@ public:
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
         stream() << "[FATAL] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
     }
-    ~fatal() { stream() << std::endl; std::abort(); } // Can't call base class dtor after abort()
+    ~fatal() { stream() << std::endl; m.unlock(); std::abort(); } // Can't call base class dtor after abort()
 };
 
 } // namespace logger
