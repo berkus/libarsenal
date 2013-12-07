@@ -130,7 +130,8 @@ inline void set_verbosity(verbosity level) { logging::set_verbosity(to_underlyin
 class debug : public logging
 {
 public:
-    debug() : logging(3) {
+    debug(int level = 3) : logging(level) {
+        assert(level >= 3);
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
         stream() << "[DEBUG] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
     }
@@ -139,7 +140,7 @@ public:
 class info : public logging
 {
 public:
-    info() : logging(2) {
+    info(int level = 2) : logging(level) {
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
         stream() << "[INFO ] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
     }
@@ -148,7 +149,7 @@ public:
 class warning : public logging
 {
 public:
-    warning() : logging(1) {
+    warning(int level = 1) : logging(level) {
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
         stream() << "[WARN ] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
     }
