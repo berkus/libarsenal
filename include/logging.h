@@ -18,7 +18,7 @@
 #include "flurry.h"
 #include "byte_array_wrap.h"
 
-namespace logger { // logger::debug()
+namespace logger {
 
 /**
  * Binary dump a container to the log binary file.
