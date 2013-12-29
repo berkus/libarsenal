@@ -102,6 +102,18 @@ public:
         return reinterpret_cast<T const*>(data());
     }
 
+    /**
+     * Interpret contents of byte_array buffer as holding an array of n items of type T.
+     * Will ensure byte_array has enough capacity before returning the pointer to array start.
+     */
+    template <typename T>
+    T* as(size_t n) {
+        if (sizeof(T)*n > size()) {
+            resize(sizeof(T)*n);
+        }
+        return reinterpret_cast<T*>(data());
+    }
+    // There is no const variant of this function, as it may change the vector.
 
     /**
      * Unlike Qt's fromRawData current implementation of
