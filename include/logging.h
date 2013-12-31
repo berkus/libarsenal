@@ -87,7 +87,7 @@ protected:
     static nul_ostream nul_stream_;
 
     logging(int level) : actual_level(level) {
-        m.lock();
+        m.lock(); // @todo Avoid locking the mutex if log line will not be printed anyway.
 	}
     ~logging() { stream() << std::endl; m.unlock(); }
 
