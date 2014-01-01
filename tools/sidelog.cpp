@@ -71,7 +71,7 @@ public:
     void display() override
     {
         file_input::display();
-        cout << name_ << " " << rec_.title_or_text;
+        cout << name_ << " " << rec_.title_or_text << endl;
     }
 
     void advance() override
@@ -111,6 +111,7 @@ public:
         cout << name_ << " *** BLOB " << rec_.data.size() << " bytes *** " << rec_.timestamp << ": "
             << rec_.title_or_text << endl;
         hexdump(rec_.data);
+        cout << endl;
     }
 
     void advance() override
