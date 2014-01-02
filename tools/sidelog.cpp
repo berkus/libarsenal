@@ -17,11 +17,9 @@ using namespace std;
 using namespace boost::posix_time;
 using namespace boost::date_time;
 
-// left log line | left binary dump | right binary dump | right log line
-// sorted by timestamp
-
-// @todo Thread switch indication
-// @todo Time adjust factor?
+/// [ ] Thread switch indication
+/// [ ] Color different threads differently
+/// [ ] Time adjust factor
 
 class file_input
 {
