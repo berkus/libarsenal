@@ -12,14 +12,15 @@ inline char printable(char c)
 
 // @todo Add formatting width
 // @todo Add lead indent printing
-void hexdump(byte_array data, size_t octet_stride, size_t octet_split/*, int indent_spaces*/)
+void hexdump(byte_array data, size_t octet_stride, size_t octet_split, size_t indent_spaces)
 {
     size_t offset = 0;
     size_t remain = data.size();
+    string spaces(indent_spaces, ' ');
 
     while (remain > 0)
     {
-        cout << boost::format("%08x  ") % offset;
+        cout << spaces << boost::format("%08x  ") % offset;
         size_t stride = remain < octet_stride ? remain : octet_stride;
 
         for(size_t i = 0; i < stride; ++i)
@@ -45,6 +46,6 @@ void hexdump(byte_array data, size_t octet_stride, size_t octet_split/*, int ind
         remain -= stride;
         offset += stride;
     }
-    cout << boost::format("%08x") % offset << endl;
+    cout << spaces << boost::format("%08x") % offset << endl;
 }
 
