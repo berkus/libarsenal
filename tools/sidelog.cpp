@@ -35,11 +35,15 @@ protected:
     bool eof_{false};
     bool drained_{false};
     string name_;
+    size_t indent_;
+    size_t width_;
 
 public:
-    file_input(string filename, string name)
+    file_input(string filename, string name, int indent, int width_limit)
         : if_(filename, std::ios::in|std::ios::binary)
         , name_(name)
+        , indent_(indent)
+        , width_(width_limit)
     {}
 
     bool accept(ptime& timestamp) {
@@ -62,8 +66,8 @@ public:
 class log_input : public file_input
 {
 public:
-    log_input(string filename, string name)
-        : file_input(filename, name)
+    log_input(string filename, string name, int indent, int width_limit)
+        : file_input(filename, name, indent, width_limit)
     {
         advance(); // Load first rec
     }
@@ -71,7 +75,8 @@ public:
     void display() override
     {
         file_input::display();
-        cout << name_ << " " << rec_.title_or_text << endl;
+        string spaces(indent_, ' ');
+        cout << spaces << name_ << " " << rec_.title_or_text << endl;
     }
 
     void advance() override
@@ -98,8 +103,8 @@ class bin_input : public file_input
     flurry::iarchive ia_;
 
 public:
-    bin_input(string filename, string name)
-        : file_input(filename, name)
+    bin_input(string filename, string name, int indent, int width_limit)
+        : file_input(filename, name, indent, width_limit)
         , ia_(if_)
     {
         advance(); // Load first rec
@@ -108,9 +113,10 @@ public:
     void display() override
     {
         file_input::display();
-        cout << name_ << " *** BLOB " << rec_.data.size() << " bytes *** " << rec_.timestamp << ": "
+        string spaces(indent_, ' ');
+        cout << spaces << name_ << " *** BLOB " << rec_.data.size() << " bytes *** " << rec_.timestamp << ": "
             << rec_.title_or_text << endl;
-        hexdump(rec_.data);
+        hexdump(rec_.data, 16, 8, indent_);
         cout << endl;
     }
 
@@ -140,10 +146,10 @@ public:
 int main(int argc, char* argv[])
 {
     assert(argc > 4);
-    log_input left_log(argv[1], "local_txt");
-    bin_input left_bin(argv[2], "local_bin");
-    bin_input right_bin(argv[3], "remote_bin");
-    log_input right_log(argv[4], "remote_txt");
+    log_input left_log(argv[1], "local_txt", 0, 20);
+    bin_input left_bin(argv[2], "local_bin", 20, 20);
+    bin_input right_bin(argv[3], "remote_bin", 40, 20);
+    log_input right_log(argv[4], "remote_txt", 60, 20);
 
     file_input* inputs[4] = { &left_log, &left_bin, &right_bin, &right_log };
     bool end{false};
