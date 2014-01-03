@@ -444,7 +444,7 @@ void oarchive::pack_ext_header(uint8_t type, size_t bytes)
         os_.write(repr(big), 4);
     }
     os_ << type;
-    // Todo: client should write the data using pack_raw_data(),
+    // Client should write the data using pack_raw_data(),
     // the inline type-specific wrappers handle that.
 }
 
