@@ -18,6 +18,7 @@
 #include <boost/optional/optional.hpp>
 #include <type_traits>
 #include <iostream>
+#include <map>
 #include <unordered_map>
 #include "byte_array.h"
 #include "underlying.h"
@@ -475,6 +476,29 @@ inline flurry::iarchive& operator >> (flurry::iarchive& ia, std::unordered_map<K
 {
     size_t size = ia.unpack_map_header();
     map.reserve(size);
+    for (size_t x = 0; x < size; ++x) {
+        K key;
+        ia >> key;
+        ia >> map[key];
+    }
+    return ia;
+}
+
+template <typename K, typename V>
+inline flurry::oarchive& operator << (flurry::oarchive& oa, std::map<K, V> const& map)
+{
+    oa.pack_map_header(map.size());
+    for (auto x : map) {
+        oa << x.first << x.second;
+    }
+    return oa;
+}
+
+// K must be default-constructible.
+template <typename K, typename V>
+inline flurry::iarchive& operator >> (flurry::iarchive& ia, std::map<K, V>& map)
+{
+    size_t size = ia.unpack_map_header();
     for (size_t x = 0; x < size; ++x) {
         K key;
         ia >> key;
