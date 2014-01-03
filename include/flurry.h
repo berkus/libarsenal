@@ -30,6 +30,10 @@ namespace flurry {
 // exceptions
 //=================================================================================================
 
+/**
+ * Error encoding a flurry type.
+ * Does not include unsupported types, there's separate exception for that.
+ */
 class encode_error : public std::runtime_error
 {
 public:
@@ -38,6 +42,10 @@ public:
     {}
 };
 
+/**
+ * Error decoding a flurry type.
+ * When a mismatched type is requested, this error may be thrown.
+ */
 class decode_error : public std::runtime_error
 {
 public:
@@ -46,6 +54,9 @@ public:
     {}
 };
 
+/**
+ * An unsupported type is encountered during serialization.
+ */
 class unsupported_type : public std::runtime_error
 {
 public:
@@ -58,6 +69,9 @@ public:
 // loading archive
 //=================================================================================================
 
+/**
+ * Input archive wraps input stream and deserializes msgpack types into C++ types.
+ */
 class iarchive
 {
     std::istream& is_;
@@ -155,6 +169,9 @@ public:
 // saving archive
 //=================================================================================================
 
+/**
+ * Output archive wraps output stream and serializes C++ types to msgpack types.
+ */
 class oarchive
 {
     std::ostream& os_;
