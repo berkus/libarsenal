@@ -7,9 +7,11 @@
 // (See file LICENSE_1_0.txt or a copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 #include <boost/any.hpp>
+#include <map>
 #include <string>
+#include <fstream>
+#include "flurry.h"
 #include "settings_provider.h"
-#include "Plist.hpp"
 
 using namespace std;
 
@@ -49,8 +51,10 @@ settings_provider::settings_provider(settings_provider::private_tag)
     std::ifstream stream(
         settings_file_name(organization_name, organization_domain, application_name),
         std::ios::binary);
-    if(stream)
-        Plist::readPlist(stream, data);
+    if (stream) {
+        flurry::iarchive in(stream);
+        in >> data; // @todo Atomicity of reads.
+    }
 }
 
 bool settings_provider::enter_section(std::string const& name)
@@ -84,9 +88,13 @@ template<> void settings_provider::set<byte_array>(std::string const& key, byte_
 
 void settings_provider::sync()
 {
-    Plist::writePlistBinary(
+    std::ofstream stream( // @todo Atomicity of writes via temp file and move.
         settings_file_name(organization_name, organization_domain, application_name),
-        data);
+        std::ios::binary|std::ios::trunc);
+    if (stream) {
+        flurry::oarchive out(stream);
+        out << data; 
+    }
 }
 
 boost::any settings_provider::get(std::string const& key)
