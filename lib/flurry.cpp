@@ -467,8 +467,9 @@ bool iarchive::maybe_unpack_nil()
 bool iarchive::unpack_boolean()
 {
     uint8_t type{0};
-    is_ >> type;
-    // Todo: handle EOF
+     if (!(is_ >> type)) {
+        throw decode_error("sudden eof in unpack_boolean");
+    }
     if (type == to_underlying(TAGS::BOOLEAN_TRUE))
         return true;
     if (type == to_underlying(TAGS::BOOLEAN_FALSE))
@@ -483,8 +484,9 @@ bool iarchive::unpack_boolean()
 int8_t iarchive::unpack_int8()
 {
     uint8_t type{0};
-    is_ >> type;
-    // Todo: handle EOF
+    if (!(is_ >> type)) {
+        throw decode_error("sudden eof in unpack_int8");
+    }
     switch (type) {
         case to_underlying(TAGS::POSITIVE_INT_FIRST) ... to_underlying(TAGS::POSITIVE_INT_LAST): {
             int8_t value = type;
@@ -506,8 +508,9 @@ int8_t iarchive::unpack_int8()
 int16_t iarchive::unpack_int16()
 {
     uint8_t type{0};
-    is_ >> type;
-    // Todo: handle EOF
+    if (!(is_ >> type)) {
+        throw decode_error("sudden eof in unpack_int16");
+    }
     switch (type) {
         case to_underlying(TAGS::POSITIVE_INT_FIRST) ... to_underlying(TAGS::POSITIVE_INT_LAST): {
             int16_t value = type;
@@ -546,8 +549,9 @@ int16_t iarchive::unpack_int16()
 int32_t iarchive::unpack_int32()
 {
     uint8_t type{0};
-    is_ >> type;
-    // Todo: handle EOF
+    if (!(is_ >> type)) {
+        throw decode_error("sudden eof in unpack_int32");
+    }
     switch (type) {
         case to_underlying(TAGS::POSITIVE_INT_FIRST) ... to_underlying(TAGS::POSITIVE_INT_LAST): {
             int8_t value = type;
@@ -596,8 +600,9 @@ int32_t iarchive::unpack_int32()
 int64_t iarchive::unpack_int64()
 {
     uint8_t type{0};
-    is_ >> type;
-    // Todo: handle EOF
+    if (!(is_ >> type)) {
+        throw decode_error("sudden eof in unpack_int64");
+    }
     switch (type) {
         case to_underlying(TAGS::POSITIVE_INT_FIRST) ... to_underlying(TAGS::POSITIVE_INT_LAST): {
             int8_t value = type;
@@ -656,8 +661,9 @@ int64_t iarchive::unpack_int64()
 uint8_t iarchive::unpack_uint8()
 {
     uint8_t type{0};
-    is_ >> type;
-    // Todo: handle EOF
+    if (!(is_ >> type)) {
+        throw decode_error("sudden eof in unpack_uint8");
+    }
     switch (type) {
         case to_underlying(TAGS::POSITIVE_INT_FIRST) ... to_underlying(TAGS::POSITIVE_INT_LAST): {
             return type;
@@ -674,8 +680,9 @@ uint8_t iarchive::unpack_uint8()
 uint16_t iarchive::unpack_uint16()
 {
     uint8_t type{0};
-    is_ >> type;
-    // Todo: handle EOF
+    if (!(is_ >> type)) {
+        throw decode_error("sudden eof in unpack_uint16");
+    }
     switch (type) {
         case to_underlying(TAGS::POSITIVE_INT_FIRST) ... to_underlying(TAGS::POSITIVE_INT_LAST): {
             uint8_t value = type & 0x7f;
@@ -698,8 +705,9 @@ uint16_t iarchive::unpack_uint16()
 uint32_t iarchive::unpack_uint32()
 {
     uint8_t type{0};
-    is_ >> type;
-    // Todo: handle EOF
+    if (!(is_ >> type)) {
+        throw decode_error("sudden eof in unpack_uint32");
+    }
     switch (type) {
         case to_underlying(TAGS::POSITIVE_INT_FIRST) ... to_underlying(TAGS::POSITIVE_INT_LAST): {
             uint8_t value = type & 0x7f;
@@ -727,8 +735,9 @@ uint32_t iarchive::unpack_uint32()
 uint64_t iarchive::unpack_uint64()
 {
     uint8_t type{0};
-    is_ >> type;
-    // Todo: handle EOF
+    if (!(is_ >> type)) {
+        throw decode_error("sudden eof in unpack_uint64");
+    }
     switch (type) {
         case to_underlying(TAGS::POSITIVE_INT_FIRST) ... to_underlying(TAGS::POSITIVE_INT_LAST): {
             uint8_t value = type & 0x7f;
@@ -765,7 +774,9 @@ uint64_t iarchive::unpack_uint64()
 float iarchive::unpack_float()
 {
     uint8_t type{0};
-    is_ >> type;
+    if (!(is_ >> type)) {
+        throw decode_error("sudden eof in unpack_float");
+    }
     if (type != to_underlying(TAGS::FLOAT))
         throw decode_error("invalid float tag " + to_string(type));
 
@@ -780,7 +791,9 @@ float iarchive::unpack_float()
 double iarchive::unpack_double()
 {
     uint8_t type{0};
-    is_ >> type;
+    if (!(is_ >> type)) {
+        throw decode_error("sudden eof in unpack_double");
+    }
     if (type != to_underlying(TAGS::DOUBLE))
         throw decode_error("invalid double tag " + to_string(type));
 
@@ -801,7 +814,9 @@ byte_array iarchive::unpack_blob()
     uint8_t type{0};
     size_t bytes{0};
 
-    is_ >> type;
+    if (!(is_ >> type)) {
+        throw decode_error("sudden eof in unpack_blob");
+    }
     switch (type) {
         case to_underlying(TAGS::FIXSTR_FIRST) ... to_underlying(TAGS::FIXSTR_LAST):
             bytes = type & 0x1f;
@@ -847,7 +862,9 @@ string iarchive::unpack_string()
     uint8_t type{0};
     size_t bytes{0};
 
-    is_ >> type;
+    if (!(is_ >> type)) {
+        throw decode_error("sudden eof in unpack_string");
+    }
     switch (type) {
         case to_underlying(TAGS::FIXSTR_FIRST) ... to_underlying(TAGS::FIXSTR_LAST):
             bytes = type & 0x1f;
@@ -893,7 +910,9 @@ size_t iarchive::unpack_array_header()
     uint8_t type{0};
     size_t count{0};
 
-    is_ >> type;
+    if (!(is_ >> type)) {
+        throw decode_error("sudden eof in unpack_array_header");
+    }
     switch (type) {
         case to_underlying(TAGS::FIXARRAY_FIRST) ... to_underlying(TAGS::FIXARRAY_LAST):
             count = type & 0x0f;
@@ -922,7 +941,9 @@ size_t iarchive::unpack_map_header()
     uint8_t type{0};
     size_t count{0};
 
-    is_ >> type;
+    if (!(is_ >> type)) {
+        throw decode_error("sudden eof in unpack_map_header");
+    }
     switch (type) {
         case to_underlying(TAGS::FIXMAP_FIRST) ... to_underlying(TAGS::FIXMAP_LAST):
             count = type & 0x0f;
