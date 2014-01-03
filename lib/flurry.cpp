@@ -985,4 +985,45 @@ void iarchive::skip_raw_data(size_t bytes)
     is_.read(buf, bytes);
 }
 
+//=================================================================================================
+// boost::any serialization
+//=================================================================================================
+
+template <typename T>
+bool save_any(boost::any const& v, oarchive& oa)
+{
+    static boost::any type = T();
+    if (v.type() == type.type()) {
+        oa << boost::any_cast<T const&>(v);
+        return true;
+    }
+    return false;
+}
+
+template <>
+void oarchive::save(boost::any const& value)
+{
+    if (save_any<int32_t>(value, *this)) return;
+    if (save_any<uint32_t>(value, *this)) return;
+    if (save_any<int64_t>(value, *this)) return;
+    if (save_any<uint64_t>(value, *this)) return;
+    if (save_any<long>(value, *this)) return;
+    if (save_any<unsigned long>(value, *this)) return;
+    if (save_any<short>(value, *this)) return;
+    if (save_any<unsigned short>(value, *this)) return;
+    if (save_any<map<string, boost::any>>(value, *this)) return; // "map"
+    if (save_any<string>(value, *this)) return;
+    if (save_any<vector<boost::any>>(value, *this)) return; // "array"
+    if (save_any<byte_array>(value, *this)) return; // "byte_array"
+    if (save_any<double>(value, *this)) return;
+    if (save_any<float>(value, *this)) return;
+    if (save_any<bool>(value, *this)) return;
+    throw encode_error("unsupported boost::any type");
+}
+
+template <>
+void iarchive::load(boost::any& value)
+{}
+
+
 } // flurry namespace

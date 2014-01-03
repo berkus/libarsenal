@@ -13,6 +13,7 @@
  */
 #pragma once
 
+#include <boost/any.hpp>
 #include <boost/serialization/serialization.hpp> // for constructing optionals
 #include <boost/serialization/detail/stack_constructor.hpp> // for constructing optionals
 #include <boost/optional/optional.hpp>
@@ -360,6 +361,9 @@ inline void iarchive::load(std::string& value)
     value = unpack_string();
 }
 
+template <>
+void iarchive::load(boost::any& value);
+
 //=================================================================================================
 // save overloads
 //=================================================================================================
@@ -443,6 +447,10 @@ inline void oarchive::save(boost::array<T,N> const& value)
         *this << x;
     }
 }
+
+// Serialize a boost::any
+template <>
+void oarchive::save(boost::any const& value);
 
 // @todo generalize for STL container types...
 template <typename T>
