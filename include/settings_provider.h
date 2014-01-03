@@ -26,6 +26,7 @@
  * "globals.user.name" would refer to a key "name" inside group "user" inside group "globals".
  * Groups are called "sections" and you can limit the scope of the key search via
  * enter_section(name) and leave_section() calls.
+ * scoped_section class gives you RAII control over enter_section/leave_section calls.
  */
 class settings_provider
 {
@@ -48,7 +49,13 @@ public:
     class scoped_section
     {
         settings_provider& provider_;
+
     public:
+        scoped_section(std::string const& section)
+            : provider_(*instance())
+        {
+            provider_.enter_section(section);
+        }
         scoped_section(settings_provider& provider, std::string const& section)
             : provider_(provider)
         {
