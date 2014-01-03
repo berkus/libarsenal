@@ -450,7 +450,7 @@ void oarchive::pack_ext_header(uint8_t type, size_t bytes)
 // flurry::iarchive
 //=================================================================================================
 
-bool iarchive::unpack_nil()
+bool iarchive::maybe_unpack_nil()
 {
     uint8_t type{0};
     type = is_.peek();

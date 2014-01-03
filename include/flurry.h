@@ -100,7 +100,7 @@ public:
     template <typename T>
     inline void load(boost::optional<T>& value)
     {
-        bool empty = unpack_nil();
+        bool empty = maybe_unpack_nil();
         if (empty) {
             value.reset();
         } else {
@@ -134,11 +134,11 @@ public:
     }
 
     /**
-     * Semantics of unpack_nil are a bit different.
+     * Semantics of maybe_unpack_nil are a bit different.
      * It peeks to see if the next byte denotes nil type, and if so consumes it and returns true;
      * otherwise it returns false and leaves the stream untouched.
      */
-    bool unpack_nil();
+    bool maybe_unpack_nil();
     bool unpack_boolean();
 
     int8_t  unpack_int8();
