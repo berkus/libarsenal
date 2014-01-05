@@ -815,7 +815,9 @@ byte_array iarchive::unpack_blob()
     size_t bytes{0};
 
     if (!(is_ >> type)) {
-        throw decode_error("sudden eof in unpack_blob");
+        return byte_array();
+        // throw eof?
+        // throw decode_error("sudden eof in unpack_blob");
     }
     switch (type) {
         case to_underlying(TAGS::FIXSTR_FIRST) ... to_underlying(TAGS::FIXSTR_LAST):
