@@ -1005,6 +1005,14 @@ bool save_any(boost::any const& v, oarchive& oa)
 template <>
 void oarchive::save(boost::any const& value)
 {
+    // Problem:
+    // Serialized boost::anys use most compact wire encoding, so it's not possible to restore
+    // to exactly the same type as boost::any had before serialization.
+    //
+    // @todo For integer types save EXACTLY the type that was passed in...
+    // This would mean that deserialized type will be matching.
+    // This is a limitation of boost::any and while inefficient, I don't see any reasonable
+    // way around it.
     if (save_any<int32_t>(value, *this)) return;
     if (save_any<uint32_t>(value, *this)) return;
     if (save_any<int64_t>(value, *this)) return;
@@ -1023,10 +1031,101 @@ void oarchive::save(boost::any const& value)
     throw encode_error("unsupported boost::any type");
 }
 
+// @todo
+// boost::any reader expands all read integers to int64_t or uint64_t types.
+// this is a limitation of current implementation, in the future the implementation of save()
+// would preserve the boost::any actual type and therefore loading will return the same type.
 template <>
 void iarchive::load(boost::any& value)
-{}
-
+{
+    uint8_t type = peek();
+    switch (type)
+    {
+        case to_underlying(TAGS::NEGATIVE_INT_FIRST) ... to_underlying(TAGS::NEGATIVE_INT_LAST):
+        case to_underlying(TAGS::INT8):
+        case to_underlying(TAGS::INT16):
+        case to_underlying(TAGS::INT32):
+        case to_underlying(TAGS::INT64): {
+            value = int64_t(unpack_int64());
+            return;
+        }
+        case to_underlying(TAGS::POSITIVE_INT_FIRST) ... to_underlying(TAGS::POSITIVE_INT_LAST):
+        case to_underlying(TAGS::UINT8):
+        case to_underlying(TAGS::UINT16):
+        case to_underlying(TAGS::UINT32):
+        case to_underlying(TAGS::UINT64): {
+            value = uint64_t(unpack_uint64());
+            return;
+        }
+        case to_underlying(TAGS::FLOAT): {
+            value = unpack_float();
+            return;
+        }
+        case to_underlying(TAGS::DOUBLE): {
+            value = unpack_double();
+            return;
+        }
+        case to_underlying(TAGS::BOOLEAN_FALSE):
+        case to_underlying(TAGS::BOOLEAN_TRUE): {
+            value = unpack_boolean();
+            return;
+        }
+        case to_underlying(TAGS::NIL): {
+            value = boost::any();
+            return;
+        }
+        case to_underlying(TAGS::FIXSTR_FIRST) ... to_underlying(TAGS::FIXSTR_LAST):
+        case to_underlying(TAGS::STR8):
+        case to_underlying(TAGS::STR16):
+        case to_underlying(TAGS::STR32): {
+            value = unpack_string();
+            return;
+        }
+        case to_underlying(TAGS::FIXMAP_FIRST) ... to_underlying(TAGS::FIXMAP_LAST):
+        case to_underlying(TAGS::MAP16):
+        case to_underlying(TAGS::MAP32): {
+            map<string, boost::any> m;
+            size_t size = unpack_map_header();
+            for (size_t x = 0; x < size; ++x) {
+                string key;
+                boost::any v;
+                key = unpack_string();
+                load(v);
+                m[key] = v;
+            }
+            value = m;
+            return;
+        }
+        case to_underlying(TAGS::FIXARRAY_FIRST) ... to_underlying(TAGS::FIXARRAY_LAST):
+        case to_underlying(TAGS::ARRAY16):
+        case to_underlying(TAGS::ARRAY32): {
+            vector<boost::any> v;
+            size_t size = unpack_array_header();
+            v.reserve(size);
+            for (size_t x = 0; x < size; ++x) {
+                load(v[x]);
+            }
+            value = v;
+            return;
+        }
+        case to_underlying(TAGS::BLOB8):
+        case to_underlying(TAGS::BLOB16):
+        case to_underlying(TAGS::BLOB32): {
+            value = unpack_blob();
+            return;
+        }
+    // unsupported
+        // EXT8 = 0xc7,
+        // EXT16 = 0xc8,
+        // EXT32 = 0xc9,
+        // FIXEXT1 = 0xd4,
+        // FIXEXT2 = 0xd5,
+        // FIXEXT4 = 0xd6,
+        // FIXEXT8 = 0xd7,
+        // FIXEXT16 = 0xd8,
+    }
+    throw decode_error("invalid tag " + to_string(type));
+}
 
 } // flurry namespace
 
