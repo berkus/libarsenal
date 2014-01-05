@@ -43,7 +43,9 @@ void settings_provider::set_application_name(std::string const& app_name)
 
 std::shared_ptr<settings_provider> settings_provider::instance()
 {
-    return std::make_shared<settings_provider>(private_tag{});// @todo Return single instance!
+    static std::shared_ptr<settings_provider>
+        inst{std::make_shared<settings_provider>(private_tag{})};
+    return inst;
 }
 
 settings_provider::settings_provider(settings_provider::private_tag)
