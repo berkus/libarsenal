@@ -455,7 +455,7 @@ void oarchive::pack_ext_header(uint8_t type, size_t bytes)
 bool iarchive::maybe_unpack_nil()
 {
     uint8_t type{0};
-    type = is_.peek();
+    type = peek();
     if (type == to_underlying(TAGS::NIL))
     {
         is_ >> type;
@@ -1027,3 +1027,4 @@ void iarchive::load(boost::any& value)
 
 
 } // flurry namespace
+

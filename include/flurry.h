@@ -164,6 +164,8 @@ public:
 
     void unpack_raw_data(byte_array& buf);
     void skip_raw_data(size_t bytes);
+
+    inline uint8_t peek() { return is_.peek(); }
 };
 
 //=================================================================================================
