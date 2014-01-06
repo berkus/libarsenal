@@ -82,11 +82,7 @@ template void settings_provider::set<uint16_t>(std::string const& key, uint16_t 
 template void settings_provider::set<uint32_t>(std::string const& key, uint32_t const& value);
 template void settings_provider::set<uint64_t>(std::string const& key, uint64_t const& value);
 template void settings_provider::set<vector<char>>(std::string const& key, vector<char> const& value);
-
-template<> void settings_provider::set<byte_array>(std::string const& key, byte_array const& value)
-{
-    set(key, value.as_vector());
-}
+template void settings_provider::set<byte_array>(std::string const& key, byte_array const& value);
 
 void settings_provider::sync()
 {
