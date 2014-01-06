@@ -426,6 +426,12 @@ inline void oarchive::save(byte_array const& value)
 }
 
 template <>
+inline void oarchive::save(std::vector<char> const& value)
+{
+    pack_blob(value.data(), value.size());
+}
+
+template <>
 inline void oarchive::save(std::string const& value)
 {
     pack_string(value.data(), value.size());

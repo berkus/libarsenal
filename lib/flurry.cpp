@@ -1024,6 +1024,7 @@ void oarchive::save(boost::any const& value)
     if (save_any<map<string, boost::any>>(value, *this)) return; // "map"
     if (save_any<string>(value, *this)) return;
     if (save_any<vector<boost::any>>(value, *this)) return; // "array"
+    if (save_any<vector<char>>(value, *this)) return; // "byte_array"
     if (save_any<byte_array>(value, *this)) return; // "byte_array"
     if (save_any<double>(value, *this)) return;
     if (save_any<float>(value, *this)) return;
