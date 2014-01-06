@@ -105,5 +105,11 @@ byte_array settings_provider::get_byte_array(std::string const& key)
     auto& v = data[key];
     if (v.empty())
         return byte_array();
-    return std::move(boost::any_cast<std::vector<char>>(v));
+    if (v.type() == typeid(string)) {
+        return boost::any_cast<string>(v);
+    }
+    if (v.type() == typeid(vector<char>)) {
+        return boost::any_cast<vector<char>>(v);
+    }
+    return std::move(boost::any_cast<byte_array>(v));
 }
