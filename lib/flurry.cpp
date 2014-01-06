@@ -1029,7 +1029,7 @@ void oarchive::save(boost::any const& value)
     if (save_any<double>(value, *this)) return;
     if (save_any<float>(value, *this)) return;
     if (save_any<bool>(value, *this)) return;
-    throw encode_error("unsupported boost::any type");
+    throw encode_error(string("unsupported boost::any type ") + value.type().name());
 }
 
 // @todo
