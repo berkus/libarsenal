@@ -9,6 +9,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include <utility>
 #include <boost/tr1/array.hpp>
 #include "hash_combine.h"
@@ -30,8 +31,9 @@ public:
     byte_array();
     byte_array(byte_array const&);
     byte_array(container const&);
-    byte_array(const char* str);
-    byte_array(const char* data, size_t size);
+    byte_array(char const* str);
+    byte_array(char const* data, size_t size);
+    byte_array(std::string const& str) : byte_array(str.data(), str.size()) {}
     byte_array(std::initializer_list<uint8_t> data);
     explicit byte_array(size_t size) { resize(size); }
 
