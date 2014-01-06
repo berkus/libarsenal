@@ -1,5 +1,5 @@
 // OSX version
-// Save config to ~/Library/Preferences/<orgdomain>.<appname>.plist
+// Save config to ~/Library/Preferences/<orgdomain>.<appname>.config
 #include <string>
 #include <sstream>
 

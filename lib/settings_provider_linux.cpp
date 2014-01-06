@@ -1,5 +1,5 @@
 // Linux version
-// Save config to ~/.config/<orgname>/appname.plist
+// Save config to ~/.config/<orgname>/appname.config
 #include <string>
 #include <sstream>
 #include <boost/filesystem.hpp>
@@ -16,6 +16,6 @@ std::string settings_file_name(std::string orgname, std::string orgdomain, std::
     } catch(std::system_error& e) {
         logger::warning() << "Cannot create config file directory " << os.str() << " - " << e.what();
     }
-    os << "/" << appname << ".plist";
+    os << "/" << appname << ".config";
     return os.str();
 }
