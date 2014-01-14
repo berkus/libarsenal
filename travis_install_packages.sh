@@ -6,4 +6,4 @@ sudo add-apt-repository -y ppa:28msec/utils # Recent cmake
 sudo add-apt-repository -y ppa:ubuntu-toolchain-r/ppa # gcc-4.8 backport for clang-3.5
 sudo apt-get clean
 sudo apt-get update
-sudo apt-get install -qq --fix-missing libpulse-dev clang-3.5 cmake libssl-dev
+sudo apt-get install -q --fix-missing libpulse-dev clang-3.5 cmake libssl-dev
