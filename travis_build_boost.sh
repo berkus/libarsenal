@@ -4,7 +4,8 @@
 
 set -x
 
-wget -O boost_1_55_0.tar.bz2 http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.bz2/download
+# us-east mirrors for travis: hivelocity, colocrossing
+wget -O boost_1_55_0.tar.bz2 http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.bz2/download?use_mirror=colocrossing
 tar xjf boost_1_55_0.tar.bz2
 cd boost_1_55_0
 cat <<EOF > user-config.jam
