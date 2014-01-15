@@ -9,7 +9,7 @@
 #define BOOST_TEST_MODULE Test_base32
 #include <boost/test/unit_test.hpp>
 
-#include "base32.h"
+#include "arsenal/base32.h"
 
 // Sources lengths must be in integer multiples of 5.
 BOOST_AUTO_TEST_CASE(tobase32_string)

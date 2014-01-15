@@ -10,9 +10,9 @@
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/positional_options.hpp>
-#include "flurry.h"
-#include "logging.h"
-#include "byte_array_wrap.h"
+#include "arsenal/flurry.h"
+#include "arsenal/logging.h"
+#include "arsenal/byte_array_wrap.h"
 #include "hexdump.h"
 
 using namespace std;

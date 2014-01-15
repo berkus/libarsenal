@@ -3,7 +3,7 @@
 #include <string>
 #include <sstream>
 #include <boost/filesystem.hpp>
-#include "logging.h"
+#include "arsenal/logging.h"
 
 namespace fs = boost::filesystem;
 

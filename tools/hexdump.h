@@ -1,6 +1,6 @@
 #pragma once
 
-#include "byte_array.h"
+#include "arsenal/byte_array.h"
 
 /// octet_stride specifies number of bytes to print in one column
 /// octet_split causes run of bytes to be separated by extra space in given column

@@ -7,15 +7,15 @@
 // (See file LICENSE_1_0.txt or a copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 #include <thread>
-#include "logging.h"
+#include "arsenal/logging.h"
 
 void logger_threadfun()
 {
 	for (int i = 0; i < 10000; ++i)
 	{
-		logger::debug() << "Testing string on a nonexistent socket" << 15 << 44.1 << 'z' << true; 
-		logger::info() << "Testing string on a nonexistent socket" << 15 << 44.1 << 'z' << true; 
-		logger::warning() << "Testing string on a nonexistent socket" << 15 << 44.1 << 'z' << true; 
+		logger::debug() << "Testing string on a nonexistent socket" << 15 << 44.1 << 'x' << true;
+		logger::info() << "Testing string on an existent socket" << 15 << 44.2 << 'y' << true;
+		logger::warning() << "Testing string on a nonsocket" << 15 << 44.3 << 'z' << true;
 	}
 }
 

@@ -8,10 +8,10 @@
 //
 #include <fstream>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include "byte_array.h"
+#include "arsenal/byte_array.h"
 #include "hexdump.h"
-#include "flurry.h"
-#include "byte_array_wrap.h"
+#include "arsenal/flurry.h"
+#include "arsenal/byte_array_wrap.h"
 
 using namespace std;
 using namespace boost::posix_time;

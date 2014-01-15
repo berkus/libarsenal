@@ -9,7 +9,7 @@
 #define BOOST_TEST_MODULE Test_byte_array
 #include <boost/test/unit_test.hpp>
 
-#include "byte_array.h"
+#include "arsenal/byte_array.h"
 
 // byte_array();
 BOOST_AUTO_TEST_CASE(default_allocation)

@@ -10,8 +10,8 @@
 #include <map>
 #include <string>
 #include <fstream>
-#include "flurry.h"
-#include "settings_provider.h"
+#include "arsenal/flurry.h"
+#include "arsenal/settings_provider.h"
 
 using namespace std;
 
@@ -91,7 +91,7 @@ void settings_provider::sync()
         std::ios::binary|std::ios::trunc);
     if (stream) {
         flurry::oarchive out(stream);
-        out << data; 
+        out << data;
     }
 }
 

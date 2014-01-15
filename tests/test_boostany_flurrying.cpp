@@ -10,10 +10,10 @@
 #include <boost/test/unit_test.hpp>
 
 #include <boost/any.hpp>
-#include "flurry.h"
-#include "logging.h"
-#include "byte_array_wrap.h"
-#include "any_int_cast.h"
+#include "arsenal/flurry.h"
+#include "arsenal/logging.h"
+#include "arsenal/byte_array_wrap.h"
+#include "arsenal/any_int_cast.h"
 
 using namespace std;
 

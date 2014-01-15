@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2001-2005 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 //from http://sourcecodebrowser.com/dc-qt/0.2.0.alpha/_encoder_8cpp_source.html
 // tables adjusted according to
 
-#include "base32.h"
+#include "arsenal/base32.h"
 #include <cassert>
 
 

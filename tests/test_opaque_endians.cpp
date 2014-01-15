@@ -9,7 +9,7 @@
 #define BOOST_TEST_MODULE Test_opaque_endians
 #include <boost/test/unit_test.hpp>
 
-#include "opaque_endian.h"
+#include "arsenal/opaque_endian.h"
 
 BOOST_AUTO_TEST_CASE(basic_assignments)
 {
