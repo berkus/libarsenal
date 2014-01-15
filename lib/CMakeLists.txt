@@ -1,4 +1,4 @@
-set(support_SOURCES
+set(arsenal_SOURCES
     base32.cpp
     byte_array.cpp
     logging.cpp
@@ -6,13 +6,13 @@ set(support_SOURCES
     settings_provider.cpp)
 
 if (APPLE)
-    list(APPEND support_SOURCES
+    list(APPEND arsenal_SOURCES
         settings_provider_osx.cpp)
 endif()
 
 if (UNIX AND NOT APPLE)
-    list(APPEND support_SOURCES
+    list(APPEND arsenal_SOURCES
         settings_provider_linux.cpp)
 endif()
 
-add_library(support STATIC ${support_SOURCES})
+add_library(arsenal STATIC ${arsenal_SOURCES})
