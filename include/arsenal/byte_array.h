@@ -126,6 +126,7 @@ public:
 
     container& as_vector() { return value; }
     container const& as_vector() const { return value; }
+    std::string as_string() const { return std::string(value.begin(), value.end()); }
 
     inline iterator begin() { return value.begin(); }
     inline const_iterator begin() const { return value.begin(); }
