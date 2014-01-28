@@ -13,6 +13,12 @@ T any_int_cast(boost::any const& v)
     if (v.type() == typeid(T)) {
         return boost::any_cast<T>(v);
     }
+    if (v.type() == typeid(int16_t)) {
+        return boost::any_cast<int16_t>(v);
+    }
+    if (v.type() == typeid(uint16_t)) {
+        return boost::any_cast<uint16_t>(v);
+    }
     if (v.type() == typeid(int32_t)) {
         return boost::any_cast<int32_t>(v);
     }
