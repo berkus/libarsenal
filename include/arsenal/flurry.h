@@ -128,8 +128,7 @@ public:
     {
         size_t size = unpack_array_header();
         value.resize(size);
-        for (auto it = value.begin(); it != value.end(); ++it)
-        {
+        for (auto it = value.begin(); it != value.end(); ++it) {
             *this >> *it;
         }
     }
@@ -277,7 +276,7 @@ public:
 
 //=================================================================================================
 // Specializations for flurry serializable types.
-// 
+//
 // These types are basic building blocks for serializing other, more complex types.
 //=================================================================================================
 
