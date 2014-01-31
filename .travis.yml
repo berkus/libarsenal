@@ -7,7 +7,7 @@ before_install:
   - ./travis-ci/travis_build_libcxx.sh
   - ./travis-ci/travis_build_boost.sh
   - sudo pip install cpp-coveralls --use-mirrors
-script: CC=/usr/bin/clang CXX=/usr/bin/clang++ cmake -G "Ninja" -DTRAVIS_CI=YES -DCMAKE_BUILD_TYPE=Debug -DTEST_COVERAGE=YES -DBUILD_TESTING=YES . && ninja && ctest
+script: CC=/usr/bin/clang CXX=/usr/bin/clang++ cmake -G "Ninja" -DTRAVIS_CI=YES -DCMAKE_BUILD_TYPE=Debug -DTEST_COVERAGE=YES -DBUILD_TESTING=YES . && ninja && ctest -V
 after_success:
   - coveralls
 notifications:
