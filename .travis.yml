@@ -10,6 +10,6 @@ before_install:
 script:
   - CC=/usr/bin/clang CXX=/usr/bin/clang++ cmake -G "Ninja" -DTRAVIS_CI=YES -DCMAKE_BUILD_TYPE=Debug -DTEST_COVERAGE=YES -DBUILD_TESTING=YES . && ninja && ASAN_OPTIONS=alloc_dealloc_mismatch=0 ctest -V
 after_success:
-  - coveralls
+  - coveralls --build-root `pwd` --exclude-pattern "^/usr/" --verbose
 notifications:
   email: false
