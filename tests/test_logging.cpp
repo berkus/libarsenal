@@ -11,7 +11,7 @@
 
 void logger_threadfun()
 {
-	for (int i = 0; i < 10000; ++i)
+	for (int i = 0; i < 1000; ++i)
 	{
 		logger::debug() << "Testing string on a nonexistent socket" << 15 << 44.1 << 'x' << true;
 		logger::info() << "Testing string on an existent socket" << 15 << 44.2 << 'y' << true;
