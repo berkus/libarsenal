@@ -36,6 +36,7 @@ option(CLANG_CHECK_DOCS "[developer] Check documentation consistency using -Wdoc
 option(CLANG_ANALYZE "[developer] Run clang in static analyzer mode." OFF)
 
 option(TRAVIS_CI "Build on Travis-CI nodes (disables some warnings)" OFF)
+option(TEST_COVERAGE "Enable coverage information generation by the compiler" OFF)
 
 if (CLANG)
     set(_extraFlags)
@@ -91,6 +92,15 @@ if (CLANG)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_extraFlags}")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${_extraFlags}")
 endif (CLANG)
+
+if (TEST_COVERAGE)
+    if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+        message(WARNING "Code coverage results with an optimized (non-Debug) build may be misleading")
+    endif (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
+endif (TEST_COVERAGE)
 
 # On mac, use openssl from brew, not the default system one, because it is too old.
 # Run 'brew install openssl' to install it.
