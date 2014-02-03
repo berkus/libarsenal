@@ -9,8 +9,8 @@ before_install:
   - sudo pip install cpp-coveralls --use-mirrors
   - sudo patch /usr/local/lib/python2.7/dist-packages/coveralls/coverage.py coveralls.diff
 script:
-  - CC=/usr/bin/clang CXX=/usr/bin/clang++ cmake -G "Ninja" -DTRAVIS_CI=YES -DCMAKE_BUILD_TYPE=Debug -DTEST_COVERAGE=YES -DBUILD_TESTING=YES . && ninja && ASAN_OPTIONS=alloc_dealloc_mismatch=0 ctest -V
+  - CC=/usr/bin/clang CXX=/usr/bin/clang++ cmake -G "Ninja" -DTRAVIS_CI=YES -DCMAKE_BUILD_TYPE=Debug -DTEST_COVERAGE=YES -DBUILD_TESTING=YES . && ninja && ASAN_OPTIONS=alloc_dealloc_mismatch=0 ctest
 after_success:
-  - coveralls --build-root `pwd` --exclude libs --exclude tests --verbose
+  - coveralls --build-root `pwd` --exclude boost_1_55_0 --exclude ninja --exclude libcxx  --verbose
 notifications:
   email: false
