@@ -1,0 +1,169 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+
+<title>Boost Endian Conversion Functions</title>
+<link rel="stylesheet" type="text/css" href="../../../doc/src/minimal.css">
+</head>
+
+<body>
+
+<table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="933">
+  <tr>
+    <td width="277">
+<a href="../../../index.html">
+<img src="../../../boost.png" alt="boost.png (6897 bytes)" align="middle" width="277" height="86" border="0"></a></td>
+    <td width="636" align="middle">
+    <font size="7">Endian Conversion Functions</font></td>
+  </tr>
+</table>
+
+<table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="100%">
+  <tr>
+    <td><b><a href="../../../index.htm">Boost Home</a>&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="index.html">Endian Home</a>&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="conversion.html">Conversion Functions</a>&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="integers.html">Integer Types</a>&nbsp;&nbsp;&nbsp;&nbsp; Tutorial</b></td>
+  </tr>
+</table>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" align="right">
+  <tr>
+    <td width="100%" bgcolor="#D7EEFF" align="center">
+      <i><b>Contents</b></i></td>
+  </tr>
+  <tr>
+    <td width="100%" bgcolor="#E8F5FF">
+      <a href="#Introduction">Introduction</a><br>
+      <a href="#Reference">Reference</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Synopsis">Synopsis</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Members">Members</a><br>
+      <a href="#Acknowledgements">Acknowledgements</a></td>
+  </tr>
+  <tr>
+    <td width="100%" bgcolor="#D7EEFF" align="center">
+      <b><i>Headers</i></b></td>
+  </tr>
+  <tr>
+    <td width="100%" bgcolor="#E8F5FF">
+      <a href="../../../boost/endian/conversion.hpp">&lt;boost/endian/conversion.hpp&gt;</a><br>
+      <a href="../../../boost/endian/integers.hpp">&lt;boost/endian/integers.hpp&gt;</a></td>
+  </tr>
+</table>
+
+<h2><a name="Introduction">Introduction</a></h2>
+
+<p>Header <a href="../../../boost/endian/conversion.hpp">boost/endian/conversion.hpp</a> 
+provides functions that convert built-in 
+integers between native byte ordering and <a href="index.html#definition">big or little endian</a> byte 
+ordering.</p>
+
+<h2><a name="Reference">Reference</a></h2>
+
+<h3>
+<a name="Synopsis">Synopsis</a></h3>
+
+<pre>namespace boost
+{
+namespace endian
+{
+  // unconditional modifying (i.e. in-place) reverse byte order
+
+  inline void reorder(int16_t&amp; x);
+  inline void reorder(int32_t&amp; x);
+  inline void reorder(int64_t&amp; x);
+  inline void reorder(uint16_t&amp; x);
+  inline void reorder(uint32_t&amp; x);
+  inline void reorder(uint64_t&amp; x);
+
+  // unconditional non-modifying reverse byte order copy
+
+  inline void reorder(int16_t source, int16_t&amp; target);
+  inline void reorder(int32_t source, int32_t&amp; target);
+  inline void reorder(int64_t source, int64_t&amp; target);
+  inline void reorder(uint16_t source, uint16_t&amp; target);
+  inline void reorder(uint32_t source, uint32_t&amp; target);
+  inline void reorder(uint64_t source, uint64_t&amp; target);
+
+  // conditional modifying (i.e. in-place) reverse byte order
+
+  template &lt;class T&gt; void native_to_big(T&amp; x);
+  template &lt;class T&gt; void native_to_little(T&amp; x);
+  template &lt;class T&gt; void big_to_native(T&amp; x);
+  template &lt;class T&gt; void little_to_native(T&amp; x);
+
+  // non-modifying conditional reverse byte order copy
+
+  template &lt;class T&gt; void native_to_big(T source, T&amp; target);
+  template &lt;class T&gt; void native_to_little(T source, T&amp; target);
+  template &lt;class T&gt; void big_to_native(T source, T&amp; target);
+  template &lt;class T&gt; void little_to_native(T source, T&amp; target);
+
+} // namespace endian
+} // namespace boost</pre>
+<h3 dir="ltr"><a name="Members">Members</a></h3>
+<pre dir="ltr">inline void reorder(int16_t&amp; x);
+inline void reorder(int32_t&amp; x);
+inline void reorder(int64_t&amp; x);
+inline void reorder(uint16_t&amp; x);
+inline void reorder(uint32_t&amp; x);
+inline void reorder(uint64_t&amp; x);</pre>
+<blockquote>
+  <p dir="ltr"><i>Effects:</i> Reverses the byte order of <i><code>x</code></i>.</p>
+</blockquote>
+<pre dir="ltr">inline void reorder(int16_t source, int16_t&amp; target);
+inline void reorder(int32_t source, int32_t&amp; target);
+inline void reorder(int64_t source, int64_t&amp; target);
+inline void reorder(uint16_t source, uint16_t&amp; target);
+inline void reorder(uint32_t source, uint32_t&amp; target);
+inline void reorder(uint64_t source, uint64_t&amp; target);</pre>
+<blockquote>
+  <p dir="ltr"><i>Effects:</i> Copies <code>source</code> to <code>target</code>, 
+  reversing the byte order.</p>
+</blockquote>
+<pre dir="ltr">template &lt;class T&gt; void native_to_big(T&amp; x);
+template &lt;class T&gt; void native_to_little(T&amp; x);
+template &lt;class T&gt; void big_to_native(T&amp; x);
+template &lt;class T&gt; void little_to_native(T&amp; x);</pre>
+<blockquote>
+  <p dir="ltr"><i>Effects:</i> If the native byte ordering and  byte 
+  ordering indicated by the function name are different, <code>reorder(x)</code>, otherwise no effect.</p>
+  <p dir="ltr"><i>Example:</i></p>
+  <blockquote>
+    <pre>int32_t x = <b><i>some-value</i></b>;
+native_to_big(x); // converts x to big-endian unless
+                  // the native representation is already big-endian</pre>
+  </blockquote>
+</blockquote>
+<pre dir="ltr">template &lt;class T&gt; void native_to_big(T source, T&amp; target);
+template &lt;class T&gt; void native_to_little(T source, T&amp; target);
+template &lt;class T&gt; void big_to_native(T source, T&amp; target);
+template &lt;class T&gt; void little_to_native(T source, T&amp; target);</pre>
+<blockquote>
+  <p dir="ltr"><i>Effects:</i> If the native byte ordering and  byte 
+  ordering indicated by the function name are different, <code>reorder(source, target)</code>, otherwise <code>
+  target = source</code>.</p>
+  <p dir="ltr"><i>Example:</i></p>
+  <blockquote>
+    <pre>int32_t x;
+<i>... read an external little-endian value into x ...</i>
+int32_t y;
+little_to_native(x, y); // if native ordering is big-endian, reorder(x, y),
+                        // otherwise y = x</pre>
+  </blockquote>
+</blockquote>
+<h2><a name="Acknowledgements">Acknowledgements</a></h2>
+<p>Tomas Puverle was instrumental in identifying and articulating the need to 
+support endian conversion as separate from endian types.</p>
+<hr>
+<p>Last revised:
+<!--webbot bot="Timestamp" s-type="EDITED" s-format="%d %B, %Y" startspan -->05 September, 2011<!--webbot bot="Timestamp" endspan i-checksum="39338" --></p>
+<p>© Copyright Beman Dawes, 2011</p>
+<p>Distributed under the Boost Software License, Version 1.0. See
+<a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/ LICENSE_1_0.txt</a></p>
+
+</body>
+
+</html>
