@@ -1,6 +1,3 @@
-[submodule "cmake"]
-	path = cmake
-	url = https://berkus@github.com/berkus/cmake-setup.git
 [submodule "3rdparty/endian"]
 	path = 3rdparty/endian
 	url = https://berkus@github.com/berkus/endian.git
