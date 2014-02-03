@@ -20,4 +20,4 @@ and do not find their place anywhere in the bigger frameworks.
 * settings_provider - a settings storage class abstracting platform-specific details,
 * underlying - convert an enum class type to its underlying storage type.
 
-[![Build Status](https://travis-ci.org/berkus/libarsenal.png?branch=develop)](https://travis-ci.org/berkus/libarsenal) [![Coverage Status](https://coveralls.io/repos/berkus/libarsenal/badge.png)](https://coveralls.io/r/berkus/libarsenal) [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/berkus/libarsenal/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+[![Build Status](https://travis-ci.org/berkus/libarsenal.png?branch=develop)](https://travis-ci.org/berkus/libarsenal) [![Coverage Status](https://coveralls.io/repos/berkus/libarsenal/badge.png?branch=develop)](https://coveralls.io/r/berkus/libarsenal?branch=develop) [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/berkus/libarsenal/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
