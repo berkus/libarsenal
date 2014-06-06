@@ -20,10 +20,10 @@ using namespace std;
 std::string settings_file_name(std::string orgname, std::string orgdomain, std::string appname);
 
 namespace {
-static std::string organization_name{"Atta"};
-static std::string organization_domain{"net.atta-metta"};
-static std::string application_name{"MettaNode"};
-static map<string, boost::any> data;
+std::string organization_name{"Atta"};
+std::string organization_domain{"net.atta-metta"};
+std::string application_name{"MettaNode"};
+map<string, boost::any> data;
 } // anonymous namespace
 
 void settings_provider::set_organization_name(std::string const& org_name) {
