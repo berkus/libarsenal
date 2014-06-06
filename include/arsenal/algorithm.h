@@ -25,8 +25,10 @@ struct is_map_type<std::map<K, T, Comp, Alloc>> : public std::true_type {};
 template<class K, class T, class Hash, class KeyEqual, class Alloc>
 struct is_map_type<std::unordered_map<K, T, Hash, KeyEqual, Alloc>> : public std::true_type {};
 
-// Return true if container c contains key k
-// Container must be a collection with type Key for keys - @todo express constraint in code
+/**
+ * Return true if container c contains key k.
+ * Container must be a map type with type Key for keys - @todo express constraint in code
+ */
 template <typename Key, typename Container>
 inline typename std::enable_if<is_map_type<Container>::value, bool>::type
 contains(Container const& c, Key const& k)
@@ -34,6 +36,10 @@ contains(Container const& c, Key const& k)
     return c.find(k) != std::end(c);
 }
 
+/**
+ * Return true if container c contains key k.
+ * Container must be a non-map collection with type Key for keys - @todo express constraint in code
+ */
 template <typename Key, typename Container>
 inline typename std::enable_if<!is_map_type<Container>::value, bool>::type
 contains(Container const& c, Key const& k)

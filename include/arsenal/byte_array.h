@@ -134,9 +134,11 @@ public:
     inline const_iterator end() const { return value.end(); }
 };
 
-// Hash specialization for byte_array
 namespace std {
 
+/**
+ * Hash specialization for byte_array
+ */
 template<>
 struct hash<byte_array> : public std::unary_function<byte_array, size_t>
 {

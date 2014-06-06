@@ -15,6 +15,7 @@
 
 /**
  * Wrap byte array in an input wrapping for boost.serialization or msgpack archives.
+ * Archive type must accept an istream as constructor argument.
  */
 template <class Archive>
 class byte_array_iwrap
@@ -31,6 +32,10 @@ public:
     Archive& archive() { return ia; }
 };
 
+/**
+ * Wrap byte array in an output wrapping for boost.serialization or msgpack archives.
+ * Archive type must accept an ostream as constructor argument.
+ */
 template <class Archive>
 class byte_array_owrap
 {
