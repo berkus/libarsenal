@@ -63,6 +63,8 @@ public:
 
 class log_input : public file_input
 {
+    typedef super file_input;
+
 public:
     log_input(string filename, string name, int indent, int width_limit)
         : file_input(filename, name, indent, width_limit)
@@ -72,7 +74,7 @@ public:
 
     void display() override
     {
-        file_input::display();
+        super::display();
         string spaces(indent_, ' ');
         cout << spaces << name_ << " " << rec_.title_or_text << endl;
     }
@@ -87,7 +89,7 @@ public:
             string stamp = std::string(text.begin() + 8, text.begin() + 34);
             rec_.timestamp = parse_delimited_time<ptime>(stamp, 'T');
             rec_.title_or_text = text;
-            file_input::advance();
+            super::advance();
         }
         else
         {
@@ -98,6 +100,7 @@ public:
 
 class bin_input : public file_input
 {
+    typedef super file_input;
     flurry::iarchive ia_;
 
 public:
@@ -110,7 +113,7 @@ public:
 
     void display() override
     {
-        file_input::display();
+        super::display();
         string spaces(indent_, ' ');
         cout << spaces << name_ << " *** BLOB " << rec_.data.size() << " bytes *** " << rec_.timestamp << ": "
             << rec_.title_or_text << endl;
@@ -132,7 +135,7 @@ public:
             rec_.timestamp = parse_delimited_time<ptime>(stamp, 'T');
             rec_.title_or_text = what;
             rec_.data = blob;
-            file_input::advance();
+            super::advance();
         }
         else
         {
