@@ -33,7 +33,7 @@ class settings_provider
     bool enter_section(std::string const& name);
     void leave_section();
 
-    struct private_tag{};
+    struct private_tag {};
 
 public:
     settings_provider(private_tag);

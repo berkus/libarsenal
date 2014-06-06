@@ -19,10 +19,10 @@
 // The map types have find() member function for finding by key.
 template<class T> struct is_map_type : public std::false_type {};
 
-template<class K, class T, class Comp, class Alloc> 
+template<class K, class T, class Comp, class Alloc>
 struct is_map_type<std::map<K, T, Comp, Alloc>> : public std::true_type {};
 
-template<class K, class T, class Hash, class KeyEqual, class Alloc> 
+template<class K, class T, class Hash, class KeyEqual, class Alloc>
 struct is_map_type<std::unordered_map<K, T, Hash, KeyEqual, Alloc>> : public std::true_type {};
 
 // Return true if container c contains key k
@@ -55,8 +55,9 @@ set_to_vector(std::unordered_set<T> const& source)
 
 // Specialize tuple_size for boost::array<T,N>
 namespace std {
-template< class T, size_t N >
-class tuple_size< boost::array<T, N> > :
-    public integral_constant<size_t, N>
-{ };
+
+template<class T, size_t N>
+class tuple_size<boost::array<T, N>> : public integral_constant<size_t, N>
+{};
+
 } // std namespace

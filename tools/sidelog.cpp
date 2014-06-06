@@ -85,14 +85,14 @@ public:
             return;
         }
         string text;
-        if (getline(if_, text)) {
+        if (getline(if_, text))
+        {
             string stamp = std::string(text.begin() + 8, text.begin() + 34);
             rec_.timestamp = parse_delimited_time<ptime>(stamp, 'T');
             rec_.title_or_text = text;
             super::advance();
         }
-        else
-        {
+        else {
             eof_ = true;
         }
     }
@@ -127,7 +127,8 @@ public:
             return;
         }
         byte_array data;
-        if (ia_ >> data) {
+        if (ia_ >> data)
+        {
             std::string what, stamp;
             byte_array blob;
             byte_array_iwrap<flurry::iarchive> read(data);
@@ -137,8 +138,7 @@ public:
             rec_.data = blob;
             super::advance();
         }
-        else
-        {
+        else {
             eof_ = true;
         }
     }

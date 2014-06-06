@@ -13,7 +13,7 @@
 namespace stdext {
 
 //
-// make_unique<T> helper because libcxx still doesn't have one.
+// make_unique<T> helper because libc++ still doesn't have one.
 //
 template<typename T, typename... Args>
 std::unique_ptr<T> make_unique(Args&&... args) {

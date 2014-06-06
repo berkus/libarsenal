@@ -88,7 +88,7 @@ protected:
 
     logging(int level) : actual_level(level) {
         m.lock(); // @todo Avoid locking the mutex if log line will not be printed anyway.
-	}
+    }
     ~logging() { stream() << std::endl; m.unlock(); }
 
     inline std::ostream& stream() const {
@@ -130,7 +130,8 @@ inline void set_verbosity(verbosity level) { logging::set_verbosity(to_underlyin
 class debug : public logging
 {
 public:
-    debug(int level = 3) : logging(level) {
+    debug(int level = 3) : logging(level)
+    {
         assert(level >= 3);
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
         stream() << "[DEBUG] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
@@ -140,7 +141,8 @@ public:
 class info : public logging
 {
 public:
-    info(int level = 2) : logging(level) {
+    info(int level = 2) : logging(level)
+    {
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
         stream() << "[INFO ] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
     }
@@ -149,7 +151,8 @@ public:
 class warning : public logging
 {
 public:
-    warning(int level = 1) : logging(level) {
+    warning(int level = 1) : logging(level)
+    {
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
         stream() << "[WARN ] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
     }
@@ -158,11 +161,18 @@ public:
 class fatal : public logging
 {
 public:
-    fatal() : logging(0) {
+    fatal() : logging(0)
+    {
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
         stream() << "[FATAL] " << boost::posix_time::to_iso_extended_string(now) << " T#" << std::this_thread::get_id() << ' ';
     }
-    ~fatal() { stream() << std::endl; m.unlock(); std::abort(); } // Can't call base class dtor after abort()
+
+    ~fatal()
+    {
+        stream() << std::endl;
+        m.unlock(); // Can't call base class dtor after abort()
+        std::abort();
+    }
 };
 
 } // namespace logger
@@ -181,13 +191,11 @@ struct hex_output
     hex_output(int c, int w, bool f, bool b) : ch(c), width(w), fill(f), base(b) {}
 };
 
-inline std::ostream& operator<<(std::ostream& o, const hex_output& hs)
-{
+inline std::ostream& operator<<(std::ostream& o, const hex_output& hs) {
     return (o << std::setw(hs.width) << std::setfill(hs.fill ? '0' : ' ') << std::hex << (hs.base ? std::showbase : std::noshowbase) << hs.ch);
 }
 
-inline hex_output hex(int c, int w = 2, bool f = true, bool b = false)
-{
+inline hex_output hex(int c, int w = 2, bool f = true, bool b = false) {
     return hex_output(c,w,f,b);
 }
 

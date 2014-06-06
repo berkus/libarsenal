@@ -18,19 +18,18 @@ namespace {
 
 // For writing.
 template<typename T>
-char const* repr(const T& val)
-{
+char const* repr(const T& val) {
     return reinterpret_cast<char const*>(&val);
 }
 
 // For reading.
 template<typename T>
-char* repr(T& val)
-{
+char* repr(T& val) {
     return reinterpret_cast<char*>(&val);
 }
 
-enum class TAGS : uint8_t {
+enum class TAGS : uint8_t
+{
     POSITIVE_INT_FIRST = 0x00,
     POSITIVE_INT_LAST = 0x7f,
     FIXMAP_FIRST = 0x80,
@@ -81,18 +80,15 @@ enum class TAGS : uint8_t {
 // flurry::oarchive
 //=================================================================================================
 
-void oarchive::pack_nil()
-{
+void oarchive::pack_nil() {
     os_ << to_underlying(TAGS::NIL);
 }
 
-void oarchive::pack_true()
-{
+void oarchive::pack_true() {
     os_ << to_underlying(TAGS::BOOLEAN_TRUE);
 }
 
-void oarchive::pack_false()
-{
+void oarchive::pack_false() {
     os_ << to_underlying(TAGS::BOOLEAN_FALSE);
 }
 

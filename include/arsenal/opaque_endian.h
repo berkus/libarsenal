@@ -22,7 +22,7 @@ class __endian_conversion
 public:
     inline __endian_conversion() = default;
     // inline __endian_conversion() : representation(reorder(T())) {}
-    inline __endian_conversion(const T& t) : representation(reorder(t)) { }
+    inline __endian_conversion(const T& t) : representation(reorder(t)) {}
     inline operator T() const { return reorder(representation); }
 
     inline __endian_conversion& operator=(const T& rhs)
@@ -66,8 +66,7 @@ namespace std {
 template <>
 struct hash<big_uint32_t>
 {
-    std::size_t operator()(big_uint32_t const& value) const
-    {
+    std::size_t operator()(big_uint32_t const& value) const {
         return std::hash<uint32_t>()(value.operator uint32_t());
     }
 };
