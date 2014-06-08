@@ -63,7 +63,7 @@ public:
 
 class log_input : public file_input
 {
-    typedef super file_input;
+    typedef file_input super;
 
 public:
     log_input(string filename, string name, int indent, int width_limit)
@@ -100,7 +100,7 @@ public:
 
 class bin_input : public file_input
 {
-    typedef super file_input;
+    typedef file_input super;
     flurry::iarchive ia_;
 
 public:
