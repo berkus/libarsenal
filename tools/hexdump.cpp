@@ -1,3 +1,4 @@
+#include <iostream>
 #include <boost/format.hpp>
 #include "hexdump.h"
 
