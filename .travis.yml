@@ -15,6 +15,7 @@ cache: apt
 
 before_install:
   - git clone https://github.com/berkus/travis-scripts.git travis-ci
+  - git clone https://github.com/berkus/cmake-setup.git cmake
   - ./travis-ci/travis_install_packages.sh
   - ./travis-ci/travis_build_ninja.sh
   - ./travis-ci/travis_build_libcxx.sh
