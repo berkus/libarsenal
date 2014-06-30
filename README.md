@@ -13,7 +13,7 @@ and do not find their place anywhere in the bigger frameworks.
 * byte_array - a convenient wrapper around vector<char>,
 * flurry - msgpackv5-based (de-)serialization,
 * stdext::hash_combine - implement C++14 hash_combine,
-* logging - flexible lightweight logging.
+* logging - flexible lightweight logging,
 * stdext::make_unique - drop-in replacement for std::make_unique missing from libc++,
 * opaque_endian - opaque endianness-aware types little_intXX, big_intXX etc.,
 * pubqueue - C++ trick to access underlying container of std::queue,
