@@ -19,8 +19,7 @@ before_install:
   - ./travis-ci/travis_build_ninja.sh
   - ./travis-ci/travis_build_libcxx.sh
   - ./travis-ci/travis_build_boost.sh
-  - sudo pip install cpp-coveralls --use-mirrors
-  - sudo patch /usr/local/lib/python2.7/dist-packages/coveralls/coverage.py coveralls.diff
+  - sudo pip install cpp-coveralls
 script:
   - cmake -G "Ninja" -DTRAVIS_CI=YES -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DTEST_COVERAGE=YES -DBUILD_TESTING=YES . && ninja && ASAN_OPTIONS=alloc_dealloc_mismatch=0 ctest
 after_success:
