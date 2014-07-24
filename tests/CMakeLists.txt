@@ -1,3 +1,4 @@
+create_test(proquint)
 create_test(base32 LIBS arsenal)
 create_test(binary_literals)
 create_test(byte_array LIBS arsenal)
