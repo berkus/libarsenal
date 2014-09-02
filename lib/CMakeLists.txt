@@ -1,5 +1,9 @@
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-reorder") # boost, seriously?
+
 set(arsenal_SOURCES
     base32.cpp
+    base32x.cpp
+    base64.cpp
     byte_array.cpp
     logging.cpp
     flurry.cpp
