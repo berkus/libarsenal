@@ -9,7 +9,7 @@
 #include <fstream>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "arsenal/byte_array.h"
-#include "hexdump.h"
+#include "arsenal/hexdump.h"
 #include "arsenal/flurry.h"
 #include "arsenal/byte_array_wrap.h"
 

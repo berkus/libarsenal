@@ -1,6 +1,6 @@
 #include <iostream>
 #include <boost/format.hpp>
-#include "hexdump.h"
+#include "arsenal/hexdump.h"
 
 using namespace std;
 

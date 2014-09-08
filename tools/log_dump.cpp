@@ -13,7 +13,7 @@
 #include "arsenal/flurry.h"
 #include "arsenal/logging.h"
 #include "arsenal/byte_array_wrap.h"
-#include "hexdump.h"
+#include "arsenal/hexdump.h"
 
 using namespace std;
 namespace po = boost::program_options;
