@@ -10,7 +10,7 @@ class subrange_impl
     int start_offset_;
     int end_offset_;
 
-    inline auto make_subrange()
+    inline auto make_subrange() const
     {
         return boost::iterator_range<typename T::iterator>(
             container_.begin() + start_offset_,
@@ -18,6 +18,9 @@ class subrange_impl
     }
 
 public:
+    typedef typename T::iterator iterator;
+    typedef typename T::const_iterator const_iterator;
+
     inline subrange_impl(T& base, int start, int end)
         : container_(base)
         , start_offset_(start)
@@ -27,6 +30,20 @@ public:
     template <typename U>
     inline void operator = (U const& source) {
         boost::overwrite(source, make_subrange());
+    }
+
+    template <typename U>
+    inline bool operator == (U const& source) const {
+        return boost::equal(source, make_subrange());
+    }
+
+    typename boost::range_iterator<T>::type begin() { return make_subrange().begin(); }
+    typename boost::range_iterator<T>::type end() { return make_subrange().end(); }
+    typename boost::range_iterator<T>::type begin() const { return make_subrange().begin(); }
+    typename boost::range_iterator<T>::type end() const { return make_subrange().end(); }
+
+    operator T() const {
+        return T(begin(), end());
     }
 };
 
