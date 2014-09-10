@@ -8,23 +8,23 @@ class subrange_impl
 {
     T& container_;
     int start_offset_;
-    int end_offset_;
+    int size_;
 
     inline auto make_subrange() const
     {
         return boost::iterator_range<typename T::iterator>(
             container_.begin() + start_offset_,
-            container_.begin() + start_offset_ + end_offset_);
+            container_.begin() + start_offset_ + size_);
     }
 
 public:
     typedef typename T::iterator iterator;
     typedef typename T::const_iterator const_iterator;
 
-    inline subrange_impl(T& base, int start, int end)
+    inline subrange_impl(T& base, int start, int size)
         : container_(base)
         , start_offset_(start)
-        , end_offset_(end)
+        , size_(size)
     {}
 
     template <typename U>
@@ -52,8 +52,8 @@ public:
 };
 
 template <typename T>
-inline subrange_impl<T> subrange(T& base, int start, int end)
+inline subrange_impl<T> subrange(T& base, int start, int size)
 {
-    return subrange_impl<T>(base, start, end);
+    return subrange_impl<T>(base, start, size);
 }
 
