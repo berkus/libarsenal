@@ -32,6 +32,10 @@ public:
         boost::overwrite(source, make_subrange());
     }
 
+    inline void operator = (subrange_impl<T> const& source) {
+        boost::overwrite(source.make_subrange(), make_subrange());
+    }
+
     template <typename U>
     inline bool operator == (U const& source) const {
         return boost::equal(source, make_subrange());
