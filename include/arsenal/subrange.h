@@ -57,3 +57,8 @@ inline subrange_impl<T> subrange(T& base, int start, int size)
     return subrange_impl<T>(base, start, size);
 }
 
+template <typename T>
+inline subrange_impl<T> subrange(T& base, int start)
+{
+    return subrange_impl<T>(base, start, base.size() - start);
+}
