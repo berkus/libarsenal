@@ -271,6 +271,11 @@ public:
     inline void pack_raw_data(const char* data, size_t bytes) {
         os_.write(data, bytes);
     }
+
+    template <typename T>
+    inline void pack_raw_data(T& data) {
+        os_.write(&data, sizeof(T));
+    }
 };
 
 //=================================================================================================
