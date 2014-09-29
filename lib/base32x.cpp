@@ -41,7 +41,8 @@ const int8_t base32xTable[] = {
        -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
 };
 
-const char base32xAlphabet[] = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const char base32xAlphabet[] = "abcdefghjklmnpqrstuvwxyz23456789";
+
 }
 
 namespace encode {
