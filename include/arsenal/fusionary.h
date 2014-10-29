@@ -45,6 +45,57 @@ struct optional_field_set
 };
 
 // READER from asio buffer
+//=================================================================================================
+// Lazy reading
+//=================================================================================================
+
+template <typename T>
+std::pair<T, asio::const_buffer> read(asio::const_buffer b);
+
+struct sizer
+{
+    mutable asio::const_buffer buf_;
+    mutable size_t size_;
+
+    explicit sizer(asio::const_buffer buf)
+        : buf_(std::move(buf))
+        , size_(0)
+    { }
+
+    template <class T>
+    auto operator()(T &) const -> typename std::enable_if<std::is_integral<T>::value>::type
+    {
+        size_ += sizeof(T);
+        buf_ = buf_ + sizeof(T);
+    }
+
+    // ...
+};
+
+template<class T>
+size_t get_size(asio::const_buffer buf) {
+    sizer s(std::move(buf));
+    T val;
+    s(val);
+    return s.size_;
+}
+
+template<class T>
+struct lazy {
+    asio::const_buffer buf_;
+
+    lazy(asio::const_buffer const& buf)
+        : buf_(asio::buffer_cast<void const*>(buf),
+               get_size<T>(buf))
+    {
+        buf = buf + asio::buffer_size(buf_);
+    }
+
+    T get() const { return read<T>(buf_); }
+
+    size_t size() const { return asio::buffer_size(buf_); }
+};
+
 struct reader
 {
     mutable optional<opt_fields::bits_type> opts_;
@@ -118,6 +169,12 @@ struct reader
         typename std::enable_if<boost::fusion::is_sequence<T>::value>::type
     {
         boost::fusion::for_each(val, *this);
+    }
+    // lazy
+    template<class T>
+    void operator()(lazy<T> & val) const {
+        val = lazy<T>(buf_);
+        buf_ = buf_ + val.size();
     }
 };
 
