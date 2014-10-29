@@ -171,7 +171,7 @@ struct reader
     // fusion structs
     template <class T>
     auto operator()(T & val) const ->
-        typename std::enable_if<boost::fusion::is_sequence<T>::value>::type
+        typename std::enable_if<boost::fusion::traits::is_sequence<T>::value>::type
     {
         boost::fusion::for_each(val, *this);
     }
@@ -269,7 +269,7 @@ struct writer
     // fusion structs
     template <class T>
     auto operator()(T const& val) const ->
-        typename std::enable_if<boost::fusion::is_sequence<T>::value>::type
+        typename std::enable_if<boost::fusion::traits::is_sequence<T>::value>::type
     {
         boost::fusion::for_each(val, *this);
     }
