@@ -295,45 +295,49 @@ asio::mutable_buffer write(asio::mutable_buffer b, T const& val)
 // Pretty printer
 //=================================================================================================
 
-namespace detail {
-    namespace mpl = boost::mpl;
-    template <class T>
-    using typename range_c = mpl::range_c<int, 0, mpl::size<T>::value >;
+// namespace detail {
+//     struct value_writer {
+//         value_writer(std::ostream& os) {}
+//     };
 
-    namespace f_ext = boost::fusion::extension;
-    template <class T>
-    struct mpl_visitor {
-        value_writer w_;
-        T& msg_;
-        mpl_visitor(std::ostream& os, T& msg)
-            : value_writer_(os)
-            , msg_(msg)
-        {}
-        template <class N>
-        void operator()(N idx)
-        {
-            w_(f_ext::struct_member_name<T, N::value>::call(), ":");
-            w_(fusion::at<N>(msg_), (idx != mpl::size<T>::value ? "," : ""));
-        }
-    };
+//     namespace mpl = boost::mpl;
+//     template <class T>
+//     using range_c = typename mpl::range_c<int, 0, mpl::size<T>::value >;
 
-    template <class T>
-    struct printer
-    {
-        T& msg_;
+//     namespace f_ext = boost::fusion::extension;
+//     template <class T>
+//     struct mpl_visitor {
+//         value_writer w_;
+//         T& msg_;
+//         mpl_visitor(std::ostream& os, T& msg)
+//             : w_(os)
+//             , msg_(msg)
+//         {}
+//         template <class N>
+//         void operator()(N idx)
+//         {
+//             w_(f_ext::struct_member_name<T, N::value>::call(), ":");
+//             w_(boost::fusion::at<N>(msg_), (idx != mpl::size<T>::value ? "," : ""));
+//         }
+//     };
 
-        friend std::ostream& operator<<(std::ostream& os, printer<T> const& v)
-        {
-            using namespace detail;
-            boost::mpl::for_each<typename range_c<T>>(mpl_visitor<T>(os, v.msg_));
-            return os;
-        }
-    };
+//     template <class T>
+//     struct printer
+//     {
+//         T& msg_;
 
-} // detail namespace
+//         friend std::ostream& operator<<(std::ostream& os, printer<T> const& v)
+//         {
+//             using namespace detail;
+//             boost::mpl::for_each<mpl::range_c<T>>(mpl_visitor<T>(os, v.msg_));
+//             return os;
+//         }
+//     };
 
-template <class T>
-detail::printer<T> pretty_print(T const& v)
-{
-    return detail::printer<T>(v);
-}
+// } // detail namespace
+
+// template <class T>
+// detail::printer<T> pretty_print(T const& v)
+// {
+//     return detail::printer<T>(v);
+// }
