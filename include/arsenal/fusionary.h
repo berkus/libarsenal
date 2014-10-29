@@ -206,7 +206,7 @@ struct writer
     auto operator()(T const& val) const -> typename std::enable_if<std::is_integral<T>::value>::type
     {
         asio::buffer_copy(buf_, asio::buffer(&val, sizeof(T)));
-        buf_ = buf + sizeof(T);
+        buf_ = buf_ + sizeof(T);
     }
     // enums
     template <class T>
@@ -227,7 +227,7 @@ struct writer
     {
         (*this)(static_cast<uint16_t>(val.length()));
         asio::buffer_copy(buf_, asio::buffer(val));
-        buf_ = buf_ + length;
+        buf_ = buf_ + val.length();
     }
     // vectors
     template <class T>
@@ -241,7 +241,7 @@ struct writer
     template<class K, class V>
     void operator()(std::unordered_map<K, V> const& kvs)
     {
-        (*this)(vals.length());
+        (*this)(kvs.length());
         for(auto& kv : kvs) {
             (*this)(kv.first);
             (*this)(kv.second);
@@ -256,10 +256,10 @@ struct writer
     }
 
     template<typename T>
-    auto operator()(T const& val) ->
+    auto operator()(T const& vals) ->
         typename std::enable_if<boost::has_range_const_iterator<T>::value>::type
     {
-        auto length = std::distance(std::begin(val), std::end(val));
+        auto length = std::distance(std::begin(vals), std::end(vals));
         if (length > std::numeric_limits<uint16_t>::max())
             throw std::exception();
         (*this)(static_cast<uint16_t>(length));
