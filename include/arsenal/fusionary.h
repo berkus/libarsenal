@@ -45,6 +45,8 @@ struct optional_field_set
 };
 
 // READER from asio buffer
+using opt_fields = optional_field_set<uint8_t>;
+
 //=================================================================================================
 // Lazy reading
 //=================================================================================================
@@ -98,7 +100,7 @@ struct lazy {
 
 struct reader
 {
-    mutable optional<opt_fields::bits_type> opts_;
+    mutable boost::optional<opt_fields::bits_type> opts_;
     mutable asio::const_buffer buf_;
     explicit reader(asio::const_buffer buf)
         : buf_(std::move(buf))
