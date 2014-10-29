@@ -188,7 +188,7 @@ std::pair<T, asio::const_buffer> read(asio::const_buffer b)
 {
     reader r(std::move(b));
     T res;
-    fusion::for_each(res, r);
+    boost::fusion::for_each(res, r);
     return std::make_pair(res, r.buf_);
 }
 
@@ -257,7 +257,7 @@ struct writer
 
     template<typename T>
     auto operator()(T const& val) ->
-        std::enable_if<boost::has_range_const_iterator<T>>::value>::type
+        typename std::enable_if<boost::has_range_const_iterator<T>::value>::type
     {
         auto length = std::distance(std::begin(val), std::end(val));
         if (length > std::numeric_limits<uint16_t>::max())
