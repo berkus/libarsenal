@@ -44,7 +44,6 @@ struct optional_field_set
     using bits_type = std::bitset<N>;
 };
 
-// READER from asio buffer
 using opt_fields = optional_field_set<uint8_t>;
 
 //=================================================================================================
@@ -97,6 +96,10 @@ struct lazy {
 
     size_t size() const { return asio::buffer_size(buf_); }
 };
+
+//=================================================================================================
+// Reader
+//=================================================================================================
 
 struct reader
 {
@@ -189,7 +192,10 @@ std::pair<T, asio::const_buffer> read(asio::const_buffer b)
     return std::make_pair(res, r.buf_);
 }
 
-// WRITER to asio buffer
+//=================================================================================================
+// Writer
+//=================================================================================================
+
 struct writer
 {
     mutable asio::mutable_buffer buf_;
@@ -285,6 +291,9 @@ asio::mutable_buffer write(asio::mutable_buffer b, T const& val)
 // )
 // now decimal_t can be read and written using usual fusion overloads in reader and writer
 
+//=================================================================================================
+// Pretty printer
+//=================================================================================================
 
 namespace detail {
     namespace mpl = boost::mpl;
