@@ -199,6 +199,7 @@ std::pair<T, asio::const_buffer> read(asio::const_buffer b)
 struct writer
 {
     mutable asio::mutable_buffer buf_;
+
     explicit writer(asio::mutable_buffer buf) : buf_(std::move(buf))
     {}
     // ints
@@ -233,7 +234,7 @@ struct writer
     template <class T>
     void operator()(std::vector<T> const& vals)
     {
-        (*this)(vals.length());//uint16_t cast?
+        (*this)(static_cast<uint16_t>(vals.length()));
         for(auto&& val : vals)
             (*this)(val);
     }
@@ -241,7 +242,7 @@ struct writer
     template<class K, class V>
     void operator()(std::unordered_map<K, V> const& kvs)
     {
-        (*this)(kvs.length());
+        (*this)(static_cast<uint16_t>(kvs.length()));
         for(auto& kv : kvs) {
             (*this)(kv.first);
             (*this)(kv.second);
