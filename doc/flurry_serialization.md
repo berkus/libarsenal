@@ -65,23 +65,23 @@ NEGATIVE fixnum
 
 ## Types
 
-`NIL`
-`BOOLEAN`
+* `NIL`
+* `BOOLEAN`
 true or false
-`POSITIVE_INTEGER`
-`NEGATIVE_INTEGER`
+* `POSITIVE_INTEGER`
+* `NEGATIVE_INTEGER`
 limited between -(2^63) up to (2^64)-1
-`REAL`
+* `REAL`
 floating-point, single or double precision IEEE 754
-`STRING`
+* `STRING`
 with maximum length up to (2^32)-1
-`BLOB` (byte array)
+* `BLOB` (byte array)
 binary, with maximum length up to (2^32)-1
-`ARRAY` (of typed entities)
+* `ARRAY` (of typed entities)
 array  (sequence), with maximum number of entries up to (2^32)-1
-`MAP`
+* `MAP`
 with maximum number of entries up to (2^32)-1
-`EXT`
+* `EXT`
 extended, with up to 128 custom application specific types
 
 one byte:
@@ -107,7 +107,7 @@ variable number of objects stored in MessagePack format:
  * N is the length of data
 
 
-## NIL format
+## Nil format
 
 nil:
 ```
@@ -116,7 +116,7 @@ nil:
 +--------+
 ```
 
-## BOOLEAN format
+## Boolean format
 
 false:
 ```
@@ -131,7 +131,7 @@ true:
 +--------+
 ```
 
-## INTEGER format
+## Integer format
 
 positive fixnum stores 7-bit positive integer
 ```
@@ -139,13 +139,14 @@ positive fixnum stores 7-bit positive integer
 |0XXXXXXX|
 +--------+
 ```
+ * 0XXXXXXX is 8-bit unsigned integer
+
 negative fixnum stores 5-bit negative integer
 ```
 +--------+
 |111YYYYY|
 +--------+
 ```
- * 0XXXXXXX is 8-bit unsigned integer
  * 111YYYYY is 8-bit signed integer (sign-extended)
 
 uint 8 stores a 8-bit unsigned integer
@@ -204,7 +205,7 @@ int 64 stores a 64-bit big-endian signed integer
 +--------+--------+--------+--------+--------+--------+--------+--------+--------+
 ```
 
-## REAL format
+## Real format
 
 float 32 stores a floating point number in IEEE 754 single precision
 floating point big-endian number format:
@@ -252,7 +253,7 @@ blob 32 stores a byte array whose length is upto (2^32)-1 bytes:
 ```
  * ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ is a 32-bit big-endian unsigned integer which represents N
 
-## string format
+## String format
 
 (variable length utf8 string, possibly with corrupt codepoints)
 
@@ -315,7 +316,7 @@ array 32 stores an array whose length is upto (2^32)-1 elements:
 ```
  * ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ_ZZZZZZZZ is a 32-bit big-endian unsigned integer which represents N
 
-## map format
+## Map format
 
 * odd elements in objects are keys of a map
 * the next element of a key is its associated value
