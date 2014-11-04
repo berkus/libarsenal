@@ -16,34 +16,39 @@ using eckey_t = std::array<uint8_t, 32>;
 using magic_t = std::integral_constant<uint64_t, 0xf00d>; // packet magic
 using cnonce8_t = std::array<uint8_t, 8>;
 using cnonce16_t = std::array<uint8_t, 16>;
+using box48_t = std::array<uint8_t, 48>;
+using box64_t = std::array<uint8_t, 64>;
+using box80_t = std::array<uint8_t, 80>;
+using box96_t = std::array<uint8_t, 96>;
+using box144_t = std::array<uint8_t, 144>;
 
 BOOST_FUSION_DEFINE_STRUCT(
     (sss)(channels), responder_cookie,
     (cnonce16_t, nonce)
-    (std::array<uint8_t, 80>, box)
+    (box80_t, box)
 );
 
 BOOST_FUSION_DEFINE_STRUCT(
     (sss)(channels), hello_packet_header,
     (magic_t, magic)
     (eckey_t, initiator_shortterm_public_key)
-    (std::array<uint8_t, 64>, zeros)
+    (box64_t, zeros)
     (cnonce8_t, nonce)
-    (std::array<uint8_t, 80>, box)
+    (box80_t, box)
 );
 
 BOOST_FUSION_DEFINE_STRUCT(
     (sss)(channels), cookie_packet_header,
     (magic_t, magic)
     (cnonce16_t, nonce)
-    (std::array<uint8_t, 144>, box)
+    (box144_t, box)
 );
 
 BOOST_FUSION_DEFINE_STRUCT(
     (sss)(channels), initiate_packet_header,
     (magic_t, magic)
     (eckey_t, initiator_shortterm_public_key)
-    (std::array<uint8_t, 96>, responder_cookie)
+    (box96_t, responder_cookie)
     (cnonce8_t, nonce)
     //..... variable size box
 );
@@ -52,7 +57,7 @@ BOOST_FUSION_DEFINE_STRUCT(
     (sss)(channels), initiate_packet_box,
     (eckey_t, initiator_longterm_public_key)
     (cnonce16_t, nonce)
-    (std::array<uint8_t, 48>, vouch)
+    (box48_t, vouch)
     //..... variable size data
 );
 
