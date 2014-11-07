@@ -24,4 +24,4 @@ and do not find their place anywhere in the bigger frameworks.
 * underlying - convert an enum class type to its underlying storage type.
 
 [![Build Status](https://travis-ci.org/berkus/libarsenal.svg?branch=master)](https://travis-ci.org/berkus/libarsenal)
- [![Coverage Status](https://coveralls.io/repos/berkus/libarsenal/badge.png?branch=develop)](https://coveralls.io/r/berkus/libarsenal?branch=develop) [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/berkus/libarsenal/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+ [![Coverage Status](https://coveralls.io/repos/berkus/libarsenal/badge.png?branch=master)](https://coveralls.io/r/berkus/libarsenal?branch=master) [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/berkus/libarsenal/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
