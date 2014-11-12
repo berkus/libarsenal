@@ -13,15 +13,14 @@ std::string to_base64(const std::string& in)
     using namespace boost::archive::iterators;
 
     std::stringstream os;
-    typedef
+    using base64_text =
         base64_from_binary<    // convert binary values to base64 characters
             transform_width<   // retrieve 6 bit integers from a sequence of 8 bit bytes
                 const char *,
                 6,
                 8
             >
-        >
-        base64_text; // compose all the above operations in to a new iterator
+        >; // compose all the above operations in to a new iterator
 
     std::copy(
         base64_text(in.c_str()),

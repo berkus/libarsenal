@@ -24,9 +24,9 @@ class byte_array
     std::vector<char> value;
 
 public:
-    typedef std::vector<char> container;
-    typedef container::iterator iterator;
-    typedef container::const_iterator const_iterator;
+    using container = std::vector<char>;
+    using iterator = container::iterator;
+    using const_iterator = container::const_iterator;
 
     byte_array();
     byte_array(byte_array const&);

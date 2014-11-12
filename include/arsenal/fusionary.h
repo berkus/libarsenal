@@ -127,7 +127,7 @@ struct reader
     template <class T, T v>
     void operator()(std::integral_constant<T, v>) const
     {
-        typedef std::integral_constant<T, v> type;
+        using type = std::integral_constant<T, v>;
         typename type::value_type val;
         (*this)(val);
         if (val != type::value)
@@ -220,7 +220,7 @@ struct writer
     template<class T, T v>
     void operator()(std::integral_constant<T, v>) const
     {
-        typedef std::integral_constant<T, v> type;
+        using type = std::integral_constant<T, v>;
         (*this)(type::value);
     }
     // longpascal string

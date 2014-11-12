@@ -18,8 +18,8 @@ class subrange_impl
     }
 
 public:
-    typedef typename T::iterator iterator;
-    typedef typename T::const_iterator const_iterator;
+    using iterator = typename T::iterator;
+    using const_iterator = typename T::const_iterator;
 
     inline subrange_impl(T& base, int start, int size)
         : container_(base)

@@ -39,26 +39,26 @@ public:
 } __attribute__((packed));
 
 /* Create big-endian versions of the stdint.h exact size data types. */
-typedef int8_t big_int8_t;
-typedef __endian_conversion<int16_t, boost::endian2::big> big_int16_t;
-typedef __endian_conversion<int32_t, boost::endian2::big> big_int32_t;
-typedef __endian_conversion<int64_t, boost::endian2::big> big_int64_t;
+using big_int8_t = int8_t ;
+using big_int16_t = __endian_conversion<int16_t, boost::endian2::big>;
+using big_int32_t = __endian_conversion<int32_t, boost::endian2::big>;
+using big_int64_t = __endian_conversion<int64_t, boost::endian2::big>;
 
-typedef uint8_t big_uint8_t;
-typedef __endian_conversion<uint16_t, boost::endian2::big> big_uint16_t;
-typedef __endian_conversion<uint32_t, boost::endian2::big> big_uint32_t;
-typedef __endian_conversion<uint64_t, boost::endian2::big> big_uint64_t;
+using big_uint8_t = uint8_t;
+using big_uint16_t = __endian_conversion<uint16_t, boost::endian2::big>;
+using big_uint32_t = __endian_conversion<uint32_t, boost::endian2::big>;
+using big_uint64_t = __endian_conversion<uint64_t, boost::endian2::big>;
 
 /* Create little-endian versions of the stdint.h exact size data types. */
-typedef int8_t little_int8_t;
-typedef __endian_conversion<int16_t, boost::endian2::little> little_int16_t;
-typedef __endian_conversion<int32_t, boost::endian2::little> little_int32_t;
-typedef __endian_conversion<int64_t, boost::endian2::little> little_int64_t;
+using little_int8_t = int8_t;
+using little_int16_t = __endian_conversion<int16_t, boost::endian2::little>;
+using little_int32_t = __endian_conversion<int32_t, boost::endian2::little>;
+using little_int64_t = __endian_conversion<int64_t, boost::endian2::little>;
 
-typedef uint8_t little_uint8_t;
-typedef __endian_conversion<uint16_t, boost::endian2::little> little_uint16_t;
-typedef __endian_conversion<uint32_t, boost::endian2::little> little_uint32_t;
-typedef __endian_conversion<uint64_t, boost::endian2::little> little_uint64_t;
+using little_uint8_t = uint8_t;
+using little_uint16_t = __endian_conversion<uint16_t, boost::endian2::little>;
+using little_uint32_t = __endian_conversion<uint32_t, boost::endian2::little>;
+using little_uint64_t = __endian_conversion<uint64_t, boost::endian2::little>;
 
 // Hash function specialization to use endian-types in std collections.
 namespace std {
