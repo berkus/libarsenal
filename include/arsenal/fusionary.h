@@ -169,6 +169,8 @@ struct reader
         }
     }
     // fusion structs
+    // To read custom structs, wrap them into BOOST_FUSION_ADOPT_STRUCT and use this instead
+    // of extra overloads.
     template <class T>
     auto operator()(T & val) const ->
         typename std::enable_if<boost::fusion::traits::is_sequence<T>::value>::type
