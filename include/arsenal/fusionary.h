@@ -105,9 +105,11 @@ struct reader
 {
     mutable boost::optional<opt_fields::bits_type> opts_;
     mutable asio::const_buffer buf_;
+
     explicit reader(asio::const_buffer buf)
         : buf_(std::move(buf))
     {}
+
     // ints
     template <class T>
     auto operator()(T & val) const -> typename std::enable_if<std::is_integral<T>::value>::type
