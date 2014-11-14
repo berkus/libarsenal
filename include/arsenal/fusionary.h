@@ -22,6 +22,7 @@
 #include <boost/fusion/include/for_each.hpp>
 #include <boost/fusion/include/is_sequence.hpp>
 #include <boost/range/has_range_iterator.hpp>
+#include <boost/utility/string_ref.hpp>
 #include <boost/asio/buffer.hpp>
 
 // @todo Cleanup to make it a proper header
@@ -141,6 +142,13 @@ struct reader
         uint16_t length = 0;
         (*this)(length);
         val = std::string(asio::buffer_cast<char const*>(buf_), length);
+        buf_ = buf_ + length;
+    }
+    void operator()(boost::string_ref& val) const
+    {
+        uint16_t length = 0;
+        (*this)(length);
+        val = boost::string_ref(asio::buffer_cast<char const*>(buf_), length);
         buf_ = buf_ + length;
     }
     // vector
