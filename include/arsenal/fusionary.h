@@ -25,10 +25,6 @@
 #include <boost/utility/string_ref.hpp>
 #include <boost/asio/buffer.hpp>
 
-// @todo Cleanup to make it a proper header
-namespace asio = boost::asio;
-using boost::optional;
-
 // Optional value
 template <typename T, size_t N>
 struct optional_field : boost::optional<T>
@@ -52,14 +48,14 @@ using opt_fields = optional_field_set<uint8_t>;
 //=================================================================================================
 
 template <typename T>
-std::pair<T, asio::const_buffer> read(asio::const_buffer b);
+std::pair<T, boost::asio::const_buffer> read(boost::asio::const_buffer b);
 
 struct sizer
 {
-    mutable asio::const_buffer buf_;
+    mutable boost::asio::const_buffer buf_;
     mutable size_t size_;
 
-    explicit sizer(asio::const_buffer buf)
+    explicit sizer(boost::asio::const_buffer buf)
         : buf_(std::move(buf))
         , size_(0)
     { }
@@ -75,7 +71,7 @@ struct sizer
 };
 
 template<class T>
-size_t get_size(asio::const_buffer buf) {
+size_t get_size(boost::asio::const_buffer buf) {
     sizer s(std::move(buf));
     T val;
     s(val);
@@ -84,13 +80,13 @@ size_t get_size(asio::const_buffer buf) {
 
 template<class T>
 struct lazy {
-    asio::const_buffer buf_;
+    boost::asio::const_buffer buf_;
 
-    lazy(asio::const_buffer const& buf)
-        : buf_(asio::buffer_cast<void const*>(buf),
+    lazy(boost::asio::const_buffer const& buf)
+        : buf_(boost::asio::buffer_cast<void const*>(buf),
                get_size<T>(buf))
     {
-        buf = buf + asio::buffer_size(buf_);
+        buf = buf + boost::asio::buffer_size(buf_);
     }
 
     T get() const { return read<T>(buf_); }
