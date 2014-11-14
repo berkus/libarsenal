@@ -50,6 +50,10 @@ constexpr unsigned int operator"" _bits_mask (unsigned long long bits)
     return (1 << bits) - 1;
 }
 
+//======================
+// Channel/packet layer
+//======================
+
 BOOST_FUSION_DEFINE_STRUCT(
     (sss)(channels), responder_cookie,
     (cnonce16_t, nonce)
@@ -97,16 +101,24 @@ BOOST_FUSION_DEFINE_STRUCT(
     //..... variable size box
 );
 
+//======================
+//    Framing layer
+//======================
+
+using opt_fields = optional_field_set<uint8_t>;
+using opt_version_t = optional_field<uint16_t,0>;
+using opt_fec_t = optional_field<uint8_t,4>;
+
 BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(channels), packet_header,
-    (uint8_t, flags)
-    (uint16_t, version) // @todo mark optional
-    (uint8_t, fec_group) // @todo mark optional
+    (sss)(framing), packet_header,
+    (uint8_t, flags) // 000fssgv
+    (opt_version_t, version)
+    (opt_fec_t, fec_group)
     (uint64_t, packet_sequence) // @todo mark optional, variable size
 );
 
 BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(channels), stream_frame_header,
+    (sss)(framing), stream_frame_header,
     (uint8_t, type)
     (uint8_t, flags)
     (uint32_t, stream_id)
@@ -118,7 +130,7 @@ BOOST_FUSION_DEFINE_STRUCT(
 );
 
 BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(channels), ack_frame_header,
+    (sss)(framing), ack_frame_header,
     (uint8_t, type)
     (uint8_t, sent_entropy)
     (uint8_t, received_entropy)
@@ -130,11 +142,15 @@ BOOST_FUSION_DEFINE_STRUCT(
 );
 
 BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(channels), padding_frame_header,
+    (sss)(framing), padding_frame_header,
     (uint8_t, type)
     (uint16_t, length)
     // ... [length] padding data
 );
+
+//======================
+// Key exchange drivers
+//======================
 
 // Initiator sends Hello and subsequently Initiate
 class kex_initiator
