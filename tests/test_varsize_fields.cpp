@@ -19,22 +19,21 @@
 #include <boost/fusion/include/for_each.hpp>
 #include <boost/fusion/include/is_sequence.hpp>
 #include <boost/range/has_range_iterator.hpp>
-#define BOOST_TEST_MODULE Test_opaque_endians
+#define BOOST_TEST_MODULE Test_varsize_fields
 #include <boost/test/unit_test.hpp>
-
 
 using namespace std;
 namespace asio = boost::asio;
 namespace mpl = boost::mpl;
 namespace fusion = boost::fusion;
 
-template <typename T, size_t M, size_t O>
-struct varsize_field
-{
-    T value;
-    constexpr static const size_t bit_mask = M;
-    constexpr static const size_t bit_mask_offset = O;
-};
+// template <typename T, size_t M, size_t O>
+// struct varsize_field
+// {
+//     T value;
+//     constexpr static const size_t bit_mask = M;
+//     constexpr static const size_t bit_mask_offset = O;
+// };
 
 // Optional bitmask position
 // template <typename T, size_t N = CHAR_BIT * sizeof(T)>
@@ -45,8 +44,7 @@ struct varsize_field
 // };
 
 // 0 = uint16_t, 1 = uint32_t (bit0)
-std::array<uint8_t,5> buffer  = {{ 0x00, 0xab, 0xcd, 0xef, 0x12 }};
-// std::array<uint8_t,5> buffer2 = {{ 0x01, 0xab, 0xcd, 0xef, 0x12 }};
+std::array<uint8_t,8> buffer  = {{ 0x00, 0xab, 0xcd, 0x01, 0xab, 0xcd, 0xef, 0x12 }};
 
 struct reader
 {
@@ -81,34 +79,55 @@ BOOST_FUSION_DEFINE_STRUCT(
     (uint32_t, value2)
 );
 
+// from above switcher struct we need to copy the appropriate field into output struct:
+BOOST_FUSION_DEFINE_STRUCT(
+    (actual), output,
+    (uint64_t, the_value)
+);
+
+template <typename SWITCHER, typename FINAL>
+struct varsized_field_wrapper
+{
+    SWITCHER sw;
+    FINAL out;
+
+    inline FINAL value() const { return out; }
+};
+
 template <class T>
 using range_c = typename mpl::range_c<int, 0, mpl::size<T>::value>;
 
-template <typename T>
-struct read_field_visitor
-{
-    T& output_;
-    reader& read_;
-    uint8_t value_;
-
-    read_field_visitor(T& out, reader& r, uint8_t val) : output_(out), read_(r), value_(val) {}
-
-    template <class N>
-    void operator()(N idx)
-    {
-        if (N::value == value_) {
-            read_(fusion::at<N>(output_));
-        }
-    }
-};
-
 struct read_fields
 {
-    template <typename T>
-    void operator()(T& out, reader& r, uint8_t value)
+    template <typename T, typename V>
+    struct read_field_visitor
     {
-    // fusion::for_each(flags == x && r(fusion::at<mpl::int_<x>>(stru)));
-        mpl::for_each<range_c<T>>(read_field_visitor<T>(out, r, value));
+        T& output_;
+        V& result_;
+        reader& read_;
+        uint8_t value_;
+
+        read_field_visitor(T& out, V& result, reader& r, uint8_t val)
+            : output_(out)
+            , result_(result)
+            , read_(r)
+            , value_(val)
+        {}
+
+        template <class N>
+        void operator()(N idx)
+        {
+            if (N::value == value_) {
+                read_(fusion::at<N>(output_));
+                result_ = fusion::at<N>(output_);
+            }
+        }
+    };
+
+    template <typename T, typename V>
+    void operator()(varsized_field_wrapper<T,V>& w, reader& r, uint8_t value)
+    {
+        mpl::for_each<range_c<T>>(read_field_visitor<T,V>(w.sw, w.out, r, value));
     }
 };
 
@@ -119,13 +138,21 @@ BOOST_AUTO_TEST_CASE(basic_reader)
     read_fields rf;
 
     uint8_t flags;
-    mapping::twobits stru;
+    varsized_field_wrapper<mapping::twobits, uint64_t> packet_size;
 
     r(flags);
-    rf(stru, r, flags);
+    rf(packet_size, r, flags);
 
     BOOST_CHECK(flags == 0);
-    BOOST_CHECK(stru.value1 == 0xcdab);
+    BOOST_CHECK(packet_size.value() == 0xcdab);
 
-    cout << (int)flags << " / " << stru.value1 << endl;
+    cout << (int)flags << " / " << packet_size.value() << endl;
+
+    r(flags);
+    rf(packet_size, r, flags);
+
+    BOOST_CHECK(flags == 1);
+    BOOST_CHECK(packet_size.value() == 0x12efcdab);
+
+    cout << (int)flags << " / " << packet_size.value() << endl;
 }
