@@ -43,8 +43,16 @@ namespace fusion = boost::fusion;
 //     using bits_type = std::bitset<N>;
 // };
 
-// 0 = uint16_t, 1 = uint32_t (bit0)
-std::array<uint8_t,8> buffer  = {{ 0x00, 0xab, 0xcd, 0x01, 0xab, 0xcd, 0xef, 0x12 }};
+std::array<uint8_t,18> buffer  = {{ 0x00,
+                                    0x01, 0xab, 0xcd,
+                                    0x02, 0xab, 0xcd, 0xef, 0x12,
+                                    0x03, 0xab, 0xcd, 0xef, 0x12, 0x34, 0x56, 0x78, 0x9a }};
+
+struct nothing_t
+{
+    template <typename T>
+    operator T() { return T(); } // convert to anything - should actually return empty optional?
+};
 
 struct reader
 {
@@ -58,40 +66,34 @@ struct reader
         val = *asio::buffer_cast<T const*>(buf_);
         buf_ = buf_ + sizeof(T);
     }
+
+    void operator()(nothing_t& val) const
+    {
+        // Do nothing!
+    }
 };
 
-// template <typename T>
-// std::pair<T, const_buffer> read(const_buffer b)
-// {
-//     reader r(std::move(b));
-//     T res;
-//     fusion::for_each(res, r);
-//     return std::make_pair(res, r.buf_);
-// }
-
-// - mapping function (bits to type)
+// User-defined mapping function (switcher bits value to type)
 // based on the value of some field we must choose N-th value in this struct and read it
 // index 0 - bits value 0, index 1 - bits value 1 and so on
 // use a sentinel type nothing_t to read nothing.
+// @todo When nothing_t is present we should be using optional<V> for output value?
 BOOST_FUSION_DEFINE_STRUCT(
     (mapping), twobits,
+    (nothing_t, no_value)
     (uint16_t, value1)
     (uint32_t, value2)
+    (uint64_t, value3)
 );
 
 // from above switcher struct we need to copy the appropriate field into output struct:
-BOOST_FUSION_DEFINE_STRUCT(
-    (actual), output,
-    (uint64_t, the_value)
-);
-
-template <typename SWITCHER, typename FINAL>
+template <typename SwitchType, typename FinalType>
 struct varsized_field_wrapper
 {
-    SWITCHER sw;
-    FINAL out;
+    SwitchType choice_;
+    FinalType output_;
 
-    inline FINAL value() const { return out; }
+    inline FinalType value() const { return output_; }
 };
 
 template <class T>
@@ -127,7 +129,7 @@ struct read_fields
     template <typename T, typename V>
     void operator()(varsized_field_wrapper<T,V>& w, reader& r, uint8_t value)
     {
-        mpl::for_each<range_c<T>>(read_field_visitor<T,V>(w.sw, w.out, r, value));
+        mpl::for_each<range_c<T>>(read_field_visitor<T,V>(w.choice_, w.output_, r, value));
     }
 };
 
@@ -144,7 +146,7 @@ BOOST_AUTO_TEST_CASE(basic_reader)
     rf(packet_size, r, flags);
 
     BOOST_CHECK(flags == 0);
-    BOOST_CHECK(packet_size.value() == 0xcdab);
+    BOOST_CHECK(packet_size.value() == 0);
 
     cout << (int)flags << " / " << packet_size.value() << endl;
 
@@ -152,7 +154,23 @@ BOOST_AUTO_TEST_CASE(basic_reader)
     rf(packet_size, r, flags);
 
     BOOST_CHECK(flags == 1);
+    BOOST_CHECK(packet_size.value() == 0xcdab);
+
+    cout << (int)flags << " / " << packet_size.value() << endl;
+
+    r(flags);
+    rf(packet_size, r, flags);
+
+    BOOST_CHECK(flags == 2);
     BOOST_CHECK(packet_size.value() == 0x12efcdab);
+
+    cout << (int)flags << " / " << packet_size.value() << endl;
+
+    r(flags);
+    rf(packet_size, r, flags);
+
+    BOOST_CHECK(flags == 3);
+    BOOST_CHECK(packet_size.value() == 0x9a78563412efcdab);
 
     cout << (int)flags << " / " << packet_size.value() << endl;
 }
