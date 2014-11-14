@@ -306,7 +306,10 @@ asio::mutable_buffer write(asio::mutable_buffer b, T const& val)
 
 // namespace detail {
 //     struct value_writer {
-//         value_writer(std::ostream& os) {}
+//         std::ostream& os_;
+//         value_writer(std::ostream& os) : os_(os) {}
+//         template <typename T>
+//         operator ()(T& v) { os_ << v; }
 //     };
 
 //     namespace mpl = boost::mpl;
