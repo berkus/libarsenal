@@ -60,6 +60,11 @@ struct nothing_t
     operator T() { return T(); } // convert to anything - should actually return empty optional?
 };
 
+struct rest_t
+{
+    std::string data;
+};
+
 // from above switcher struct we need to copy the appropriate field into output struct:
 template <typename SwitchType, typename FinalType>
 struct varsize_field_wrapper
@@ -159,6 +164,13 @@ struct reader
     {
         // Do nothing!
     }
+
+    // @todo Simply return the buf_ in remaining, to reduce copying etc.
+    void operator()(rest_t& rest) const
+    {
+        rest.data = std::string(asio::buffer_cast<char const*>(buf_), asio::buffer_size(buf_));
+        buf_ = buf_ + asio::buffer_size(buf_);
+    }
 };
 
 //=================================================================================================
@@ -188,26 +200,32 @@ BOOST_FUSION_DEFINE_STRUCT(
     (packet_field_t, packet_size)
 );
 
-std::array<uint8_t,18> buffer  = {{ 0x00,
+BOOST_FUSION_DEFINE_STRUCT(
+    (actual), packet_type,
+    (actual::header_type, header1)
+    (actual::header_type, header2)
+    (actual::header_type, header3)
+    (actual::header_type, header4)
+    (rest_t, body)
+);
+
+std::array<uint8_t,23> buffer  = {{ 0x00,
                                     0x04, 0xab, 0xcd,
                                     0x08, 0xab, 0xcd, 0xef, 0x12,
-                                    0x0c, 0xab, 0xcd, 0xef, 0x12, 0x34, 0x56, 0x78, 0x9a }};
+                                    0x0c, 0xab, 0xcd, 0xef, 0x12, 0x34, 0x56, 0x78, 0x9a,
+                                    'H', 'e', 'l', 'l', 'o' }};
 
 BOOST_AUTO_TEST_CASE(basic_reader)
 {
     asio::const_buffer buf(buffer.data(), buffer.size());
     reader read_(std::move(buf));
-    actual::header_type header;
+    actual::packet_type packet;
 
-    read_(header);
-    BOOST_CHECK(header.packet_size.value.value() == 0);
+    read_(packet);
 
-    read_(header);
-    BOOST_CHECK(header.packet_size.value.value() == 0xcdab);
-
-    read_(header);
-    BOOST_CHECK(header.packet_size.value.value() == 0x12efcdab);
-
-    read_(header);
-    BOOST_CHECK(header.packet_size.value.value() == 0x9a78563412efcdab);
+    BOOST_CHECK(packet.header1.packet_size.value.value() == 0);
+    BOOST_CHECK(packet.header2.packet_size.value.value() == 0xcdab);
+    BOOST_CHECK(packet.header3.packet_size.value.value() == 0x12efcdab);
+    BOOST_CHECK(packet.header4.packet_size.value.value() == 0x9a78563412efcdab);
+    BOOST_CHECK(packet.body.data == "Hello");
 }
