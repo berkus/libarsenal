@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 #include <boost/tr1/array.hpp>
+#include <boost/asio/buffer.hpp>
 #include "hash_combine.h"
 
 /**
@@ -35,6 +36,12 @@ public:
     byte_array(char const* data, size_t size);
     byte_array(std::string const& str) : byte_array(str.data(), str.size()) {}
     byte_array(std::initializer_list<uint8_t> data);
+    byte_array(boost::asio::const_buffer const& buf)
+        : byte_array(boost::asio::buffer_cast<char const*>(buf), boost::asio::buffer_size(buf))
+    {}
+    byte_array(boost::asio::mutable_buffer const& buf)
+        : byte_array(boost::asio::buffer_cast<char const*>(buf), boost::asio::buffer_size(buf))
+    {}
     explicit byte_array(size_t size) { resize(size); }
 
     template <typename T, size_t N>
