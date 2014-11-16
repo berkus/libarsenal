@@ -95,95 +95,9 @@ struct lazy {
     size_t size() const { return asio::buffer_size(buf_); }
 };
 
-//=================================================================================================
-// Reader
-//=================================================================================================
-
 struct reader
 {
     mutable boost::optional<opt_fields::bits_type> opts_;
-    mutable asio::const_buffer buf_;
-
-    explicit reader(asio::const_buffer buf)
-        : buf_(std::move(buf))
-    {}
-
-    // ints
-    template <class T>
-    auto operator()(T & val) const -> typename std::enable_if<std::is_integral<T>::value>::type
-    {
-        val = *asio::buffer_cast<T const*>(buf_);
-        buf_ = buf_ + sizeof(T);
-    }
-    // enums
-    template <class T>
-    auto operator()(T & val) const -> typename std::enable_if<std::is_enum<T>::value>::type
-    {
-        typename std::underlying_type<T>::type v;
-        (*this)(v);
-        val = static_cast<T>(v);
-    }
-    // constant markers
-    template <class T, T v>
-    void operator()(std::integral_constant<T, v>) const
-    {
-        using type = std::integral_constant<T, v>;
-        typename type::value_type val;
-        (*this)(val);
-        if (val != type::value)
-            throw std::exception();
-    }
-    // longpascal string (uint16_t length)
-    void operator()(std::string& val) const
-    {
-        uint16_t length = 0;
-        (*this)(length);
-        val = std::string(asio::buffer_cast<char const*>(buf_), length);
-        buf_ = buf_ + length;
-    }
-    void operator()(boost::string_ref& val) const
-    {
-        uint16_t length = 0;
-        (*this)(length);
-        val = boost::string_ref(asio::buffer_cast<char const*>(buf_), length);
-        buf_ = buf_ + length;
-    }
-    // vector
-    template <class T>
-    void operator()(std::vector<T>& vals)
-    {
-        uint16_t length;
-        (*this)(length);
-        for (; length; --length)
-        {
-            T val;
-            (*this)(val);
-            vals.emplace_back(std::move(val));
-        }
-    }
-    // map
-    template<class K, class V>
-    void operator()(std::unordered_map<K,V> & kvs)
-    {
-        uint16_t length;
-        (*this)(length);
-        for (; length; --length) {
-            K key;
-            (*this)(key);
-            V val;
-            (*this)(val);
-            kvs.emplace(key, val);
-        }
-    }
-    // fusion structs
-    // To read custom structs, wrap them into BOOST_FUSION_ADOPT_STRUCT and use this instead
-    // of extra overloads.
-    template <class T>
-    auto operator()(T & val) const ->
-        typename std::enable_if<boost::fusion::traits::is_sequence<T>::value>::type
-    {
-        boost::fusion::for_each(val, *this);
-    }
     // lazy
     template<class T>
     void operator()(lazy<T> & val) const {
@@ -191,15 +105,6 @@ struct reader
         buf_ = buf_ + val.size();
     }
 };
-
-template <typename T>
-std::pair<T, asio::const_buffer> read(asio::const_buffer b)
-{
-    reader r(std::move(b));
-    T res;
-    boost::fusion::for_each(res, r);
-    return std::make_pair(res, r.buf_);
-}
 
 //=================================================================================================
 // Writer
@@ -388,6 +293,10 @@ struct read_fields
     }
 };
 
+//=================================================================================================
+// Reader
+//=================================================================================================
+
 struct reader
 {
     mutable boost::asio::const_buffer buf_;
@@ -411,6 +320,77 @@ struct reader
     {
         val = *boost::asio::buffer_cast<T const*>(buf_);
         buf_ = buf_ + sizeof(T);
+    }
+
+    // Read enums
+
+    template <class T, typename P>
+    auto operator()(T& val, P&) const -> typename std::enable_if<std::is_enum<T>::value>::type
+    {
+        typename std::underlying_type<T>::type v;
+        (*this)(v);
+        val = static_cast<T>(v);
+    }
+
+    // Read constant markers
+
+    template <class T, T v>
+    void operator()(std::integral_constant<T, v>) const
+    {
+        using type = std::integral_constant<T, v>;
+        typename type::value_type val;
+        (*this)(val);
+        if (val != type::value)
+            throw std::exception();
+    }
+
+    // Read longpascal string (uint16_t length)
+
+    void operator()(std::string& val) const
+    {
+        uint16_t length = 0;
+        (*this)(length);
+        val = std::string(boost::asio::buffer_cast<char const*>(buf_), length);
+        buf_ = buf_ + length;
+    }
+
+    void operator()(boost::string_ref& val) const
+    {
+        uint16_t length = 0;
+        (*this)(length);
+        val = boost::string_ref(boost::asio::buffer_cast<char const*>(buf_), length);
+        buf_ = buf_ + length;
+    }
+
+    // Read vector
+
+    template <class T>
+    void operator()(std::vector<T>& vals)
+    {
+        uint16_t length;
+        (*this)(length);
+        for (; length; --length)
+        {
+            T val;
+            (*this)(val);
+            vals.emplace_back(std::move(val));
+        }
+    }
+
+    // Read map
+
+    template<class K, class V>
+    void operator()(std::unordered_map<K,V>& kvs)
+    {
+        uint16_t length;
+        (*this)(length);
+        for (; length; --length) {
+            K key;
+            (*this)(key);
+            V val;
+            (*this)(val);
+            kvs.emplace(key, val);
+        }
     }
 
     // Read varsized fields flags
@@ -439,14 +419,18 @@ struct reader
         read_fields()(val, *this, flag_value);
     }
 
+    // To read custom structs, wrap them into BOOST_FUSION_ADOPT_STRUCT and use this instead
+    // of extra overloads.
+    //
     // Sequence doesn't usually need parent.
+
     template <class T>
     auto operator()(T & val) const ->
         typename std::enable_if<boost::fusion::traits::is_sequence<T>::value>::type
     {
         boost::fusion::for_each(val, boost::bind(boost::ref(*this), _1, boost::ref(val)));
     }
-    // Parent version for sequence member of a sequence.
+    // Version with parent for sequence member of a sequence.
     template <class T, typename P>
     auto operator()(T & val, P&) const ->
         typename std::enable_if<boost::fusion::traits::is_sequence<T>::value>::type
@@ -472,4 +456,13 @@ struct reader
         buf_ = buf_ + boost::asio::buffer_size(buf_);
     }
 };
+
+template <typename T>
+std::pair<T, boost::asio::const_buffer> read(boost::asio::const_buffer b)
+{
+    reader r(std::move(b));
+    T res;
+    boost::fusion::for_each(res, r);
+    return std::make_pair(res, r.buf_);
+}
 
