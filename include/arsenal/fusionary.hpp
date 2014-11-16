@@ -8,12 +8,13 @@
 //
 #pragma once
 
-#include <ostream> // temp
 #include <bitset>
 #include <cstddef>
 #include <type_traits>
 #include <unordered_map>
+#include <boost/bind.hpp>
 #include <boost/optional.hpp>
+#include <boost/mpl/size.hpp>
 #include <boost/mpl/range_c.hpp>
 #include <boost/mpl/for_each.hpp>
 #include <boost/fusion/include/value_at.hpp>
@@ -24,7 +25,7 @@
 #include <boost/range/has_range_iterator.hpp>
 #include <boost/utility/string_ref.hpp>
 #include <boost/asio/buffer.hpp>
-
+/*
 // Optional value
 template <typename T, size_t N>
 struct optional_field : boost::optional<T>
@@ -299,57 +300,176 @@ asio::mutable_buffer write(asio::mutable_buffer b, T const& val)
 //     (uint32_t, mantissa_)
 // )
 // now decimal_t can be read and written using usual fusion overloads in reader and writer
+*/
 
-//=================================================================================================
-// Pretty printer
-//=================================================================================================
+// Variable sized field bitmask position
+template <typename T, size_t N = CHAR_BIT * sizeof(T)>
+struct varsize_field_flag
+{
+    using value_type = T;
+    using bits_type = std::bitset<N>;
+    value_type value;
+};
 
-// namespace detail {
-//     struct value_writer {
-//         std::ostream& os_;
-//         value_writer(std::ostream& os) : os_(os) {}
-//         template <typename T>
-//         operator ()(T& v) { os_ << v; }
-//     };
+// * a variable sized field, where size is controlled by external bitfield with certain mapping
+//   - where this bitfield is
+//   - offset of bits
+//   - mask of bits
+//   - mapping function (bits to type)
+template <typename T, typename I, size_t M, size_t O>
+struct varsize_field_specification
+{
+    T value; // varsized_field_wrapper
+    using index = I;
+    constexpr static const size_t bit_mask = M;
+    constexpr static const size_t bit_mask_offset = O;
+};
 
-//     namespace mpl = boost::mpl;
-//     template <class T>
-//     using range_c = typename mpl::range_c<int, 0, mpl::size<T>::value >;
+struct nothing_t
+{
+    template <typename T>
+    operator T() { return T(); } // convert to anything - should actually return empty optional?
+};
 
-//     namespace f_ext = boost::fusion::extension;
-//     template <class T>
-//     struct mpl_visitor {
-//         value_writer w_;
-//         T& msg_;
-//         mpl_visitor(std::ostream& os, T& msg)
-//             : w_(os)
-//             , msg_(msg)
-//         {}
-//         template <class N>
-//         void operator()(N idx)
-//         {
-//             w_(f_ext::struct_member_name<T, N::value>::call(), ":");
-//             w_(boost::fusion::at<N>(msg_), (idx != mpl::size<T>::value ? "," : ""));
-//         }
-//     };
+// * buffer that runs from current point until the end of asio::buffer
+//   (should be easy - when we see it in types, just consume the rest of the buffer)
+//   sentinel type rest_t to grab until the rest of buffer... must be last in struct
+struct rest_t
+{
+    std::string data;
+};
 
-//     template <class T>
-//     struct printer
-//     {
-//         T& msg_;
+// from above switcher struct we need to copy the appropriate field into output struct:
+template <typename SwitchType, typename FinalType>
+struct varsize_field_wrapper
+{
+    SwitchType choice_;
+    FinalType output_;
 
-//         friend std::ostream& operator<<(std::ostream& os, printer<T> const& v)
-//         {
-//             using namespace detail;
-//             boost::mpl::for_each<mpl::range_c<T>>(mpl_visitor<T>(os, v.msg_));
-//             return os;
-//         }
-//     };
+    inline FinalType value() const { return output_; }
+};
 
-// } // detail namespace
+template <class T>
+using range_c = typename boost::mpl::range_c<int, 0, boost::mpl::size<T>::value>;
 
-// template <class T>
-// detail::printer<T> pretty_print(T const& v)
-// {
-//     return detail::printer<T>(v);
-// }
+struct reader;
+
+struct read_fields
+{
+    template <typename T, typename V>
+    struct read_field_visitor
+    {
+        T& output_;
+        V& result_;
+        reader const& read_;
+        uint8_t value_;
+
+        read_field_visitor(T& out, V& result, reader const& r, uint8_t val)
+            : output_(out)
+            , result_(result)
+            , read_(r)
+            , value_(val)
+        {}
+
+        template <class N>
+        void operator()(N idx)
+        {
+            if (N::value == value_) {
+                read_(boost::fusion::at<N>(output_), output_);
+                result_ = boost::fusion::at<N>(output_);
+            }
+        }
+    };
+
+    template <typename T, typename V>
+    void operator()(varsize_field_wrapper<T,V>& w, reader const& r, uint8_t value)
+    {
+        boost::mpl::for_each<range_c<T>>(read_field_visitor<T,V>(w.choice_, w.output_, r, value));
+    }
+};
+
+struct reader
+{
+    mutable boost::asio::const_buffer buf_;
+    using result_type = void;
+
+    explicit reader(boost::asio::const_buffer b)
+        : buf_(std::move(b))
+    {}
+
+    // Read integral values
+
+    template <class T>
+    auto operator()(T& val) const -> typename std::enable_if<std::is_integral<T>::value>::type
+    {
+        val = *boost::asio::buffer_cast<T const*>(buf_);
+        buf_ = buf_ + sizeof(T);
+    }
+
+    template <class T, typename P>
+    auto operator()(T& val, P&) const -> typename std::enable_if<std::is_integral<T>::value>::type
+    {
+        val = *boost::asio::buffer_cast<T const*>(buf_);
+        buf_ = buf_ + sizeof(T);
+    }
+
+    // Read varsized fields flags
+
+    template <typename T, typename P>
+    void operator()(varsize_field_flag<T>& val, P& parent) const {
+        (*this)(val.value, parent);
+    }
+
+    // Read varsized field
+
+    template <typename T, typename I, size_t M, size_t O, typename P>
+    void operator()(varsize_field_specification<T,I,M,O>& val, P& parent) const
+    {
+        // We need to extract the flags value out of parent sequence
+        auto vflag = boost::fusion::at<I>(parent).value; // do we need bits_type at all?
+        vflag = (vflag >> O) & M;
+        (*this)(val.value, vflag);
+    }
+
+    // This is called from the function above and does not need the parent.
+    // Read the actual varsized field with proper flags.
+    template <typename T, typename V, typename F>
+    void operator()(varsize_field_wrapper<T,V>& val, F flag_value) const
+    {
+        read_fields()(val, *this, flag_value);
+    }
+
+    // Sequence doesn't usually need parent.
+    template <class T>
+    auto operator()(T & val) const ->
+        typename std::enable_if<boost::fusion::traits::is_sequence<T>::value>::type
+    {
+        boost::fusion::for_each(val, boost::bind(boost::ref(*this), _1, boost::ref(val)));
+    }
+    // Parent version for sequence member of a sequence.
+    template <class T, typename P>
+    auto operator()(T & val, P&) const ->
+        typename std::enable_if<boost::fusion::traits::is_sequence<T>::value>::type
+    {
+        boost::fusion::for_each(val, boost::bind(boost::ref(*this), _1, boost::ref(val)));
+    }
+
+    // Read nothing
+
+    template <typename P>
+    void operator()(nothing_t&, P&) const
+    {
+        // Do nothing!
+    }
+
+    // Read until the end of the buffer
+
+    // @todo Simply return the buf_ in remaining, to reduce copying etc.
+    template <typename P>
+    void operator()(rest_t& rest, P&) const
+    {
+        rest.data = std::string(boost::asio::buffer_cast<char const*>(buf_), boost::asio::buffer_size(buf_));
+        buf_ = buf_ + boost::asio::buffer_size(buf_);
+    }
+};
+
