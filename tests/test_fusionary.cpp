@@ -82,7 +82,7 @@ BOOST_FUSION_DEFINE_STRUCT(
     (eckey_t, initiator_shortterm_public_key)
     (box96_t, responder_cookie)
     (cnonce8_t, nonce)
-    //..... variable size box
+    (rest_t, box) // variable size box
 );
 
 BOOST_FUSION_DEFINE_STRUCT(
@@ -90,7 +90,7 @@ BOOST_FUSION_DEFINE_STRUCT(
     (eckey_t, initiator_longterm_public_key)
     (cnonce16_t, nonce)
     (box48_t, vouch)
-    //..... variable size data
+    (rest_t, data) // variable size data inside this box
 );
 
 BOOST_FUSION_DEFINE_STRUCT(
@@ -98,7 +98,7 @@ BOOST_FUSION_DEFINE_STRUCT(
     (magic::message_packet, magic)
     (eckey_t, public_key)
     (cnonce8_t, nonce)
-    //..... variable size box
+    (rest_t, box) // variable size box
 );
 
 //======================
