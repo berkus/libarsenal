@@ -36,7 +36,7 @@ BOOST_FUSION_DEFINE_STRUCT(
     (uint64_t, value3)
 );
 
-using flag_field_t = varsize_field_flag<uint8_t>;
+using flag_field_t = field_flag<uint8_t>;
 using packet_size_t = varsize_field_wrapper<mapping::twobits, uint64_t>;
 using packet_field_t = varsize_field_specification<packet_size_t, mpl::int_<0>, 2_bits_mask, 2>;
 using packet_field2_t = varsize_field_specification<packet_size_t, mpl::int_<2>, 2_bits_mask, 2>;

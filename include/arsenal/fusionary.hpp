@@ -207,9 +207,9 @@ asio::mutable_buffer write(asio::mutable_buffer b, T const& val)
 // now decimal_t can be read and written using usual fusion overloads in reader and writer
 */
 
-// Variable sized field bitmask position
+// Variable size field or optional field flags
 template <typename T, size_t N = CHAR_BIT * sizeof(T)>
-struct varsize_field_flag
+struct field_flag
 {
     using value_type = T;
     using bits_type = std::bitset<N>;
@@ -396,7 +396,7 @@ struct reader
     // Read varsized fields flags
 
     template <typename T, typename P>
-    void operator()(varsize_field_flag<T>& val, P& parent) const {
+    void operator()(field_flag<T>& val, P& parent) const {
         (*this)(val.value, parent);
     }
 

@@ -31,7 +31,7 @@ namespace detail {
         }
 
         template <typename T>
-        value_writer const& operator()(varsize_field_flag<T>& v) const
+        value_writer const& operator()(field_flag<T>& v) const
         {
             os_ << v.value;
             return *this;
