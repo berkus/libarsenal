@@ -95,8 +95,10 @@ struct writer
 {
     mutable asio::mutable_buffer buf_;
 
-    explicit writer(asio::mutable_buffer buf) : buf_(std::move(buf))
+    explicit writer(asio::mutable_buffer buf)
+        : buf_(std::move(buf))
     {}
+
     // ints
     template <class T>
     auto operator()(T const& val) const -> typename std::enable_if<std::is_integral<T>::value>::type
@@ -211,13 +213,13 @@ struct optional_field_specification : boost::optional<Type>
 //   - offset of bits
 //   - mask of bits
 //   - mapping function (bits to type)
-template <typename T, typename I, size_t M, size_t O>
+template <typename Type, typename Index, size_t Mask, size_t Offset>
 struct varsize_field_specification
 {
-    T value; // varsized_field_wrapper
-    using index = I;
-    constexpr static const size_t bit_mask = M;
-    constexpr static const size_t bit_mask_offset = O;
+    Type value; // varsized_field_wrapper
+    using index = Index;
+    constexpr static const size_t bit_mask = Mask;
+    constexpr static const size_t bit_mask_offset = Offset;
 };
 
 struct nothing_t
@@ -392,12 +394,12 @@ struct reader
 
     // Read varsized field
 
-    template <typename T, typename I, size_t M, size_t O, typename P>
-    void operator()(varsize_field_specification<T,I,M,O>& val, P& parent) const
+    template <typename Type, typename Index, size_t Mask, size_t Offset, typename P>
+    void operator()(varsize_field_specification<Type,Index,Mask,Offset>& val, P& parent) const
     {
         // We need to extract the flags value out of parent sequence
-        auto vflag = boost::fusion::at<I>(parent).value; // do we need bits_type at all?
-        vflag = (vflag >> O) & M;
+        auto vflag = boost::fusion::at<Index>(parent).value; // do we need bits_type at all?
+        vflag = (vflag >> Offset) & Mask;
         (*this)(val.value, vflag);
     }
 
