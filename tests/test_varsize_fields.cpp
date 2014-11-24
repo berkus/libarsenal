@@ -23,6 +23,11 @@ constexpr unsigned int operator"" _bits_mask (unsigned long long bits)
     return (1 << bits) - 1;
 }
 
+constexpr unsigned int operator"" _bits_shift (unsigned long long bits)
+{
+    return bits;
+}
+
 // User-defined mapping function (switcher bits value to type)
 // based on the value of some field we must choose N-th value in this struct and read it
 // index 0 - bits value 0, index 1 - bits value 1 and so on
@@ -37,10 +42,10 @@ BOOST_FUSION_DEFINE_STRUCT(
 );
 
 using flag_field_t = field_flag<uint8_t>;
-using version_field_t = optional_field_specification<uint32_t, mpl::int_<0>, 0>;
+using version_field_t = optional_field_specification<uint32_t, field_index<0>, 0_bits_shift>;
 using packet_size_t = varsize_field_wrapper<mapping::twobits, uint64_t>;
-using packet_field_t = varsize_field_specification<packet_size_t, mpl::int_<0>, 2_bits_mask, 2>;
-using packet_field2_t = varsize_field_specification<packet_size_t, mpl::int_<3>, 2_bits_mask, 2>;
+using packet_field_t = varsize_field_specification<packet_size_t, field_index<0>, 2_bits_mask, 2_bits_shift>;
+using packet_field2_t = varsize_field_specification<packet_size_t, field_index<3>, 2_bits_mask, 2_bits_shift>;
 
 BOOST_FUSION_DEFINE_STRUCT(
     (actual), header_type,

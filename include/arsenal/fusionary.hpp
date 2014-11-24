@@ -199,6 +199,10 @@ struct field_flag
     value_type value;
 };
 
+// Type for Index type below
+template <int N>
+using field_index = boost::mpl::int_<N>;
+
 // Optional value
 template <typename Type, typename Index, size_t Num>
 struct optional_field_specification : boost::optional<Type>
