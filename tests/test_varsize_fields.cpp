@@ -37,9 +37,10 @@ BOOST_FUSION_DEFINE_STRUCT(
 );
 
 using flag_field_t = field_flag<uint8_t>;
+using version_field_t = optional_field_specification<uint32_t, mpl::int_<0>, 0>;
 using packet_size_t = varsize_field_wrapper<mapping::twobits, uint64_t>;
 using packet_field_t = varsize_field_specification<packet_size_t, mpl::int_<0>, 2_bits_mask, 2>;
-using packet_field2_t = varsize_field_specification<packet_size_t, mpl::int_<2>, 2_bits_mask, 2>;
+using packet_field2_t = varsize_field_specification<packet_size_t, mpl::int_<3>, 2_bits_mask, 2>;
 
 BOOST_FUSION_DEFINE_STRUCT(
     (actual), header_type,
@@ -50,6 +51,7 @@ BOOST_FUSION_DEFINE_STRUCT(
 BOOST_FUSION_DEFINE_STRUCT(
     (actual), big_header_type,
     (flag_field_t, flags)
+    (version_field_t, version)
     (packet_field_t, packet_size)
     (flag_field_t, flags2)
     (packet_field2_t, packet_size2)
@@ -63,8 +65,8 @@ BOOST_FUSION_DEFINE_STRUCT(
     (rest_t, body)
 );
 
-std::array<uint8_t,23> buffer  = {{ 0x04, 0xab, 0xcd,
-                                    0x00,
+std::array<uint8_t,27> buffer  = {{ 0x04, 0xab, 0xcd,
+                                    0x01, 0x03, 0x02, 0x01, 0x00, // version only
                                     0x08, 0xab, 0xcd, 0xef, 0x12,
                                     0x0c, 0xab, 0xcd, 0xef, 0x12, 0x34, 0x56, 0x78, 0x9a,
                                     'H', 'e', 'l', 'l', 'o' }};
@@ -80,6 +82,7 @@ BOOST_AUTO_TEST_CASE(basic_reader)
     // cout << pretty_print(packet) << endl;
 
     BOOST_CHECK(packet.header1.packet_size.value.value() == 0xcdab);
+    BOOST_CHECK(*packet.header23.version == 0x010203);
     BOOST_CHECK(packet.header23.packet_size.value.value() == 0);
     BOOST_CHECK(packet.header23.packet_size2.value.value() == 0x12efcdab);
     BOOST_CHECK(packet.header4.packet_size.value.value() == 0x9a78563412efcdab);

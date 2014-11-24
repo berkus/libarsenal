@@ -26,24 +26,6 @@
 #include <boost/utility/string_ref.hpp>
 #include <boost/asio/buffer.hpp>
 /*
-// Optional value
-template <typename T, size_t N>
-struct optional_field : boost::optional<T>
-{
-    using boost::optional<T>::optional;
-    constexpr static const size_t bit = N;
-};
-
-// Optional bitmask position
-template <typename T, size_t N = CHAR_BIT * sizeof(T)>
-struct optional_field_set
-{
-    using value_type = T;
-    using bits_type = std::bitset<N>;
-};
-
-using opt_fields = optional_field_set<uint8_t>;
-
 //=================================================================================================
 // Lazy reading
 //=================================================================================================
@@ -97,7 +79,6 @@ struct lazy {
 
 struct reader
 {
-    mutable boost::optional<opt_fields::bits_type> opts_;
     // lazy
     template<class T>
     void operator()(lazy<T> & val) const {
@@ -214,6 +195,15 @@ struct field_flag
     using value_type = T;
     using bits_type = std::bitset<N>;
     value_type value;
+};
+
+// Optional value
+template <typename Type, typename Index, size_t Num>
+struct optional_field_specification : boost::optional<Type>
+{
+    using boost::optional<Type>::optional;
+    using index = Index;
+    constexpr static const size_t bit = Num;
 };
 
 // * a variable sized field, where size is controlled by external bitfield with certain mapping
@@ -417,6 +407,19 @@ struct reader
     void operator()(varsize_field_wrapper<T,V>& val, F flag_value) const
     {
         read_fields()(val, *this, flag_value);
+    }
+
+    template <typename Type, typename Index, size_t N, typename P>
+    void operator()(optional_field_specification<Type,Index,N>& val, P& parent) const
+    {
+        auto flag = boost::fusion::at<Index>(parent).value; // do we need bits_type at all?
+        if (flag & (1 << N)) {
+            Type v;
+            (*this)(v);
+            val = optional_field_specification<Type,Index,N>(std::move(v));
+        } else {
+            val = boost::none;
+        }
     }
 
     // To read custom structs, wrap them into BOOST_FUSION_ADOPT_STRUCT and use this instead
