@@ -51,6 +51,7 @@ BOOST_FUSION_DEFINE_STRUCT(
     (actual), header_type,
     (flag_field_t, flags)
     (packet_field_t, packet_size)
+    (version_field_t, version)
 );
 
 BOOST_FUSION_DEFINE_STRUCT(
@@ -67,13 +68,20 @@ BOOST_FUSION_DEFINE_STRUCT(
     (actual::header_type, header1)
     (actual::big_header_type, header23)
     (actual::header_type, header4)
+    (actual::header_type, header5)
     (rest_t, body)
 );
 
-std::array<uint8_t,27> buffer  = {{ 0x04, 0xab, 0xcd,
-                                    0x01, 0x03, 0x02, 0x01, 0x00, // version only
+std::array<uint8_t,36> buffer  = {{ // 2 byte packet size only
+                                    0x04, 0xab, 0xcd,
+                                    // version only
+                                    0x01, 0x03, 0x02, 0x01, 0x00,
+                                    // 4 byte packet size only
                                     0x08, 0xab, 0xcd, 0xef, 0x12,
+                                    // 8 byte packet size only
                                     0x0c, 0xab, 0xcd, 0xef, 0x12, 0x34, 0x56, 0x78, 0x9a,
+                                    // 4 byte packet size and version
+                                    0x09, 0xef, 0xcd, 0xab, 0x01, 0x03, 0x02, 0x01, 0x00,
                                     'H', 'e', 'l', 'l', 'o' }};
 
 BOOST_AUTO_TEST_CASE(basic_reader)
@@ -87,9 +95,11 @@ BOOST_AUTO_TEST_CASE(basic_reader)
     // cout << pretty_print(packet) << endl;
 
     BOOST_CHECK(packet.header1.packet_size.value.value() == 0xcdab);
-    BOOST_CHECK(*packet.header23.version == 0x010203);
+    BOOST_CHECK(*packet.header23.version == 0x10203);
     BOOST_CHECK(packet.header23.packet_size.value.value() == 0);
     BOOST_CHECK(packet.header23.packet_size2.value.value() == 0x12efcdab);
     BOOST_CHECK(packet.header4.packet_size.value.value() == 0x9a78563412efcdab);
+    BOOST_CHECK(packet.header5.packet_size.value.value() == 0x1abcdef);
+    BOOST_CHECK(*packet.header5.version == 0x10203);
     BOOST_CHECK(packet.body.data == "Hello");
 }
