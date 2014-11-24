@@ -13,6 +13,7 @@
 #include <type_traits>
 #include <unordered_map>
 #include <boost/bind.hpp>
+#define BOOST_OPTIONAL_NO_INPLACE_FACTORY_SUPPORT // hmm without this breaks using optional ctor
 #include <boost/optional.hpp>
 #include <boost/mpl/size.hpp>
 #include <boost/mpl/range_c.hpp>
@@ -207,7 +208,7 @@ using field_index = boost::mpl::int_<N>;
 template <typename Type, typename Index, size_t Num>
 struct optional_field_specification : boost::optional<Type>
 {
-    using boost::optional<Type>::optional;
+    using boost::optional<Type>::optional; // @todo Requires BOOST_OPTIONAL_NO_INPLACE_FACTORY_SUPPORT
     using index = Index;
     constexpr static const size_t bit = Num;
 };
