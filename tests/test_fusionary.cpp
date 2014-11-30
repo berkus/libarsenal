@@ -10,14 +10,16 @@
 #include <iostream>
 #include <type_traits>
 #include <sodiumpp/sodiumpp.h> // @todo Remove sodium dep?
+#include "arsenal/fusionary.hpp"
 #include "arsenal/hexdump.h"
 #include "arsenal/subrange.h"
-#include "arsenal/fusionary.h"
 #include "arsenal/opaque_endian.h"
 
 using namespace std;
 using namespace boost;
 using namespace sodiumpp;
+
+// TODO: BIG ENDIAN!
 
 using usid_t = std::array<uint8_t, 24>;
 using eckey_t = std::array<uint8_t, 32>;
@@ -50,9 +52,14 @@ constexpr unsigned int operator"" _bits_mask (unsigned long long bits)
     return (1 << bits) - 1;
 }
 
-//======================
+constexpr unsigned int operator"" _bits_shift (unsigned long long bits)
+{
+    return bits;
+}
+
+//=================================================================================================
 // Channel/packet layer
-//======================
+//=================================================================================================
 
 BOOST_FUSION_DEFINE_STRUCT(
     (sss)(channels), responder_cookie,
@@ -80,73 +87,104 @@ BOOST_FUSION_DEFINE_STRUCT(
     (sss)(channels), initiate_packet_header,
     (magic::initiate_packet, magic)
     (eckey_t, initiator_shortterm_public_key)
-    (box96_t, responder_cookie)
+    (sss::channels::responder_cookie, responder_cookie)
     (cnonce8_t, nonce)
-    (rest_t, box) // variable size box
+    (rest_t, box) // variable size box --v
 );
 
 BOOST_FUSION_DEFINE_STRUCT(
     (sss)(channels), initiate_packet_box,
     (eckey_t, initiator_longterm_public_key)
-    (cnonce16_t, nonce)
+    (cnonce16_t, vouch_nonce)
     (box48_t, vouch)
-    (rest_t, data) // variable size data inside this box
+    (rest_t, data) // variable size data containing initial frames
 );
 
 BOOST_FUSION_DEFINE_STRUCT(
     (sss)(channels), message_packet_header,
     (magic::message_packet, magic)
-    (eckey_t, public_key)
+    (eckey_t, shortterm_public_key)
     (cnonce8_t, nonce)
-    (rest_t, box) // variable size box
+    (rest_t, box) // variable size box containing message
 );
 
-//======================
-//    Framing layer
-//======================
+//=================================================================================================
+// Framing layer
+//=================================================================================================
 
-using opt_fields = optional_field_set<uint8_t>;
-using opt_version_t = optional_field<uint16_t,0>;
-using opt_fec_t = optional_field<uint8_t,4>;
+namespace sss { namespace framing {
+
+struct uint48_t {
+    uint32_t high;
+    uint16_t low;
+    operator uint64_t() { return uint64_t(high) << 16 | low; }
+};
+
+}}
+
+BOOST_FUSION_ADAPT_STRUCT(
+    sss::framing::uint48_t,
+    (uint32_t, high)
+    (uint16_t, low)
+);
+
+BOOST_FUSION_DEFINE_STRUCT(
+    (sss)(framing), packet_sequence_number,
+    (uint16_t, size2)
+    (uint32_t, size4)
+    (sss::framing::uint48_t, size6)
+    (uint64_t, size8)
+);
+
+// namespace sss::framing { // -std=c++1z with SVN clang
+namespace sss { namespace framing {
+
+using packet_flag_field_t = field_flag<uint8_t>;
+using version_field_t = optional_field_specification<uint16_t, field_index<0>, 0_bits_shift>;
+using fec_field_t = optional_field_specification<uint8_t, field_index<0>, 1_bits_shift>;
+using packet_size_t = varsize_field_wrapper<packet_sequence_number, uint64_t>;
+using packet_field_t = varsize_field_specification<packet_size_t, field_index<0>, 2_bits_mask, 2_bits_shift>;
+
+}}
 
 BOOST_FUSION_DEFINE_STRUCT(
     (sss)(framing), packet_header,
-    (uint8_t, flags) // 000fssgv
-    (opt_version_t, version)
-    (opt_fec_t, fec_group)
-    (uint64_t, packet_sequence) // @todo mark optional, variable size
+    (sss::framing::packet_flag_field_t, flags) // 000fssgv
+    (sss::framing::version_field_t, version)
+    (sss::framing::fec_field_t, fec_group)
+    (sss::framing::packet_field_t, packet_sequence)
 );
 
-BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(framing), stream_frame_header,
-    (uint8_t, type)
-    (uint8_t, flags)
-    (uint32_t, stream_id)
-    (uint32_t, parent_stream_id)
-    (usid_t, usid)
-    (uint64_t, stream_offset)
-    (uint16_t, data_length)
-    // variable size data
-);
+// BOOST_FUSION_DEFINE_STRUCT(
+//     (sss)(framing), stream_frame_header,
+//     (uint8_t, type)
+//     (uint8_t, flags)
+//     (uint32_t, stream_id)
+//     (uint32_t, parent_stream_id)
+//     (usid_t, usid)
+//     (uint64_t, stream_offset)
+//     (uint16_t, data_length)
+//     // variable size data
+// );
 
-BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(framing), ack_frame_header,
-    (uint8_t, type)
-    (uint8_t, sent_entropy)
-    (uint8_t, received_entropy)
-    (uint8_t, missing_packets)
-    (uint64_t, least_unacked_packet)
-    (uint64_t, largest_observed_packet)
-    (uint32_t, largest_observed_delta_time)
-    (std::vector<uint64_t>, nacks)
-);
+// BOOST_FUSION_DEFINE_STRUCT(
+//     (sss)(framing), ack_frame_header,
+//     (uint8_t, type)
+//     (uint8_t, sent_entropy)
+//     (uint8_t, received_entropy)
+//     (uint8_t, missing_packets)
+//     (uint64_t, least_unacked_packet)
+//     (uint64_t, largest_observed_packet)
+//     (uint32_t, largest_observed_delta_time)
+//     (std::vector<uint64_t>, nacks)
+// );
 
-BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(framing), padding_frame_header,
-    (uint8_t, type)
-    (uint16_t, length)
-    // ... [length] padding data
-);
+// BOOST_FUSION_DEFINE_STRUCT(
+//     (sss)(framing), padding_frame_header,
+//     (uint8_t, type)
+//     (uint16_t, length)
+//     // ... [length] padding data
+// );
 
 //======================
 // Key exchange drivers
@@ -372,14 +410,9 @@ private:
     }
 };
 
-int main()
-{
-    sss::channels::message_packet_header hdr;
-    // std::cout << pretty_print(hdr) << std::endl;
-    return 0;
-}
 int main(int argc, const char ** argv)
 {
+    sss::channels::message_packet_header hdr;
     kex_initiator client;
     kex_responder server;
     string msg;
@@ -388,16 +421,11 @@ int main(int argc, const char ** argv)
 
     try {
         msg = client.send_hello();
-        hexdump(msg);
         msg = server.got_hello(msg);
-        hexdump(msg);
         msg = client.got_cookie(msg);
-        hexdump(msg);
         server.got_initiate(msg);
         msg = client.send_message();
-        // hexdump(msg);
         msg = server.send_message(msg);
-        // hexdump(msg);
     } catch(const char* e) {
         cout << "Exception: " << e << endl;
     }
