@@ -19,6 +19,23 @@ using namespace std;
 using namespace boost;
 using namespace sodiumpp;
 
+namespace bufferpool {
+
+bool locked = false;
+char bufferPool[1280] = {0};
+
+void grabBuffer(asio::mutable_buffer& out) {
+    if (locked) throw logic_error("Grabbing already used buffer");
+    locked = true;
+    out = asio::mutable_buffer(bufferPool, sizeof(bufferPool));
+}
+
+void releaseBuffer(asio::mutable_buffer& in) {
+    locked = false;
+}
+
+} // bufferpool namespace
+
 // TODO: BIG ENDIAN!
 
 using usid_t = std::array<uint8_t, 24>;
@@ -219,9 +236,22 @@ std::string as_string(rest_t const& a)
     return a.data;
 }
 
-std::string string_cast(asio::mutable_buffer const& buf)
+// Eh, clumsy.
+std::string string_cast(asio::mutable_buffer const& buf, asio::mutable_buffer const& end)
 {
-    return string(boost::asio::buffer_cast<char const*>(buf), boost::asio::buffer_size(buf));
+    return string(boost::asio::buffer_cast<char const*>(buf),
+        boost::asio::buffer_size(buf) - boost::asio::buffer_size(end));
+}
+
+template <typename T>
+std::string make_packet(T const& pkt)
+{
+    asio::mutable_buffer out;
+    bufferpool::grabBuffer(out);
+    asio::mutable_buffer end = write(out, pkt);
+    string result = string_cast(out, end);
+    bufferpool::releaseBuffer(out);
+    return result;
 }
 
 // Initiator sends Hello and subsequently Initiate
@@ -250,10 +280,7 @@ public:
         pkt.box = as_array<80>(seal.box(long_term_key.pk.get()+string(32, '\0')));
         pkt.nonce = as_array<8>(seal.nonce_sequential());
 
-        asio::mutable_buffer out;
-        write(out, pkt);
-
-        return string_cast(out);
+        return make_packet(pkt);
     }
 
     string got_cookie(string pkt)
@@ -297,10 +324,7 @@ private:
         // @todo Round payload size to next or second next multiple of 16..
         pkt.nonce = as_array<8>(seal.nonce_sequential());
 
-        asio::mutable_buffer out;
-        write(out, pkt);
-
-        return string_cast(out);
+        return make_packet(pkt);
     }
 };
 
@@ -432,16 +456,12 @@ private:
         packet.nonce = as_array<16>(seal.nonce_sequential());
         packet.box = as_array<144>(box);
 
-        asio::mutable_buffer out;
-        write(out, packet);
-
-        return string_cast(out);
+        return make_packet(packet);
     }
 };
 
 int main(int argc, const char ** argv)
 {
-    sss::channels::message_packet_header hdr;
     kex_initiator client;
     kex_responder server;
     string msg;
