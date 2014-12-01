@@ -143,7 +143,8 @@ using packet_flag_field_t = field_flag<uint8_t>;
 using version_field_t = optional_field_specification<uint16_t, field_index<0>, 0_bits_shift>;
 using fec_field_t = optional_field_specification<uint8_t, field_index<0>, 1_bits_shift>;
 using packet_size_t = varsize_field_wrapper<packet_sequence_number, uint64_t>;
-using packet_field_t = varsize_field_specification<packet_size_t, field_index<0>, 2_bits_mask, 2_bits_shift>;
+using packet_field_t = varsize_field_specification<packet_size_t, field_index<0>,
+    2_bits_mask, 2_bits_shift>;
 
 }}
 
@@ -190,6 +191,39 @@ BOOST_FUSION_DEFINE_STRUCT(
 // Key exchange drivers
 //======================
 
+template <size_t N>
+std::array<uint8_t, N> as_array(std::string const& s)
+{
+    assert(s.size() == N);
+    std::array<uint8_t, N> ret;
+    std::copy(s.begin(), s.end(), ret.begin());
+    return ret;
+}
+
+template <size_t N>
+std::string as_string(std::array<uint8_t, N> const& a)
+{
+    std::string ret;
+    ret.resize(N);
+    std::copy(a.begin(), a.end(), back_inserter(ret));
+    return ret;
+}
+
+std::string as_string(sss::channels::responder_cookie const& a)
+{
+    return as_string(a.nonce) + as_string(a.box);
+}
+
+std::string as_string(rest_t const& a)
+{
+    return a.data;
+}
+
+std::string string_cast(asio::mutable_buffer const& buf)
+{
+    return string(boost::asio::buffer_cast<char const*>(buf), boost::asio::buffer_size(buf));
+}
+
 // Initiator sends Hello and subsequently Initiate
 class kex_initiator
 {
@@ -212,20 +246,20 @@ public:
         boxer<nonce64> seal(server.long_term_key, short_term_key, helloNoncePrefix);
 
         sss::channels::hello_packet_header pkt;
-        pkt.initiator_shortterm_public_key = short_term_key.pk.get();
-        pkt.box = seal.box(long_term_key.pk.get()+string(32, '\0'));
-        pkt.nonce = seal.nonce_sequential();
+        pkt.initiator_shortterm_public_key = as_array<32>(short_term_key.pk.get());
+        pkt.box = as_array<80>(seal.box(long_term_key.pk.get()+string(32, '\0')));
+        pkt.nonce = as_array<8>(seal.nonce_sequential());
 
         asio::mutable_buffer out;
         write(out, pkt);
 
-        return packet;
+        return string_cast(out);
     }
 
     string got_cookie(string pkt)
     {
         assert(pkt.size() == 168);
-        assert(subrange(pkt, 0, 8) == cookiePacketMagic);
+        // assert(subrange(pkt, 0, 8) == cookiePacketMagic);
 
         // open cookie box
         string nonce(24, '\0');
@@ -253,20 +287,20 @@ private:
         assert(vouch.size() == 48);
 
         // Assemble initiate packet
-        string initiate(256+payload.size(), '\0');
-
-        subrange(initiate, 0, 8) = initiatePacketMagic;
-        subrange(initiate, 8, 32) = short_term_key.pk.get();
-        subrange(initiate, 40, 96) = cookie;
+        sss::channels::initiate_packet_header pkt;
+        pkt.initiator_shortterm_public_key = as_array<32>(short_term_key.pk.get());
+        pkt.responder_cookie.nonce = as_array<16>(subrange(cookie, 0, 16));
+        pkt.responder_cookie.box = as_array<80>(subrange(cookie, 16));
 
         boxer<nonce64> seal(server.short_term_key, short_term_key, initiateNoncePrefix);
-        subrange(initiate, 144, 112+payload.size())
-            = seal.box(long_term_key.pk.get()+vouchSeal.nonce_sequential()+vouch+payload);
+        pkt.box = seal.box(long_term_key.pk.get()+vouchSeal.nonce_sequential()+vouch+payload);
         // @todo Round payload size to next or second next multiple of 16..
+        pkt.nonce = as_array<8>(seal.nonce_sequential());
 
-        subrange(initiate, 136, 8) = seal.nonce_sequential();
+        asio::mutable_buffer out;
+        write(out, pkt);
 
-        return initiate;
+        return string_cast(out);
     }
 };
 
@@ -286,11 +320,12 @@ public:
 
     string got_hello(string pkt)
     {
-        hello_packet_header hello;
-        packet_reader(pkt, hello);
+        sss::channels::hello_packet_header hello;
+        asio::const_buffer buf(pkt.data(), pkt.size());
+        tie(hello, ignore) = read<sss::channels::hello_packet_header>(buf);
 
-        string clientKey = hello.initiator_shortterm_public_key;
-        string nonce = helloNoncePrefix + hello.nonce;
+        string clientKey = as_string(hello.initiator_shortterm_public_key);
+        string nonce = helloNoncePrefix + as_string(hello.nonce);
 
         // assert(pkt.size() == 192);
         // assert(subrange(pkt, 0, 8) == helloPacketMagic);
@@ -302,7 +337,7 @@ public:
         // subrange(nonce, 16, 8) = subrange(pkt, 104, 8);
 
         unboxer<recv_nonce> unseal(clientKey, long_term_key, nonce);
-        string open = unseal.unbox(hello.box);
+        string open = unseal.unbox(as_string(hello.box));
         // string open = unseal.unbox(subrange(pkt, 112, 80));
 
         // Open box contains client's long-term public key which we should check against:
@@ -318,54 +353,50 @@ public:
 
     void got_initiate(string pkt) // end of negotiation
     {
-        initiate_packet_header init;
-        tie(init, pkt) = read<initiate_packet_header>(pkt);
-        // vs.
-        packet_reader(pkt, init);
+        sss::channels::initiate_packet_header init;
+        asio::const_buffer buf(pkt.data(), pkt.size());
+        tie(init, ignore) = read<sss::channels::initiate_packet_header>(buf);
 
         // assert(subrange(pkt, 0, 8) == initiatePacketMagic);
 
         // Try to open the cookie
-        string nonce = minuteKeyNoncePrefix + init.nonce;
+        string nonce = minuteKeyNoncePrefix + as_string(init.nonce);
 
         // string nonce(24, '\0');
         // subrange(nonce, 0, 8) = minuteKeyNoncePrefix;
         // subrange(nonce, 8, 16) = subrange(pkt, 40, 16);
 
-        string cookie = crypto_secretbox_open(init.cookie, nonce, minute_key.get());
+        string cookie = crypto_secretbox_open(as_string(init.responder_cookie),
+            nonce, minute_key.get());
 
         // string cookie = crypto_secretbox_open(subrange(pkt, 56, 80), nonce, minute_key.get());
 
         // Check that cookie and client match
-        assert(init.clientShortTermKey == subrange(cookie, 0, 32));
+        assert(as_string(init.initiator_shortterm_public_key) == string(subrange(cookie, 0, 32)));
         // assert(subrange(pkt, 8 ,32) == subrange(cookie, 0, 32));
 
         // Extract server short-term secret key
         short_term_key = secret_key(public_key(""), subrange(cookie, 32, 32));
 
         // Open the Initiate box using both short-term keys
-        string initiateNonce = initiateNoncePrefix + init.nonce;
-        // string initateNonce(24, '\0');
-        // subrange(initateNonce, 0, 16) = initiateNoncePrefix;
-        // subrange(initateNonce, 16, 8) = subrange(pkt, 136, 8);
+        string initiateNonce = initiateNoncePrefix + as_string(init.nonce);
 
         // string clientShortTermKey = subrange(pkt, 8, 32);
 
-        unboxer<recv_nonce> unseal(init.clientShortTermKey, short_term_key, initateNonce);
-        string msg = unseal.unbox(init.box);
+        unboxer<recv_nonce> unseal(as_string(init.initiator_shortterm_public_key),
+            short_term_key, initiateNonce);
+        string msg = unseal.unbox(as_string(init.box));
         // string msg = unseal.unbox(subrange(pkt, 144));
 
         // Extract client long-term public key and check the vouch subpacket.
         string clientLongTermKey = subrange(msg, 0, 32);
 
-        string vouchNonce(24, '\0');
-        subrange(vouchNonce, 0, 8) = vouchNoncePrefix;
-        subrange(vouchNonce, 8, 16) = subrange(msg, 32, 16);
+        string vouchNonce = vouchNoncePrefix + string(subrange(msg, 32, 16));
 
         unboxer<recv_nonce> vouchUnseal(clientLongTermKey, long_term_key, vouchNonce);
         string vouch = vouchUnseal.unbox(subrange(msg, 48, 48));
 
-        assert(vouch == clientShortTermKey);
+        // assert(vouch == clientShortTermKey);
 
         // All is good, what's in the payload?
 
@@ -378,35 +409,33 @@ public:
 private:
     string send_cookie(string clientKey)
     {
-        string packet(8+16+144, '\0');
-        string cookie(96, '\0');
+        sss::channels::cookie_packet_header packet;
+        sss::channels::responder_cookie cookie;
         secret_key sessionKey; // Generate short-term server key
-
-        // Client short-term public key
-        subrange(cookie, 16, 32) = clientKey;
-        // Server short-term secret key
-        subrange(cookie, 48, 32) = sessionKey.get();
 
         // minute-key secretbox nonce
         random_nonce<8> minuteKeyNonce(minuteKeyNoncePrefix);
-        subrange(cookie, 16, 80)
-            = crypto_secretbox(subrange(cookie, 16, 64), minuteKeyNonce.get(), minute_key.get());
+        // Client short-term public key + Server short-term secret key
+        cookie.box = as_array<80>(crypto_secretbox(clientKey + sessionKey.get(),
+            minuteKeyNonce.get(), minute_key.get()));
 
         // Compressed cookie nonce
-        subrange(cookie, 0, 16) = minuteKeyNonce.sequential();
+        cookie.nonce = as_array<16>(minuteKeyNonce.sequential());
 
         boxer<random_nonce<8>> seal(clientKey, long_term_key, cookieNoncePrefix);
 
         // Server short-term public key + cookie
         // Box the cookies
-        string box = seal.box(sessionKey.pk.get() + cookie);
+        string box = seal.box(sessionKey.pk.get() + as_string(cookie));
         assert(box.size() == 96+32+16);
 
-        subrange(packet, 0, 8) = cookiePacketMagic;
-        subrange(packet, 8, 16) = seal.nonce_sequential();
-        subrange(packet, 24, 144) = box;
+        packet.nonce = as_array<16>(seal.nonce_sequential());
+        packet.box = as_array<144>(box);
 
-        return packet;
+        asio::mutable_buffer out;
+        write(out, packet);
+
+        return string_cast(out);
     }
 };
 
