@@ -222,7 +222,7 @@ std::string as_string(std::array<uint8_t, N> const& a)
 {
     std::string ret;
     ret.resize(N);
-    std::copy(a.begin(), a.end(), back_inserter(ret));
+    std::copy(a.begin(), a.end(), ret.begin());
     return ret;
 }
 
