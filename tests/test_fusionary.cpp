@@ -384,13 +384,9 @@ public:
         // assert(subrange(pkt, 0, 8) == initiatePacketMagic);
 
         // Try to open the cookie
-        string nonce = minuteKeyNoncePrefix + as_string(init.nonce);
+        string nonce = minuteKeyNoncePrefix + as_string(init.responder_cookie.nonce);
 
-        // string nonce(24, '\0');
-        // subrange(nonce, 0, 8) = minuteKeyNoncePrefix;
-        // subrange(nonce, 8, 16) = subrange(pkt, 40, 16);
-
-        string cookie = crypto_secretbox_open(as_string(init.responder_cookie),
+        string cookie = crypto_secretbox_open(as_string(init.responder_cookie.box),
             nonce, minute_key.get());
 
         // string cookie = crypto_secretbox_open(subrange(pkt, 56, 80), nonce, minute_key.get());
