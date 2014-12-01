@@ -472,5 +472,7 @@ int main(int argc, const char ** argv)
         msg = server.send_message(msg);
     } catch(const char* e) {
         cout << "Exception: " << e << endl;
+    } catch(std::exception& ex) {
+        cout << "Exception: " << ex.what() << endl;
     }
 }
