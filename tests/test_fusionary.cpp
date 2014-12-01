@@ -285,22 +285,21 @@ public:
 
     string got_cookie(string pkt)
     {
-        assert(pkt.size() == 168);
-        // assert(subrange(pkt, 0, 8) == cookiePacketMagic);
+        sss::channels::cookie_packet_header cookie;
+        asio::const_buffer buf(pkt.data(), pkt.size());
+        tie(cookie, ignore) = read<sss::channels::cookie_packet_header>(buf);
 
         // open cookie box
-        string nonce(24, '\0');
-        subrange(nonce, 0, 8) = cookieNoncePrefix;
-        subrange(nonce, 8, 16) = subrange(pkt, 8, 16);
+        string nonce = cookieNoncePrefix + as_string(cookie.nonce);
 
         unboxer<recv_nonce> unseal(server.long_term_key, short_term_key, nonce);
-        string open = unseal.unbox(subrange(pkt, 24, 144));
+        string open = unseal.unbox(as_string(cookie.box));
 
         server.short_term_key = subrange(open, 0, 32);
-        string cookie = subrange(open, 32, 96);
+        string cookie_buf = subrange(open, 32, 96);
 
         // @todo Must get payload from client
-        return send_initiate(cookie, "Hello, world!");
+        return send_initiate(cookie_buf, "Hello, world!");
     }
 
     string send_message() { return ""s; } // must be in client
@@ -351,18 +350,8 @@ public:
         string clientKey = as_string(hello.initiator_shortterm_public_key);
         string nonce = helloNoncePrefix + as_string(hello.nonce);
 
-        // assert(pkt.size() == 192);
-        // assert(subrange(pkt, 0, 8) == helloPacketMagic);
-
-        // string clientKey = subrange(pkt, 8, 32);
-
-        // string nonce(24, '\0');
-        // subrange(nonce, 0, 16) = helloNoncePrefix;
-        // subrange(nonce, 16, 8) = subrange(pkt, 104, 8);
-
         unboxer<recv_nonce> unseal(clientKey, long_term_key, nonce);
         string open = unseal.unbox(as_string(hello.box));
-        // string open = unseal.unbox(subrange(pkt, 112, 80));
 
         // Open box contains client's long-term public key which we should check against:
         //  a) blacklist
@@ -379,17 +368,13 @@ public:
     {
         sss::channels::initiate_packet_header init;
         asio::const_buffer buf(pkt.data(), pkt.size());
-        tie(init, ignore) = read<sss::channels::initiate_packet_header>(buf);
-
-        // assert(subrange(pkt, 0, 8) == initiatePacketMagic);
+        tie(init, buf) = read<sss::channels::initiate_packet_header>(buf);
 
         // Try to open the cookie
         string nonce = minuteKeyNoncePrefix + as_string(init.responder_cookie.nonce);
 
         string cookie = crypto_secretbox_open(as_string(init.responder_cookie.box),
             nonce, minute_key.get());
-
-        // string cookie = crypto_secretbox_open(subrange(pkt, 56, 80), nonce, minute_key.get());
 
         // Check that cookie and client match
         assert(as_string(init.initiator_shortterm_public_key) == string(subrange(cookie, 0, 32)));
@@ -400,8 +385,6 @@ public:
 
         // Open the Initiate box using both short-term keys
         string initiateNonce = initiateNoncePrefix + as_string(init.nonce);
-
-        // string clientShortTermKey = subrange(pkt, 8, 32);
 
         unboxer<recv_nonce> unseal(as_string(init.initiator_shortterm_public_key),
             short_term_key, initiateNonce);
@@ -415,12 +398,13 @@ public:
         unboxer<recv_nonce> vouchUnseal(clientLongTermKey, long_term_key, vouchNonce);
         string vouch = vouchUnseal.unbox(subrange(msg, 48, 48));
 
-        // assert(vouch == clientShortTermKey);
+        assert(vouch == as_string(init.initiator_shortterm_public_key));
 
         // All is good, what's in the payload?
 
         string payload = subrange(msg, 96);
         hexdump(payload);
+        // @todo Read payload using framing layer.
     }
 
     string send_message(string pkt) { return ""s; }
