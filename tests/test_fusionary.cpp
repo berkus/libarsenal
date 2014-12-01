@@ -406,7 +406,6 @@ public:
         unboxer<recv_nonce> unseal(as_string(init.initiator_shortterm_public_key),
             short_term_key, initiateNonce);
         string msg = unseal.unbox(as_string(init.box));
-        // string msg = unseal.unbox(subrange(pkt, 144));
 
         // Extract client long-term public key and check the vouch subpacket.
         string clientLongTermKey = subrange(msg, 0, 32);
