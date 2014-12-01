@@ -87,108 +87,6 @@ struct reader
         buf_ = buf_ + val.size();
     }
 };
-
-//=================================================================================================
-// Writer
-//=================================================================================================
-
-struct writer
-{
-    mutable asio::mutable_buffer buf_;
-
-    explicit writer(asio::mutable_buffer buf)
-        : buf_(std::move(buf))
-    {}
-
-    // ints
-    template <class T>
-    auto operator()(T const& val) const -> typename std::enable_if<std::is_integral<T>::value>::type
-    {
-        asio::buffer_copy(buf_, asio::buffer(&val, sizeof(T)));
-        buf_ = buf_ + sizeof(T);
-    }
-    // enums
-    template <class T>
-    auto operator()(T const& val) const -> typename std::enable_if<std::is_enum<T>::value>::type
-    {
-        using utype = typename std::underlying_type<T>::type;
-        (*this)(static_cast<utype>(val));
-    }
-    // constant markers
-    template<class T, T v>
-    void operator()(std::integral_constant<T, v>) const
-    {
-        using type = std::integral_constant<T, v>;
-        (*this)(type::value);
-    }
-    // longpascal string
-    void operator()(std::string const& val) const
-    {
-        (*this)(static_cast<uint16_t>(val.length()));
-        asio::buffer_copy(buf_, asio::buffer(val));
-        buf_ = buf_ + val.length();
-    }
-    // vectors
-    template <class T>
-    void operator()(std::vector<T> const& vals)
-    {
-        (*this)(static_cast<uint16_t>(vals.length()));
-        for(auto&& val : vals)
-            (*this)(val);
-    }
-    // map
-    template<class K, class V>
-    void operator()(std::unordered_map<K, V> const& kvs)
-    {
-        (*this)(static_cast<uint16_t>(kvs.length()));
-        for(auto& kv : kvs) {
-            (*this)(kv.first);
-            (*this)(kv.second);
-        }
-    }
-    // any ForwardRange
-    template<class T, class U>
-    void operator()(std::pair<T, U> const& val)
-    {
-        (*this)(val.first);
-        (*this)(val.second);
-    }
-
-    template<typename T>
-    auto operator()(T const& vals) ->
-        typename std::enable_if<boost::has_range_const_iterator<T>::value>::type
-    {
-        auto length = std::distance(std::begin(vals), std::end(vals));
-        if (length > std::numeric_limits<uint16_t>::max())
-            throw std::exception();
-        (*this)(static_cast<uint16_t>(length));
-        for (auto& val : vals)
-            (*this)(val);
-    }
-    // fusion structs
-    template <class T>
-    auto operator()(T const& val) const ->
-        typename std::enable_if<boost::fusion::traits::is_sequence<T>::value>::type
-    {
-        boost::fusion::for_each(val, *this);
-    }
-
-};
-
-template <typename T>
-asio::mutable_buffer write(asio::mutable_buffer b, T const& val)
-{
-    writer w(std::move(b));
-    boost::fusion::for_each(val, w);
-    return w.buf_;
-}
-
-// BOOST_FUSION_ADAPT_STRUCT(
-//     example::decimal_t,
-//     (int8_t, exponent_)
-//     (uint32_t, mantissa_)
-// )
-// now decimal_t can be read and written using usual fusion overloads in reader and writer
 */
 
 // Variable size field or optional field flags
@@ -239,6 +137,10 @@ struct nothing_t
 struct rest_t
 {
     std::string data;
+
+    void operator = (std::string const& other) {
+        data = other;
+    }
 };
 
 // from above switcher struct we need to copy the appropriate field into output struct:
@@ -448,6 +350,22 @@ struct reader
         boost::fusion::for_each(val, boost::bind(boost::ref(*this), _1, boost::ref(val)));
     }
 
+    // Read fixed-size array
+
+    template <typename T, size_t N>
+    void operator()(std::array<T,N>& arr) const
+    {
+        for (auto& val : arr)
+            (*this)(val);
+    }
+
+    template <typename T, size_t N, typename P>
+    void operator()(std::array<T,N>& arr, P&) const
+    {
+        for (auto& val : arr)
+            (*this)(val);
+    }
+
     // Read nothing
 
     template <typename P>
@@ -459,6 +377,12 @@ struct reader
     // Read until the end of the buffer
 
     // @todo Simply return the buf_ in remaining, to reduce copying etc.
+    void operator()(rest_t& rest) const
+    {
+        rest.data = std::string(boost::asio::buffer_cast<char const*>(buf_), boost::asio::buffer_size(buf_));
+        buf_ = buf_ + boost::asio::buffer_size(buf_);
+    }
+
     template <typename P>
     void operator()(rest_t& rest, P&) const
     {
@@ -476,3 +400,128 @@ std::pair<T, boost::asio::const_buffer> read(boost::asio::const_buffer b)
     return std::make_pair(res, r.buf_);
 }
 
+//=================================================================================================
+// Writer
+//=================================================================================================
+
+struct writer
+{
+    mutable boost::asio::mutable_buffer buf_;
+
+    explicit writer(boost::asio::mutable_buffer buf)
+        : buf_(std::move(buf))
+    {}
+
+    // Write integral values
+
+    template <class T>
+    auto operator()(T const& val) const -> typename std::enable_if<std::is_integral<T>::value>::type
+    {
+        boost::asio::buffer_copy(buf_, boost::asio::buffer(&val, sizeof(T)));
+        buf_ = buf_ + sizeof(T);
+    }
+
+    // Write enums
+
+    template <class T>
+    auto operator()(T const& val) const -> typename std::enable_if<std::is_enum<T>::value>::type
+    {
+        using utype = typename std::underlying_type<T>::type;
+        (*this)(static_cast<utype>(val));
+    }
+
+    // Write constant markers
+
+    template<class T, T v>
+    void operator()(std::integral_constant<T, v>) const
+    {
+        using type = std::integral_constant<T, v>;
+        (*this)(type::value);
+    }
+
+    // Write longpascal string
+
+    void operator()(std::string const& val) const
+    {
+        (*this)(static_cast<uint16_t>(val.length()));
+        boost::asio::buffer_copy(buf_, boost::asio::buffer(val));
+        buf_ = buf_ + val.length();
+    }
+
+    // Write vectors
+
+    template <class T>
+    void operator()(std::vector<T> const& vals) const
+    {
+        (*this)(static_cast<uint16_t>(vals.length()));
+        for(auto&& val : vals)
+            (*this)(val);
+    }
+
+    // Write map
+
+    template<class K, class V>
+    void operator()(std::unordered_map<K, V> const& kvs) const
+    {
+        (*this)(static_cast<uint16_t>(kvs.length()));
+        for(auto& kv : kvs) {
+            (*this)(kv.first);
+            (*this)(kv.second);
+        }
+    }
+
+    // Write any ForwardRange
+
+    template<class T, class U>
+    void operator()(std::pair<T, U> const& val) const
+    {
+        (*this)(val.first);
+        (*this)(val.second);
+    }
+
+    template<typename T>
+    auto operator()(T const& vals) const ->
+        typename std::enable_if<boost::has_range_const_iterator<T>::value>::type
+    {
+        auto length = std::distance(std::begin(vals), std::end(vals));
+        if (length > std::numeric_limits<uint16_t>::max())
+            throw std::exception();
+        (*this)(static_cast<uint16_t>(length));
+        for (auto& val : vals)
+            (*this)(val);
+    }
+
+    // Write fusion structs
+
+    template <class T>
+    auto operator()(T const& val) const ->
+        typename std::enable_if<boost::fusion::traits::is_sequence<T>::value>::type
+    {
+        boost::fusion::for_each(val, *this);
+    }
+
+    // Write fixed-size array
+
+    template <typename T, size_t N>
+    void operator()(std::array<T,N> const& arr) const
+    {
+        for (auto& val : arr)
+            (*this)(val);
+    }
+
+    // Write the final remainder of the buffer
+
+    void operator()(rest_t const& rest) const
+    {
+        boost::asio::buffer_copy(buf_, boost::asio::buffer(rest.data));
+        buf_ = buf_ + rest.data.length();
+    }
+};
+
+template <typename T>
+boost::asio::mutable_buffer write(boost::asio::mutable_buffer b, T const& val)
+{
+    writer w(std::move(b));
+    boost::fusion::for_each(val, w);
+    return w.buf_;
+}
