@@ -63,6 +63,7 @@ const string minuteKeyNoncePrefix = "minute-k";
 const string cookieNoncePrefix    = "cURVEcpk";
 const string vouchNoncePrefix     = "cURVEcpv";
 const string initiateNoncePrefix  = "cURVEcp-CLIENT-i";
+const string messageNoncePrefix   = "cURVEcp-CLIENT-m";
 
 constexpr unsigned int operator"" _bits_mask (unsigned long long bits)
 {
@@ -302,7 +303,31 @@ public:
         return send_initiate(cookie_buf, "Hello, world!");
     }
 
-    string send_message() { return ""s; } // must be in client
+    string send_message(string payload)
+    {
+        boxer<nonce64> seal(server.short_term_key, short_term_key, messageNoncePrefix);
+
+        sss::channels::message_packet_header pkt;
+        pkt.shortterm_public_key = as_array<32>(short_term_key.pk.get());
+        pkt.box = seal.box(payload);
+        pkt.nonce = as_array<8>(seal.nonce_sequential());
+
+        return make_packet(pkt);
+    }
+
+    void got_message(string pkt)
+    {
+        sss::channels::message_packet_header msg;
+        asio::const_buffer buf(pkt.data(), pkt.size());
+        tie(msg, buf) = read<sss::channels::message_packet_header>(buf);
+
+        string nonce = messageNoncePrefix + as_string(msg.nonce);
+        unboxer<recv_nonce> unseal(as_string(msg.shortterm_public_key), short_term_key, nonce);
+
+        string payload = unseal.unbox(msg.box.data);
+        cout << "Got from server:" << endl;
+        hexdump(payload);
+    }
 
 private:
     string send_initiate(string cookie, string payload)
@@ -334,6 +359,10 @@ class kex_responder
     secret_key short_term_key;
     secret_key minute_key;
     set<string> cookie_cache;
+    struct client {
+        string short_term_key;
+    } client;
+    std::string fixmeNeedToRebuildSessionPk;
 
 public:
     kex_responder()
@@ -378,7 +407,6 @@ public:
 
         // Check that cookie and client match
         assert(as_string(init.initiator_shortterm_public_key) == string(subrange(cookie, 0, 32)));
-        // assert(subrange(pkt, 8 ,32) == subrange(cookie, 0, 32));
 
         // Extract server short-term secret key
         short_term_key = secret_key(public_key(""), subrange(cookie, 32, 32));
@@ -400,6 +428,8 @@ public:
 
         assert(vouch == as_string(init.initiator_shortterm_public_key));
 
+        client.short_term_key = vouch;
+
         // All is good, what's in the payload?
 
         string payload = subrange(msg, 96);
@@ -407,7 +437,31 @@ public:
         // @todo Read payload using framing layer.
     }
 
-    string send_message(string pkt) { return ""s; }
+    string send_message(string payload)
+    {
+        boxer<nonce64> seal(client.short_term_key, short_term_key, messageNoncePrefix);
+
+        sss::channels::message_packet_header pkt;
+        pkt.shortterm_public_key = as_array<32>(fixmeNeedToRebuildSessionPk);
+        pkt.box = seal.box(payload);
+        pkt.nonce = as_array<8>(seal.nonce_sequential());
+
+        return make_packet(pkt);
+    }
+
+    void got_message(string pkt)
+    {
+        sss::channels::message_packet_header msg;
+        asio::const_buffer buf(pkt.data(), pkt.size());
+        tie(msg, buf) = read<sss::channels::message_packet_header>(buf);
+
+        string nonce = messageNoncePrefix + as_string(msg.nonce);
+        unboxer<recv_nonce> unseal(as_string(msg.shortterm_public_key), short_term_key, nonce);
+
+        string payload = unseal.unbox(msg.box.data);
+        cout << "Got from client:" << endl;
+        hexdump(payload);
+    }
 
 private:
     string send_cookie(string clientKey)
@@ -415,6 +469,8 @@ private:
         sss::channels::cookie_packet_header packet;
         sss::channels::responder_cookie cookie;
         secret_key sessionKey; // Generate short-term server key
+
+        fixmeNeedToRebuildSessionPk = sessionKey.pk.get();
 
         // minute-key secretbox nonce
         random_nonce<8> minuteKeyNonce(minuteKeyNoncePrefix);
@@ -452,8 +508,10 @@ int main(int argc, const char ** argv)
         msg = server.got_hello(msg);
         msg = client.got_cookie(msg);
         server.got_initiate(msg);
-        msg = client.send_message();
-        msg = server.send_message(msg);
+        msg = client.send_message("Hello, server!");
+        server.got_message(msg);
+        msg = server.send_message("Good day to you, client!");
+        client.got_message(msg);
     } catch(const char* e) {
         cout << "Exception: " << e << endl;
     } catch(std::exception& ex) {
