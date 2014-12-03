@@ -19,6 +19,7 @@ before_install:
   - git clone https://github.com/berkus/travis-scripts.git travis-ci
   - git clone https://github.com/berkus/cmake-setup.git cmake
   - git clone https://github.com/berkus/endian.git endian
+  - git clone https://github.com/berkus/sodiumpp.git sodiumpp
   - ./travis-ci/travis_install_packages.sh
   - ./travis-ci/travis_build_ninja.sh
   - ./travis-ci/travis_build_libcxx.sh
