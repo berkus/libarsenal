@@ -211,6 +211,11 @@ class frames_reader
 {
     asio::const_buffer buf_;
 
+public:
+    frames_reader(std::string const& str)
+        : buf_(str.data(), str.size())
+    {}
+
     frames_reader(asio::const_buffer buf)
         : buf_(std::move(buf))
     {}
@@ -219,6 +224,9 @@ class frames_reader
     {
         sss::framing::packet_header hdr;
         tie(hdr, buf_) = read(hdr, buf_);
+
+        cout << "Protocol version " << showbase << hex << hdr.version.value() << endl
+             << "Packet sequence  " << showbase << hex << hdr.packet_sequence.value() << endl;
     }
 };
 
@@ -320,7 +328,9 @@ public:
         string cookie_buf = subrange(open, 32, 96);
 
         // @todo Must get payload from client
-        return send_initiate(cookie_buf, "Hello, world!");
+        std::array<uint8_t,5> frame = {{0b00000001, 0x12, 0x34, 0x56, 0x78}};
+
+        return send_initiate(cookie_buf, as_string(frame));
     }
 
     string send_message(string payload)
@@ -469,7 +479,10 @@ public:
 
         cout << "Opened INITIATE msg payload:" << endl;
         hexdump(payload);
+
         // @todo Read payload using framing layer.
+        frames_reader r(payload);
+        r.read_packet_header();
     }
 
     string send_message(string payload)
