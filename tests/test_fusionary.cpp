@@ -503,11 +503,8 @@ private:
 
         // Server short-term public key + cookie
         // Box the cookies
-        string box = seal.box(sessionKey.pk.get() + as_string(cookie));
-        assert(box.size() == 96+32+16);
-
+        packet.box = as_array<144>(seal.box(sessionKey.pk.get() + as_string(cookie)));
         packet.nonce = as_array<16>(seal.nonce_sequential());
-        packet.box = as_array<144>(box);
 
         return make_packet(packet);
     }
