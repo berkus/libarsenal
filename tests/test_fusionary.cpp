@@ -418,7 +418,7 @@ public:
         assert(as_string(init.initiator_shortterm_public_key) == string(subrange(cookie, 0, 32)));
 
         // Extract server short-term secret key
-        short_term_key = secret_key(public_key(""), subrange(cookie, 32, 32));
+        short_term_key = secret_key(public_key(fixmeNeedToRebuildSessionPk), subrange(cookie, 32, 32));
         // cout << "Constructed server short term key:" << endl
         //      << short_term_key << endl
         //      << "Client short term public key:" << endl
