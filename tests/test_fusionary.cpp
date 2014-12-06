@@ -288,7 +288,7 @@ public:
     {
         sss::channels::cookie_packet_header cookie;
         asio::const_buffer buf(pkt.data(), pkt.size());
-        tie(cookie, ignore) = read<sss::channels::cookie_packet_header>(buf);
+        tie(cookie, ignore) = read(cookie, buf);
 
         // open cookie box
         string nonce = cookieNoncePrefix + as_string(cookie.nonce);
@@ -322,7 +322,7 @@ public:
     {
         sss::channels::message_packet_header msg;
         asio::const_buffer buf(pkt.data(), pkt.size());
-        tie(msg, buf) = read<sss::channels::message_packet_header>(buf);
+        tie(msg, buf) = read(msg, buf);
 
         string nonce = messageNoncePrefix + as_string(msg.nonce);
         unboxer<recv_nonce> unseal(as_string(msg.shortterm_public_key), short_term_key, nonce);
@@ -377,7 +377,7 @@ public:
     {
         sss::channels::hello_packet_header hello;
         asio::const_buffer buf(pkt.data(), pkt.size());
-        tie(hello, ignore) = read<sss::channels::hello_packet_header>(buf);
+        tie(hello, ignore) = read(hello, buf);
 
         string clientKey = as_string(hello.initiator_shortterm_public_key);
         string nonce = helloNoncePrefix + as_string(hello.nonce);
@@ -403,7 +403,7 @@ public:
     {
         sss::channels::initiate_packet_header init;
         asio::const_buffer buf(pkt.data(), pkt.size());
-        tie(init, buf) = read<sss::channels::initiate_packet_header>(buf);
+        tie(init, buf) = read(init, buf);
 
         // Try to open the cookie
         string nonce = minuteKeyNoncePrefix + as_string(init.responder_cookie.nonce);
@@ -471,7 +471,7 @@ public:
     {
         sss::channels::message_packet_header msg;
         asio::const_buffer buf(pkt.data(), pkt.size());
-        tie(msg, buf) = read<sss::channels::message_packet_header>(buf);
+        tie(msg, buf) = read(msg, buf);
 
         string nonce = messageNoncePrefix + as_string(msg.nonce);
         unboxer<recv_nonce> unseal(as_string(msg.shortterm_public_key), short_term_key, nonce);
