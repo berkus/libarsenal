@@ -296,6 +296,9 @@ public:
         unboxer<recv_nonce> unseal(server.long_term_key, short_term_key, nonce);
         string open = unseal.unbox(as_string(cookie.box));
 
+        // cout << "Opened COOKIE box:" << endl;
+        // hexdump(open);
+
         server.short_term_key = subrange(open, 0, 32);
         string cookie_buf = subrange(open, 32, 96);
 
@@ -382,6 +385,9 @@ public:
         unboxer<recv_nonce> unseal(clientKey, long_term_key, nonce);
         string open = unseal.unbox(as_string(hello.box));
 
+        // cout << "Opened HELLO box:" << endl;
+        // hexdump(open);
+
         // Open box contains client's long-term public key which we should check against:
         //  a) blacklist
         //  b) already initiated connection list
@@ -405,11 +411,18 @@ public:
         string cookie = crypto_secretbox_open(as_string(init.responder_cookie.box),
             nonce, minute_key.get());
 
+        // cout << "Opened INITIATE cookie box:" << endl;
+        // hexdump(cookie);
+
         // Check that cookie and client match
         assert(as_string(init.initiator_shortterm_public_key) == string(subrange(cookie, 0, 32)));
 
         // Extract server short-term secret key
         short_term_key = secret_key(public_key(""), subrange(cookie, 32, 32));
+        // cout << "Constructed server short term key:" << endl
+        //      << short_term_key << endl
+        //      << "Client short term public key:" << endl
+        //      << init.initiator_shortterm_public_key << endl;
 
         // Open the Initiate box using both short-term keys
         string initiateNonce = initiateNoncePrefix + as_string(init.nonce);
@@ -417,6 +430,9 @@ public:
         unboxer<recv_nonce> unseal(as_string(init.initiator_shortterm_public_key),
             short_term_key, initiateNonce);
         string msg = unseal.unbox(as_string(init.box));
+
+        // cout << "Opened INITIATE msg box:" << endl;
+        // hexdump(msg);
 
         // Extract client long-term public key and check the vouch subpacket.
         string clientLongTermKey = subrange(msg, 0, 32);
@@ -433,6 +449,8 @@ public:
         // All is good, what's in the payload?
 
         string payload = subrange(msg, 96);
+
+        cout << "Opened INITIATE msg payload:" << endl;
         hexdump(payload);
         // @todo Read payload using framing layer.
     }
@@ -504,14 +522,26 @@ int main(int argc, const char ** argv)
     client.set_peer_pk(server.long_term_pk());
 
     try {
+        cout << "Exchange start." << endl;
         msg = client.send_hello();
+        // cout << "HELLO packet:" << endl;
+        // hexdump(msg);
         msg = server.got_hello(msg);
+        // cout << "COOKIE packet:" << endl;
+        // hexdump(msg);
         msg = client.got_cookie(msg);
+        // cout << "INITIATE packet:" << endl;
+        // hexdump(msg);
         server.got_initiate(msg);
         msg = client.send_message("Hello, server!");
+        // cout << "Client MESSAGE packet:" << endl;
+        // hexdump(msg);
         server.got_message(msg);
         msg = server.send_message("Good day to you, client!");
+        // cout << "Server MESSAGE packet:" << endl;
+        // hexdump(msg);
         client.got_message(msg);
+        cout << "Exchange done." << endl;
     } catch(const char* e) {
         cout << "Exception: " << e << endl;
     } catch(std::exception& ex) {
