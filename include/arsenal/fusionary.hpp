@@ -152,6 +152,8 @@ struct varsize_field_wrapper
     SwitchType choice_;
     FinalType output_;
 
+    inline FinalType operator()(void) const { return output_; }
+    inline operator FinalType() const { return output_; }
     inline FinalType value() const { return output_; }
 };
 
