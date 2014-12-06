@@ -115,7 +115,7 @@ BOOST_FUSION_DEFINE_STRUCT(
     (eckey_t, initiator_longterm_public_key)
     (cnonce16_t, vouch_nonce)
     (box48_t, vouch)
-    (rest_t, data) // variable size data containing initial frames
+    (rest_t, box) // variable size data containing initial frames
 );
 
 BOOST_FUSION_DEFINE_STRUCT(
@@ -174,36 +174,53 @@ BOOST_FUSION_DEFINE_STRUCT(
     (sss::framing::packet_field_t, packet_sequence)
 );
 
-// BOOST_FUSION_DEFINE_STRUCT(
-//     (sss)(framing), stream_frame_header,
-//     (uint8_t, type)
-//     (uint8_t, flags)
-//     (uint32_t, stream_id)
-//     (uint32_t, parent_stream_id)
-//     (usid_t, usid)
-//     (uint64_t, stream_offset)
-//     (uint16_t, data_length)
-//     // variable size data
-// );
+BOOST_FUSION_DEFINE_STRUCT(
+    (sss)(framing), stream_frame_header,
+    (uint8_t, type)
+    (uint8_t, flags)
+    (uint32_t, stream_id)
+    (uint32_t, parent_stream_id)
+    (usid_t, usid)
+    (uint64_t, stream_offset)
+    (uint16_t, data_length)
+    (rest_t, frame) // variable size data - @todo only until end of the frame! ext length spec...
+);
 
-// BOOST_FUSION_DEFINE_STRUCT(
-//     (sss)(framing), ack_frame_header,
-//     (uint8_t, type)
-//     (uint8_t, sent_entropy)
-//     (uint8_t, received_entropy)
-//     (uint8_t, missing_packets)
-//     (uint64_t, least_unacked_packet)
-//     (uint64_t, largest_observed_packet)
-//     (uint32_t, largest_observed_delta_time)
-//     (std::vector<uint64_t>, nacks)
-// );
+BOOST_FUSION_DEFINE_STRUCT(
+    (sss)(framing), ack_frame_header,
+    (uint8_t, type)
+    (uint8_t, sent_entropy)
+    (uint8_t, received_entropy)
+    (uint8_t, missing_packets)
+    (uint64_t, least_unacked_packet)
+    (uint64_t, largest_observed_packet)
+    (uint32_t, largest_observed_delta_time)
+    (std::vector<uint64_t>, nacks)
+);
 
-// BOOST_FUSION_DEFINE_STRUCT(
-//     (sss)(framing), padding_frame_header,
-//     (uint8_t, type)
-//     (uint16_t, length)
-//     // ... [length] padding data
-// );
+BOOST_FUSION_DEFINE_STRUCT(
+    (sss)(framing), padding_frame_header,
+    (uint8_t, type)
+    (uint16_t, length)
+    (rest_t, frame) // [length] padding data - @todo only until end of the frame! ext length spec...
+);
+
+// Read frames from the packet buffer until we run out.
+// Read starts with packet header and continues with different packet types.
+class frames_reader
+{
+    asio::const_buffer buf_;
+
+    frames_reader(asio::const_buffer buf)
+        : buf_(std::move(buf))
+    {}
+
+    void read_packet_header()
+    {
+        sss::framing::packet_header hdr;
+        tie(hdr, buf_) = read(hdr, buf_);
+    }
+};
 
 //======================
 // Key exchange drivers
