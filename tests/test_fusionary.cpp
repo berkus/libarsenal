@@ -132,19 +132,56 @@ BOOST_FUSION_DEFINE_STRUCT(
 
 namespace sss { namespace framing {
 
+struct uint24_t {
+    uint16_t high;
+    uint8_t  low;
+    operator uint64_t() { return uint64_t(high) << 8 | low; }
+};
+
+struct uint40_t {
+    uint32_t high;
+    uint8_t  low;
+    operator uint64_t() { return uint64_t(high) << 8 | low; }
+};
+
 struct uint48_t {
     uint32_t high;
     uint16_t low;
     operator uint64_t() { return uint64_t(high) << 16 | low; }
 };
 
+struct uint56_t {
+    uint32_t high;
+    uint24_t low;
+    operator uint64_t() { return uint64_t(high) << 24 | low; }
+};
+
 }}
+
+BOOST_FUSION_ADAPT_STRUCT(
+    sss::framing::uint24_t,
+    (uint32_t, high)
+    (uint8_t, low)
+);
+
+BOOST_FUSION_ADAPT_STRUCT(
+    sss::framing::uint40_t,
+    (uint32_t, high)
+    (uint8_t, low)
+);
 
 BOOST_FUSION_ADAPT_STRUCT(
     sss::framing::uint48_t,
     (uint32_t, high)
     (uint16_t, low)
 );
+
+BOOST_FUSION_ADAPT_STRUCT(
+    sss::framing::uint56_t,
+    (uint32_t, high)
+    (sss::framing::uint24_t, low)
+);
+
 
 BOOST_FUSION_DEFINE_STRUCT(
     (sss)(framing), packet_sequence_number,
@@ -174,16 +211,46 @@ BOOST_FUSION_DEFINE_STRUCT(
     (sss::framing::packet_field_t, packet_sequence)
 );
 
+//-------------------------------------------------------------------------------------------------
+// STREAM frame
+//-------------------------------------------------------------------------------------------------
+
+BOOST_FUSION_DEFINE_STRUCT(
+    (sss)(framing), packet_stream_offset,
+    (nothing_t,              size0)
+    (uint16_t,               size2)
+    (sss::framing::uint24_t, size3)
+    (uint32_t,               size4)
+    (sss::framing::uint40_t, size5)
+    (sss::framing::uint48_t, size6)
+    (sss::framing::uint56_t, size7)
+    (uint64_t,               size8)
+);
+
+namespace sss { namespace framing {
+
+using stream_frame_type_t = std::integral_constant<uint8_t, 1>;
+using stream_flags_field_t = field_flag<uint8_t>;
+using optional_parent_sid_t = optional_field_specification<uint32_t, field_index<1>, 6_bits_shift>;
+using optional_usid_t = optional_field_specification<usid_t, field_index<1>, 5_bits_shift>;
+using optional_data_length_t = optional_field_specification<uint16_t, field_index<1>, 1_bits_shift>;
+using stream_offset_t = varsize_field_wrapper<packet_stream_offset, uint64_t>;
+using packet_stream_offset_t = varsize_field_specification<stream_offset_t, field_index<1>,
+    3_bits_mask, 2_bits_shift>;
+
+}}
+
 BOOST_FUSION_DEFINE_STRUCT(
     (sss)(framing), stream_frame_header,
-    (uint8_t, type)
-    (uint8_t, flags)
+    (sss::framing::stream_frame_type_t, type)
+    (sss::framing::stream_flags_field_t, flags)
     (uint32_t, stream_id)
-    (uint32_t, parent_stream_id)
-    (usid_t, usid)
-    (uint64_t, stream_offset)
-    (uint16_t, data_length)
-    (rest_t, frame) // variable size data - @todo only until end of the frame! ext length spec...
+    (sss::framing::optional_parent_sid_t, parent_stream_id)
+    (sss::framing::optional_usid_t, usid)
+    (sss::framing::packet_stream_offset_t, stream_offset)
+    (sss::framing::optional_data_length_t, data_length)
+    (rest_t, frame) // variable size data - @todo only until end of the frame!
+    // ^^ ext length spec through data_length member... need ext_sized_field spec too
 );
 
 BOOST_FUSION_DEFINE_STRUCT(
