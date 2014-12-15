@@ -92,8 +92,6 @@ BOOST_AUTO_TEST_CASE(basic_reader)
 
     read_(packet);
 
-    // cout << pretty_print(packet) << endl;
-
     BOOST_CHECK(packet.header1.packet_size.value.value() == 0xcdab);
     BOOST_CHECK(*packet.header23.version == 0x10203);
     BOOST_CHECK(packet.header23.packet_size.value.value() == 0);
