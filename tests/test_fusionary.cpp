@@ -203,7 +203,7 @@ using packet_field_t = varsize_field_specification<packet_size_t, field_index<0>
 
 }}
 
-BOOST_FUSION_DEFINE_STRUCT(
+BOOST_FUSION_DEFINE_STRUCT( // done: r
     (sss)(framing), packet_header,
     (sss::framing::packet_flag_field_t, flags) // 000fssgv
     (sss::framing::version_field_t, version)
