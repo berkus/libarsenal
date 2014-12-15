@@ -376,7 +376,7 @@ public:
         return make_packet(pkt);
     }
 
-    string got_cookie(string pkt)
+    string got_cookie(string pkt, string reply)
     {
         sss::channels::cookie_packet_header cookie;
         asio::const_buffer buf(pkt.data(), pkt.size());
@@ -394,10 +394,7 @@ public:
         server.short_term_key = subrange(open, 0, 32);
         string cookie_buf = subrange(open, 32, 96);
 
-        // @todo Must get payload from client
-        std::array<uint8_t,5> frame = {{0b00000001, 0x12, 0x34, 0x56, 0x78}};
-
-        return send_initiate(cookie_buf, as_string(frame));
+        return send_initiate(cookie_buf, reply);
     }
 
     string send_message(string payload)
@@ -623,7 +620,17 @@ int main(int argc, const char ** argv)
         msg = server.got_hello(msg);
         // cout << "COOKIE packet:" << endl;
         // hexdump(msg);
-        msg = client.got_cookie(msg);
+
+        sss::framing::packet_header hdr;
+        hdr.version = 1; // should set flag bit
+        // Specialize below type writing rules to pick shortest representation for size field.
+        hdr.packet_sequence.value.choice_.size4 = 0x12345678; // should set flag type bits
+
+        // write(hdr, buf);
+
+        std::array<uint8_t,5> frame = {{0b00000001, 0x12, 0x34, 0x56, 0x78}};
+        msg = client.got_cookie(msg, as_string(frame));
+
         // cout << "INITIATE packet:" << endl;
         // hexdump(msg);
         server.got_initiate(msg);
