@@ -204,7 +204,7 @@ struct read_fields
 struct reader
 {
     mutable boost::asio::const_buffer buf_;
-    using result_type = void;
+    // using result_type = void;
 
     explicit reader(boost::asio::const_buffer b)
         : buf_(std::move(b))
