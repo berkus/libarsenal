@@ -18,16 +18,6 @@ using namespace std;
 namespace asio = boost::asio;
 namespace mpl = boost::mpl;
 
-constexpr unsigned int operator"" _bits_mask (unsigned long long bits)
-{
-    return (1 << bits) - 1;
-}
-
-constexpr unsigned int operator"" _bits_shift (unsigned long long bits)
-{
-    return bits;
-}
-
 // User-defined mapping function (switcher bits value to type)
 // based on the value of some field we must choose N-th value in this struct and read it
 // index 0 - bits value 0, index 1 - bits value 1 and so on

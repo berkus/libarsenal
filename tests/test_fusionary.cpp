@@ -65,16 +65,6 @@ const string vouchNoncePrefix     = "cURVEcpv";
 const string initiateNoncePrefix  = "cURVEcp-CLIENT-i";
 const string messageNoncePrefix   = "cURVEcp-CLIENT-m";
 
-constexpr unsigned int operator"" _bits_mask (unsigned long long bits)
-{
-    return (1 << bits) - 1;
-}
-
-constexpr unsigned int operator"" _bits_shift (unsigned long long bits)
-{
-    return bits;
-}
-
 //=================================================================================================
 // Channel/packet layer
 //=================================================================================================

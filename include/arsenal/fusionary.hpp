@@ -91,6 +91,16 @@ struct reader
 };
 */
 
+constexpr unsigned int operator"" _bits_mask (unsigned long long bits)
+{
+    return (1 << bits) - 1;
+}
+
+constexpr unsigned int operator"" _bits_shift (unsigned long long bits)
+{
+    return bits;
+}
+
 // Variable size field or optional field flags
 template <typename T, size_t N = CHAR_BIT * sizeof(T)>
 struct field_flag
