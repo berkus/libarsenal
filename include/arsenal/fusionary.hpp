@@ -189,12 +189,12 @@ struct read_fields
             , value_(val)
         {}
 
-        template <class N>
-        void operator()(N idx)
+        template <class Idx>
+        void operator()(Idx)
         {
-            if (N::value == value_) {
-                read_(boost::fusion::at<N>(output_), &output_);
-                result_ = boost::fusion::at<N>(output_);
+            if (Idx::value == value_) {
+                read_(boost::fusion::at<Idx>(output_), &output_);
+                result_ = boost::fusion::at<Idx>(output_);
             }
         }
     };
