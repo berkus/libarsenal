@@ -9,7 +9,7 @@
 #include <array>
 #include <iostream>
 #include <type_traits>
-#include <sodiumpp/sodiumpp.h> // @todo Remove sodium dep?
+#include "sodiumpp/sodiumpp.h" // @todo Remove sodium dep?
 #include "arsenal/fusionary.hpp"
 #include "arsenal/hexdump.h"
 #include "arsenal/subrange.h"
