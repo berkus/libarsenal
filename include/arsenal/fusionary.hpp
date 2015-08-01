@@ -409,6 +409,8 @@ struct reader
     }
 };
 
+namespace fusionary {
+
 // @todo Return only remaining buf and pass T in by reference (we do anyway)?
 template <typename T>
 std::pair<T, boost::asio::const_buffer> read(T const&, boost::asio::const_buffer b)
@@ -419,6 +421,8 @@ std::pair<T, boost::asio::const_buffer> read(T const&, boost::asio::const_buffer
     // std::cout << "Remaining buffer space after read " << boost::asio::buffer_size(r.buf_) << " bytes" << std::endl;
     return std::make_pair(res, r.buf_);
 }
+
+} // fusionary namespace
 
 //=================================================================================================
 // Writer
@@ -540,6 +544,8 @@ struct writer
     }
 };
 
+namespace fusionary {
+
 template <typename T>
 boost::asio::mutable_buffer write(boost::asio::mutable_buffer b, T const& val)
 {
@@ -547,3 +553,5 @@ boost::asio::mutable_buffer write(boost::asio::mutable_buffer b, T const& val)
     w(val);
     return w.buf_;
 }
+
+} // fusionary namespace
