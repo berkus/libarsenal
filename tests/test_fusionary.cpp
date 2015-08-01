@@ -14,6 +14,9 @@
 #include "arsenal/hexdump.h"
 #include "arsenal/subrange.h"
 #include "arsenal/opaque_endian.h"
+#include "sss/framing/packet_format.h" // @fixme deps
+#include "sss/framing/frame_format.h" // @fixme deps
+#include "sss/framing/frames_reader.h" // @fixme deps
 
 using namespace std;
 using namespace boost;
@@ -36,288 +39,9 @@ void releaseBuffer(asio::mutable_buffer& in) {
 
 } // bufferpool namespace
 
-// TODO: BIG ENDIAN!
-
-using usid_t = std::array<uint8_t, 24>;
-using eckey_t = std::array<uint8_t, 32>;
-using cnonce8_t = std::array<uint8_t, 8>;
-using cnonce16_t = std::array<uint8_t, 16>;
-using box48_t = std::array<uint8_t, 48>;
-using box64_t = std::array<uint8_t, 64>;
-using box80_t = std::array<uint8_t, 80>;
-using box96_t = std::array<uint8_t, 96>;
-using box144_t = std::array<uint8_t, 144>;
-using nonce64 = nonce<crypto_box_NONCEBYTES-8, 8>;
-using nonce128 = nonce<crypto_box_NONCEBYTES-16, 16>;
-using recv_nonce = source_nonce<crypto_box_NONCEBYTES>;
-
-namespace magic {
-using hello_packet = std::integral_constant<uint64_t, 0x71564e7135784c68>; // "qVNq5xLh"
-using cookie_packet = std::integral_constant<uint64_t, 0x726c33416e6d786b>; // "rl3Anmxk"
-using initiate_packet = std::integral_constant<uint64_t, 0x71564e7135784c69>; // "qVNq5xLi"
-using message_packet = std::integral_constant<uint64_t, 0x726c337135784c6d>; // "rl3q5xLm"
-}
-
-const string helloNoncePrefix     = "cURVEcp-CLIENT-h";
-const string minuteKeyNoncePrefix = "minute-k";
-const string cookieNoncePrefix    = "cURVEcpk";
-const string vouchNoncePrefix     = "cURVEcpv";
-const string initiateNoncePrefix  = "cURVEcp-CLIENT-i";
-const string messageNoncePrefix   = "cURVEcp-CLIENT-m";
-
-//=================================================================================================
-// Channel/packet layer
-//=================================================================================================
-
-BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(channels), responder_cookie,
-    (cnonce16_t, nonce)
-    (box80_t, box)
-);
-
-BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(channels), hello_packet_header,
-    (magic::hello_packet, magic)
-    (eckey_t, initiator_shortterm_public_key)
-    (box64_t, zeros)
-    (cnonce8_t, nonce)
-    (box80_t, box)
-);
-
-BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(channels), cookie_packet_header,
-    (magic::cookie_packet, magic)
-    (cnonce16_t, nonce)
-    (box144_t, box)
-);
-
-BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(channels), initiate_packet_header,
-    (magic::initiate_packet, magic)
-    (eckey_t, initiator_shortterm_public_key)
-    (sss::channels::responder_cookie, responder_cookie)
-    (cnonce8_t, nonce)
-    (rest_t, box) // variable size box --v
-);
-
-BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(channels), initiate_packet_box,
-    (eckey_t, initiator_longterm_public_key)
-    (cnonce16_t, vouch_nonce)
-    (box48_t, vouch)
-    (rest_t, box) // variable size data containing initial frames
-);
-
-BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(channels), message_packet_header,
-    (magic::message_packet, magic)
-    (eckey_t, shortterm_public_key)
-    (cnonce8_t, nonce)
-    (rest_t, box) // variable size box containing message
-);
-
-//=================================================================================================
-// Framing layer
-//=================================================================================================
-
-namespace sss { namespace framing {
-
-struct uint24_t {
-    uint16_t high;
-    uint8_t  low;
-    operator uint64_t() { return uint64_t(high) << 8 | low; }
-};
-
-struct uint40_t {
-    uint32_t high;
-    uint8_t  low;
-    operator uint64_t() { return uint64_t(high) << 8 | low; }
-};
-
-struct uint48_t {
-    uint32_t high;
-    uint16_t low;
-    operator uint64_t() { return uint64_t(high) << 16 | low; }
-};
-
-struct uint56_t {
-    uint32_t high;
-    uint24_t low;
-    operator uint64_t() { return uint64_t(high) << 24 | low; }
-};
-
-}}
-
-BOOST_FUSION_ADAPT_STRUCT(
-    sss::framing::uint24_t,
-    (uint32_t, high)
-    (uint8_t, low)
-);
-
-BOOST_FUSION_ADAPT_STRUCT(
-    sss::framing::uint40_t,
-    (uint32_t, high)
-    (uint8_t, low)
-);
-
-BOOST_FUSION_ADAPT_STRUCT(
-    sss::framing::uint48_t,
-    (uint32_t, high)
-    (uint16_t, low)
-);
-
-BOOST_FUSION_ADAPT_STRUCT(
-    sss::framing::uint56_t,
-    (uint32_t, high)
-    (sss::framing::uint24_t, low)
-);
-
-
-BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(framing), packet_sequence_number,
-    (uint16_t, size2)
-    (uint32_t, size4)
-    (sss::framing::uint48_t, size6)
-    (uint64_t, size8)
-);
-
-// namespace sss::framing { // -std=c++1z with SVN clang
-namespace sss { namespace framing {
-
-using packet_flag_field_t = field_flag<uint8_t>;
-using version_field_t = optional_field_specification<uint16_t, field_index<0>, 0_bits_shift>;
-using fec_field_t = optional_field_specification<uint8_t, field_index<0>, 1_bits_shift>;
-using packet_size_t = varsize_field_wrapper<packet_sequence_number, uint64_t>;
-using packet_field_t = varsize_field_specification<packet_size_t, field_index<0>,
-    2_bits_mask, 2_bits_shift>;
-
-}}
-
-BOOST_FUSION_DEFINE_STRUCT( // done: r
-    (sss)(framing), packet_header,
-    (sss::framing::packet_flag_field_t, flags) // 000fssgv
-    (sss::framing::version_field_t, version)
-    (sss::framing::fec_field_t, fec_group)
-    (sss::framing::packet_field_t, packet_sequence)
-);
-
-//-------------------------------------------------------------------------------------------------
-// STREAM frame
-//-------------------------------------------------------------------------------------------------
-
-BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(framing), packet_stream_offset,
-    (nothing_t,              size0)
-    (uint16_t,               size2)
-    (sss::framing::uint24_t, size3)
-    (uint32_t,               size4)
-    (sss::framing::uint40_t, size5)
-    (sss::framing::uint48_t, size6)
-    (sss::framing::uint56_t, size7)
-    (uint64_t,               size8)
-);
-
-namespace sss { namespace framing {
-
-using stream_frame_type_t = std::integral_constant<uint8_t, 1>;
-using stream_flags_field_t = field_flag<uint8_t>;
-using optional_parent_sid_t = optional_field_specification<uint32_t, field_index<1>, 6_bits_shift>;
-using optional_usid_t = optional_field_specification<usid_t, field_index<1>, 5_bits_shift>;
-using optional_data_length_t = optional_field_specification<uint16_t, field_index<1>, 1_bits_shift>;
-using stream_offset_t = varsize_field_wrapper<packet_stream_offset, uint64_t>;
-using packet_stream_offset_t = varsize_field_specification<stream_offset_t, field_index<1>,
-    3_bits_mask, 2_bits_shift>;
-
-}}
-
-BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(framing), stream_frame_header,
-    (sss::framing::stream_frame_type_t, type)
-    (sss::framing::stream_flags_field_t, flags)
-    (uint32_t, stream_id)
-    (sss::framing::optional_parent_sid_t, parent_stream_id)
-    (sss::framing::optional_usid_t, usid)
-    (sss::framing::packet_stream_offset_t, stream_offset)
-    (sss::framing::optional_data_length_t, data_length)
-    (rest_t, frame) // variable size data - @todo only until end of the frame!
-    // ^^ ext length spec through data_length member... need ext_sized_field spec too
-);
-
-BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(framing), ack_frame_header,
-    (uint8_t, type)
-    (uint8_t, sent_entropy)
-    (uint8_t, received_entropy)
-    (uint8_t, missing_packets)
-    (uint64_t, least_unacked_packet)
-    (uint64_t, largest_observed_packet)
-    (uint32_t, largest_observed_delta_time)
-    (std::vector<uint64_t>, nacks)
-);
-
-BOOST_FUSION_DEFINE_STRUCT(
-    (sss)(framing), padding_frame_header,
-    (uint8_t, type)
-    (uint16_t, length)
-    (rest_t, frame) // [length] padding data - @todo only until end of the frame! ext length spec...
-);
-
-// Read frames from the packet buffer until we run out.
-// Read starts with packet header and continues with different packet types.
-class frames_reader
-{
-    asio::const_buffer buf_;
-
-public:
-    frames_reader(std::string const& str)
-        : buf_(str.data(), str.size())
-    {}
-
-    frames_reader(asio::const_buffer buf)
-        : buf_(std::move(buf))
-    {}
-
-    void read_packet_header()
-    {
-        sss::framing::packet_header hdr;
-        tie(hdr, buf_) = read(hdr, buf_);
-
-        cout << "Protocol version " << showbase << hex << hdr.version.value() << endl
-             << "Packet sequence  " << showbase << hex << hdr.packet_sequence.value() << endl;
-    }
-};
-
 //======================
 // Key exchange drivers
 //======================
-
-template <size_t N>
-std::array<uint8_t, N> as_array(std::string const& s)
-{
-    assert(s.size() == N);
-    std::array<uint8_t, N> ret;
-    std::copy(s.begin(), s.end(), ret.begin());
-    return ret;
-}
-
-template <size_t N>
-std::string as_string(std::array<uint8_t, N> const& a)
-{
-    std::string ret;
-    ret.resize(N);
-    std::copy(a.begin(), a.end(), ret.begin());
-    return ret;
-}
-
-std::string as_string(sss::channels::responder_cookie const& a)
-{
-    return as_string(a.nonce) + as_string(a.box);
-}
-
-std::string as_string(rest_t const& a)
-{
-    return a.data;
-}
 
 // Eh, clumsy.
 std::string string_cast(asio::mutable_buffer const& buf, asio::mutable_buffer const& end)
@@ -356,7 +80,7 @@ public:
     // Create and return a hello packet from the initiator
     string send_hello()
     {
-        boxer<nonce64> seal(server.long_term_key, short_term_key, helloNoncePrefix);
+        boxer<nonce64> seal(server.long_term_key, short_term_key, HELLO_NONCE_PREFIX);
 
         sss::channels::hello_packet_header pkt;
         pkt.initiator_shortterm_public_key = as_array<32>(short_term_key.pk.get());
@@ -370,10 +94,10 @@ public:
     {
         sss::channels::cookie_packet_header cookie;
         asio::const_buffer buf(pkt.data(), pkt.size());
-        tie(cookie, ignore) = read(cookie, buf);
+        tie(cookie, ignore) = fusionary::read(cookie, buf);
 
         // open cookie box
-        string nonce = cookieNoncePrefix + as_string(cookie.nonce);
+        string nonce = COOKIE_NONCE_PREFIX + as_string(cookie.nonce);
 
         unboxer<recv_nonce> unseal(server.long_term_key, short_term_key, nonce);
         string open = unseal.unbox(as_string(cookie.box));
@@ -389,7 +113,7 @@ public:
 
     string send_message(string payload)
     {
-        boxer<nonce64> seal(server.short_term_key, short_term_key, messageNoncePrefix);
+        boxer<nonce64> seal(server.short_term_key, short_term_key, MESSAGE_NONCE_PREFIX);
 
         sss::channels::message_packet_header pkt;
         pkt.shortterm_public_key = as_array<32>(short_term_key.pk.get());
@@ -403,9 +127,9 @@ public:
     {
         sss::channels::message_packet_header msg;
         asio::const_buffer buf(pkt.data(), pkt.size());
-        tie(msg, buf) = read(msg, buf);
+        tie(msg, buf) = fusionary::read(msg, buf);
 
-        string nonce = messageNoncePrefix + as_string(msg.nonce);
+        string nonce = MESSAGE_NONCE_PREFIX + as_string(msg.nonce);
         unboxer<recv_nonce> unseal(as_string(msg.shortterm_public_key), short_term_key, nonce);
 
         string payload = unseal.unbox(msg.box.data);
@@ -417,7 +141,7 @@ private:
     string send_initiate(string cookie, string payload)
     {
         // Create vouch subpacket
-        boxer<random_nonce<8>> vouchSeal(server.long_term_key, long_term_key, vouchNoncePrefix);
+        boxer<random_nonce<8>> vouchSeal(server.long_term_key, long_term_key, VOUCH_NONCE_PREFIX);
         string vouch = vouchSeal.box(short_term_key.pk.get());
         assert(vouch.size() == 48);
 
@@ -427,7 +151,7 @@ private:
         pkt.responder_cookie.nonce = as_array<16>(subrange(cookie, 0, 16));
         pkt.responder_cookie.box = as_array<80>(subrange(cookie, 16));
 
-        boxer<nonce64> seal(server.short_term_key, short_term_key, initiateNoncePrefix);
+        boxer<nonce64> seal(server.short_term_key, short_term_key, INITIATE_NONCE_PREFIX);
         pkt.box = seal.box(long_term_key.pk.get()+vouchSeal.nonce_sequential()+vouch+payload);
         // @todo Round payload size to next or second next multiple of 16..
         pkt.nonce = as_array<8>(seal.nonce_sequential());
@@ -458,10 +182,10 @@ public:
     {
         sss::channels::hello_packet_header hello;
         asio::const_buffer buf(pkt.data(), pkt.size());
-        tie(hello, ignore) = read(hello, buf);
+        tie(hello, ignore) = fusionary::read(hello, buf);
 
         string clientKey = as_string(hello.initiator_shortterm_public_key);
-        string nonce = helloNoncePrefix + as_string(hello.nonce);
+        string nonce = HELLO_NONCE_PREFIX + as_string(hello.nonce);
 
         unboxer<recv_nonce> unseal(clientKey, long_term_key, nonce);
         string open = unseal.unbox(as_string(hello.box));
@@ -484,10 +208,10 @@ public:
     {
         sss::channels::initiate_packet_header init;
         asio::const_buffer buf(pkt.data(), pkt.size());
-        tie(init, buf) = read(init, buf);
+        tie(init, buf) = fusionary::read(init, buf);
 
         // Try to open the cookie
-        string nonce = minuteKeyNoncePrefix + as_string(init.responder_cookie.nonce);
+        string nonce = MINUTEKEY_NONCE_PREFIX + as_string(init.responder_cookie.nonce);
 
         string cookie = crypto_secretbox_open(as_string(init.responder_cookie.box),
             nonce, minute_key.get());
@@ -506,7 +230,7 @@ public:
         //      << init.initiator_shortterm_public_key << endl;
 
         // Open the Initiate box using both short-term keys
-        string initiateNonce = initiateNoncePrefix + as_string(init.nonce);
+        string initiateNonce = INITIATE_NONCE_PREFIX + as_string(init.nonce);
 
         unboxer<recv_nonce> unseal(as_string(init.initiator_shortterm_public_key),
             short_term_key, initiateNonce);
@@ -518,7 +242,7 @@ public:
         // Extract client long-term public key and check the vouch subpacket.
         string clientLongTermKey = subrange(msg, 0, 32);
 
-        string vouchNonce = vouchNoncePrefix + string(subrange(msg, 32, 16));
+        string vouchNonce = VOUCH_NONCE_PREFIX + string(subrange(msg, 32, 16));
 
         unboxer<recv_nonce> vouchUnseal(clientLongTermKey, long_term_key, vouchNonce);
         string vouch = vouchUnseal.unbox(subrange(msg, 48, 48));
@@ -537,11 +261,12 @@ public:
         // @todo Read payload using framing layer.
         frames_reader r(payload);
         r.read_packet_header();
+        r.read_frame_header();
     }
 
     string send_message(string payload)
     {
-        boxer<nonce64> seal(client.short_term_key, short_term_key, messageNoncePrefix);
+        boxer<nonce64> seal(client.short_term_key, short_term_key, MESSAGE_NONCE_PREFIX);
 
         sss::channels::message_packet_header pkt;
         pkt.shortterm_public_key = as_array<32>(fixmeNeedToRebuildSessionPk);
@@ -555,9 +280,9 @@ public:
     {
         sss::channels::message_packet_header msg;
         asio::const_buffer buf(pkt.data(), pkt.size());
-        tie(msg, buf) = read(msg, buf);
+        tie(msg, buf) = fusionary::read(msg, buf);
 
-        string nonce = messageNoncePrefix + as_string(msg.nonce);
+        string nonce = MESSAGE_NONCE_PREFIX + as_string(msg.nonce);
         unboxer<recv_nonce> unseal(as_string(msg.shortterm_public_key), short_term_key, nonce);
 
         string payload = unseal.unbox(msg.box.data);
@@ -575,7 +300,7 @@ private:
         fixmeNeedToRebuildSessionPk = sessionKey.pk.get();
 
         // minute-key secretbox nonce
-        random_nonce<8> minuteKeyNonce(minuteKeyNoncePrefix);
+        random_nonce<8> minuteKeyNonce(MINUTEKEY_NONCE_PREFIX);
         // Client short-term public key + Server short-term secret key
         cookie.box = as_array<80>(crypto_secretbox(clientKey + sessionKey.get(),
             minuteKeyNonce.get(), minute_key.get()));
@@ -583,7 +308,7 @@ private:
         // Compressed cookie nonce
         cookie.nonce = as_array<16>(minuteKeyNonce.sequential());
 
-        boxer<random_nonce<8>> seal(clientKey, long_term_key, cookieNoncePrefix);
+        boxer<random_nonce<8>> seal(clientKey, long_term_key, COOKIE_NONCE_PREFIX);
 
         // Server short-term public key + cookie
         // Box the cookies
