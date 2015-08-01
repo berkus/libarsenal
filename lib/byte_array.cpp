@@ -18,10 +18,6 @@ byte_array::byte_array(byte_array const& other)
     : value(other.value)
 {}
 
-byte_array::byte_array(std::vector<char> const& v)
-    : value(v)
-{}
-
 byte_array::byte_array(const char* str)
     : value(str, str+strlen(str)+1)
 {}
