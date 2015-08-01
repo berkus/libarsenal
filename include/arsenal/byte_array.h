@@ -13,6 +13,7 @@
 #include <utility>
 #include <boost/tr1/array.hpp>
 #include <boost/asio/buffer.hpp>
+#include <boost/utility/string_ref.hpp>
 #include "hash_combine.h"
 
 /**
@@ -22,19 +23,19 @@ class byte_array
 {
     friend bool operator ==(const byte_array& a, const byte_array& b);
     friend bool operator !=(const byte_array& a, const byte_array& b);
-    std::vector<char> value;
+    std::string value;
 
 public:
-    using container = std::vector<char>;
+    using container = std::string;
     using iterator = container::iterator;
     using const_iterator = container::const_iterator;
 
     byte_array();
     byte_array(byte_array const&);
-    byte_array(container const&);
+    byte_array(std::string const& str) : value(str) {}
+    byte_array(std::vector<char> const& v) : byte_array(v.data(), v.size()) {}
     byte_array(char const* str);
     byte_array(char const* data, size_t size);
-    byte_array(std::string const& str) : byte_array(str.data(), str.size()) {}
     byte_array(std::initializer_list<uint8_t> data);
     byte_array(boost::asio::const_buffer const& buf)
         : byte_array(boost::asio::buffer_cast<char const*>(buf), boost::asio::buffer_size(buf))
@@ -130,6 +131,11 @@ public:
      * its own copy. XXX fix it
      */
     static byte_array wrap(const char* data, size_t size);
+
+    inline boost::string_ref
+    string_view(size_t start_offset, size_t count = boost::string_ref::npos) const {
+        return boost::string_ref(value).substr(start_offset, count);
+    }
 
     container& as_vector() { return value; }
     container const& as_vector() const { return value; }
