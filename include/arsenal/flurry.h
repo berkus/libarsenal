@@ -190,8 +190,8 @@ public:
     // ...longs
     template <typename T>
     typename std::enable_if<!std::is_enum<T>::value
-        && std::is_integral<T>::value && std::is_signed<T>::value
-        && sizeof(T)==sizeof(int32_t)>::type
+        and std::is_integral<T>::value and std::is_signed<T>::value
+        and sizeof(T)==sizeof(int32_t)>::type
     save(T const& value)
     {
         pack_int32(value);
@@ -199,8 +199,8 @@ public:
 
     template <typename T>
     typename std::enable_if<!std::is_enum<T>::value
-        && std::is_integral<T>::value && std::is_signed<T>::value
-        && sizeof(T)==sizeof(int64_t)>::type
+        and std::is_integral<T>::value and std::is_signed<T>::value
+        and sizeof(T)==sizeof(int64_t)>::type
     save(T const& value)
     {
         pack_int64(value);
@@ -209,8 +209,8 @@ public:
     // ...unsigned longs
     template <typename T>
     typename std::enable_if<!std::is_enum<T>::value
-        && std::is_integral<T>::value && std::is_unsigned<T>::value
-        && sizeof(T)==sizeof(uint32_t)>::type
+        and std::is_integral<T>::value and std::is_unsigned<T>::value
+        and sizeof(T)==sizeof(uint32_t)>::type
     save(T const& value)
     {
         pack_uint32(value);
@@ -218,8 +218,8 @@ public:
 
     template <typename T>
     typename std::enable_if<!std::is_enum<T>::value
-        && std::is_integral<T>::value && std::is_unsigned<T>::value
-        && sizeof(T)==sizeof(uint64_t)>::type
+        and std::is_integral<T>::value and std::is_unsigned<T>::value
+        and sizeof(T)==sizeof(uint64_t)>::type
     save(T const& value)
     {
         pack_uint64(value);
@@ -228,9 +228,9 @@ public:
     // ...and the rest.
     template <typename T>
     typename std::enable_if<!std::is_enum<T>::value
-        && !(std::is_integral<T>::value && (std::is_signed<T>::value || std::is_unsigned<T>::value)
-        && ((sizeof(T)==sizeof(uint64_t)) || (sizeof(T)==sizeof(uint32_t))
-             || (sizeof(T)==sizeof(int64_t)) || (sizeof(T)==sizeof(int32_t))))
+        and !(std::is_integral<T>::value and (std::is_signed<T>::value or std::is_unsigned<T>::value)
+        and ((sizeof(T)==sizeof(uint64_t)) or (sizeof(T)==sizeof(uint32_t))
+             or (sizeof(T)==sizeof(int64_t)) or (sizeof(T)==sizeof(int32_t))))
         >::type
     save(T const& value);
 
