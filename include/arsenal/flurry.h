@@ -12,6 +12,7 @@
 //
 #pragma once
 
+#define BOOST_OPTIONAL_NO_INPLACE_FACTORY_SUPPORT // hmm without this breaks using optional ctor
 #include <boost/any.hpp>
 #include <boost/serialization/serialization.hpp> // for constructing optionals
 #include <boost/serialization/detail/stack_constructor.hpp> // for constructing optionals
