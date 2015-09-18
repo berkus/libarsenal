@@ -72,3 +72,15 @@ struct hash<big_uint32_t>
 };
 
 } // std namespace
+
+template <typename T>
+struct is_endian
+{
+    static constexpr bool const value = false;
+};
+
+template <typename T, T (*reorder)(const T&)>
+struct is_endian<__endian_conversion<T, reorder>>
+{
+    static constexpr bool const value = true;
+};

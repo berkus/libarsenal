@@ -9,6 +9,7 @@
 #pragma once
 
 #include "arsenal/optional_field_specification.hpp"
+#include "arsenal/opaque_endian.h"
 
 #include <cstddef>
 #include <type_traits>
@@ -187,6 +188,23 @@ struct reader
         buf_ = buf_ + sizeof(T);
     }
 
+    template <typename T, typename P = void>
+    auto operator()(T& val, P* = nullptr) const
+        -> typename std::enable_if<is_endian<T>::value>::type
+    {
+        // std::cout << "r(integral value)" << std::endl;
+        val = *boost::asio::buffer_cast<T const*>(buf_);
+        buf_ = buf_ + sizeof(T);
+    }
+
+    template <typename T, size_t N, typename P = void>
+    auto operator()(field_flag<T, N>& val, P* = nullptr) const
+        -> void
+    {
+        val.value = *boost::asio::buffer_cast<T const*>(buf_);
+        buf_ = buf_ + sizeof(T);
+    }
+
     // Read enums
 
     template <typename T, typename P = void>
@@ -238,7 +256,7 @@ struct reader
     // Read vector
 
     template <class T, typename P = void>
-    void operator()(std::vector<T>& vals, P* = nullptr)
+    void operator()(std::vector<T>& vals, P* = nullptr) const
     {
         // std::cout << "r(vector)" << std::endl;
         uint16_t length;
@@ -266,14 +284,6 @@ struct reader
             (*this)(val);
             kvs.emplace(key, val);
         }
-    }
-
-    // Read varsized fields flags
-
-    template <typename T, typename P = void>
-    void operator()(field_flag<T>& val, P* = nullptr) const {
-        // std::cout << "r(field flag)" << std::endl;
-        (*this)(val.value);
     }
 
     // Read varsized field
@@ -402,6 +412,22 @@ struct writer
         buf_ = buf_ + sizeof(T);
     }
 
+    template <typename T>
+    auto operator()(T const& val) const
+        -> typename std::enable_if<is_endian<T>::value>::type
+    {
+        boost::asio::buffer_copy(buf_, boost::asio::buffer(&val, sizeof(T)));
+        buf_ = buf_ + sizeof(T);
+    }
+
+    template <typename T, size_t N>
+    auto operator()(field_flag<T, N> const& val) const
+        -> void
+    {
+        boost::asio::buffer_copy(buf_, boost::asio::buffer(&val.value, sizeof(T)));
+        buf_ = buf_ + sizeof(T);
+    }
+
     // Write enums
 
     template <class T>
@@ -425,9 +451,9 @@ struct writer
 
     void operator()(std::string const& val) const
     {
-        (*this)(static_cast<uint16_t>(val.length()));
+        (*this)(static_cast<uint16_t>(val.size()));
         boost::asio::buffer_copy(buf_, boost::asio::buffer(val));
-        buf_ = buf_ + val.length();
+        buf_ = buf_ + val.size() + sizeof(uint16_t);
     }
 
     // Write vectors
@@ -435,7 +461,7 @@ struct writer
     template <class T>
     void operator()(std::vector<T> const& vals) const
     {
-        (*this)(static_cast<uint16_t>(vals.length()));
+        (*this)(static_cast<uint16_t>(vals.size()));
         for(auto&& val : vals)
             (*this)(val);
     }
@@ -445,7 +471,7 @@ struct writer
     template<class K, class V>
     void operator()(std::unordered_map<K, V> const& kvs) const
     {
-        (*this)(static_cast<uint16_t>(kvs.length()));
+        (*this)(static_cast<uint16_t>(kvs.size()));
         for(auto& kv : kvs) {
             (*this)(kv.first);
             (*this)(kv.second);
@@ -491,12 +517,33 @@ struct writer
             (*this)(val);
     }
 
+    template <typename Type, typename Index, size_t Mask, size_t Offset>
+    auto operator()(varsize_field_specification<Type,Index,Mask,Offset> const& val) const
+        -> void
+    {
+        (*this)(val.value);
+    }
+
+    template <typename T, typename V>
+    void operator()(varsize_field_wrapper<T,V> const& val) const
+    {
+        (*this)(val.output_);
+    }
+
+    template <typename Type, typename Index, size_t N>
+    auto operator()(optional_field_specification<Type,Index,N> const& val) const
+        -> void
+    {
+        if (val) {
+            (*this)(val.get());
+        }
+    }
     // Write the final remainder of the buffer
 
     void operator()(rest_t const& rest) const
     {
         boost::asio::buffer_copy(buf_, boost::asio::buffer(rest.data));
-        buf_ = buf_ + rest.data.length();
+        buf_ = buf_ + rest.data.size();
     }
 };
 
