@@ -377,15 +377,13 @@ struct reader
 
 namespace fusionary {
 
-// @todo Return only remaining buf and pass T in by reference (we do anyway)?
 template <typename T>
-std::pair<T, boost::asio::const_buffer> read(T const&, boost::asio::const_buffer b)
+boost::asio::const_buffer read(T& val, boost::asio::const_buffer b)
 {
     reader r(std::move(b));
-    T res;
-    r(res);
+    r(val);
     // std::cout << "Remaining buffer space after read " << boost::asio::buffer_size(r.buf_) << " bytes" << std::endl;
-    return std::make_pair(res, r.buf_);
+    return r.buf_;
 }
 
 } // fusionary namespace
