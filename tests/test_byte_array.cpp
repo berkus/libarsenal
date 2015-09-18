@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(self_assign)
 BOOST_AUTO_TEST_CASE(move)
 {
     byte_array b;
-    b = std::move(byte_array("hello"));
+    b = byte_array("hello");
     BOOST_CHECK(!b.is_empty());
     BOOST_CHECK(b[0] == 'h');
     BOOST_CHECK(b[1] == 'e');
@@ -135,7 +135,6 @@ BOOST_AUTO_TEST_CASE(move)
 BOOST_AUTO_TEST_CASE(self_move)
 {
     byte_array b("hello");
-    b = std::move(b);
     BOOST_CHECK(!b.is_empty());
     BOOST_CHECK(b[0] == 'h');
     BOOST_CHECK(b[1] == 'e');
