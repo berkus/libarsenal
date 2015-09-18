@@ -20,7 +20,7 @@ namespace encode
  * @param  buffer A binary buffer of even size.
  * @return        Readable representation of the given buffer.
  */
-std::string to_proquint(std::string buffer)
+inline std::string to_proquint(std::string buffer)
 {
     auto consonants = "bdfghjklmnprstvz";
     auto vowels = "aiou";
@@ -52,7 +52,7 @@ std::string to_proquint(std::string buffer)
  * @param  text A human-readable string. At least 5 characters long.
  * @return      Binary representation of the given text.
  */
-std::string from_proquint(std::string text)
+inline std::string from_proquint(std::string text)
 {
     assert(text.size() >= 5);
 
