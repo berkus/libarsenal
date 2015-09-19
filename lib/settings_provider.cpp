@@ -17,90 +17,104 @@ using namespace std;
 
 // Generate file name for settings file, this is platform-dependent.
 // @todo Make more complex structure allowing to share some data at org level and some per-app.
-std::string settings_file_name(std::string orgname, std::string orgdomain, std::string appname);
+string settings_file_name(string orgname, string orgdomain, string appname);
 
 namespace {
-std::string organization_name{"Atta"};
-std::string organization_domain{"net.atta-metta"};
-std::string application_name{"MettaNode"};
-map<string, boost::any> data;
+string organization_name_{"Atta"};
+string organization_domain_{"net.atta-metta"};
+string application_name_{"Uvvy"};
+map<string, boost::any> data_;
 } // anonymous namespace
 
-void settings_provider::set_organization_name(std::string const& org_name) {
-    organization_name = org_name;
-}
-
-void settings_provider::set_organization_domain(std::string const& org_domain) {
-    organization_domain = org_domain;
-}
-
-void settings_provider::set_application_name(std::string const& app_name) {
-    application_name = app_name;
-}
-
-std::shared_ptr<settings_provider> settings_provider::instance()
+void
+settings_provider::set_organization_name(string const& org_name)
 {
-    static std::shared_ptr<settings_provider>
-        inst{std::make_shared<settings_provider>(private_tag{})};
+    organization_name_ = org_name;
+}
+
+void
+settings_provider::set_organization_domain(string const& org_domain)
+{
+    organization_domain_ = org_domain;
+}
+
+void
+settings_provider::set_application_name(string const& app_name)
+{
+    application_name_ = app_name;
+}
+
+shared_ptr<settings_provider>
+settings_provider::instance()
+{
+    static shared_ptr<settings_provider> inst{make_shared<settings_provider>(private_tag{})};
     return inst;
 }
 
 settings_provider::settings_provider(settings_provider::private_tag)
 {
-    std::ifstream stream(
-        settings_file_name(organization_name, organization_domain, application_name),
-        std::ios::binary);
+    ifstream stream(settings_file_name(organization_name_, organization_domain_, application_name_),
+                    ios::binary);
 
-    if (stream)
-    {
+    if (stream) {
         flurry::iarchive in(stream);
-        in >> data; // @todo Atomicity of reads.
+        in >> data_; // @todo Atomicity of reads.
     }
 }
 
-bool settings_provider::enter_section(std::string const& name) {
+bool
+settings_provider::enter_section(string const& name)
+{
     return false;
 }
 
-void settings_provider::leave_section()
-{}
-
-template <typename T>
-void settings_provider::set(std::string const& key, T const& value) {
-    data[key] = value;
+void
+settings_provider::leave_section()
+{
 }
 
-template void settings_provider::set<int8_t>(std::string const& key, int8_t const& value);
-template void settings_provider::set<int16_t>(std::string const& key, int16_t const& value);
-template void settings_provider::set<int32_t>(std::string const& key, int32_t const& value);
-template void settings_provider::set<int64_t>(std::string const& key, int64_t const& value);
-template void settings_provider::set<uint8_t>(std::string const& key, uint8_t const& value);
-template void settings_provider::set<uint16_t>(std::string const& key, uint16_t const& value);
-template void settings_provider::set<uint32_t>(std::string const& key, uint32_t const& value);
-template void settings_provider::set<uint64_t>(std::string const& key, uint64_t const& value);
-template void settings_provider::set<vector<char>>(std::string const& key, vector<char> const& value);
-template void settings_provider::set<byte_array>(std::string const& key, byte_array const& value);
-
-void settings_provider::sync()
+template <typename T>
+void
+settings_provider::set(string const& key, T const& value)
 {
-    std::ofstream stream( // @todo Atomicity of writes via temp file and move.
-        settings_file_name(organization_name, organization_domain, application_name),
-        std::ios::binary|std::ios::trunc);
+    data_[key] = value;
+}
 
-    if (stream)
-    {
+template void settings_provider::set<int8_t>(string const& key, int8_t const& value);
+template void settings_provider::set<int16_t>(string const& key, int16_t const& value);
+template void settings_provider::set<int32_t>(string const& key, int32_t const& value);
+template void settings_provider::set<int64_t>(string const& key, int64_t const& value);
+template void settings_provider::set<uint8_t>(string const& key, uint8_t const& value);
+template void settings_provider::set<uint16_t>(string const& key, uint16_t const& value);
+template void settings_provider::set<uint32_t>(string const& key, uint32_t const& value);
+template void settings_provider::set<uint64_t>(string const& key, uint64_t const& value);
+template void settings_provider::set<vector<char>>(string const& key, vector<char> const& value);
+template void settings_provider::set<byte_array>(string const& key, byte_array const& value);
+template void settings_provider::set<string>(string const& key, string const& value);
+
+void
+settings_provider::sync()
+{
+    ofstream stream( // @todo Atomicity of writes via temp file and move.
+        settings_file_name(organization_name_, organization_domain_, application_name_),
+        ios::binary | ios::trunc);
+
+    if (stream) {
         flurry::oarchive out(stream);
-        out << data;
+        out << data_;
     }
 }
 
-boost::any settings_provider::get(std::string const& key) {
-    return data[key];
+boost::any
+settings_provider::get(string const& key)
+{
+    return data_[key];
 }
 
-byte_array settings_provider::get_byte_array(std::string const& key)
+byte_array
+settings_provider::get_byte_array(string const& key)
 {
-    auto& v = data[key];
+    auto& v = data_[key];
     if (v.empty()) {
         return byte_array();
     }
