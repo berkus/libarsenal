@@ -91,12 +91,12 @@ struct reader
 };
 */
 
-constexpr unsigned int operator"" _bits_mask (unsigned long long bits)
+constexpr unsigned int operator"" _bits_mask(unsigned long long bits)
 {
     return (1 << bits) - 1;
 }
 
-constexpr unsigned int operator"" _bits_shift (unsigned long long bits)
+constexpr unsigned int operator"" _bits_shift(unsigned long long bits)
 {
     return bits;
 }
@@ -104,7 +104,10 @@ constexpr unsigned int operator"" _bits_shift (unsigned long long bits)
 struct nothing_t
 {
     template <typename T>
-    operator T() { return T(); } // convert to anything - should actually return empty optional?
+    operator T()
+    {
+        return T();
+    } // convert to anything - should actually return empty optional?
 };
 
 // * buffer that runs from current point until the end of asio::buffer
@@ -114,14 +117,9 @@ struct rest_t
 {
     std::string data;
 
-    void operator = (std::string const& other) {
-        data = other;
-    }
+    void operator=(std::string const& other) { data = other; }
 
-    bool operator==(rest_t const& o) const
-    {
-        return data == o.data;
-    }
+    bool operator==(rest_t const& o) const { return data == o.data; }
 };
 
 template <class T>
@@ -144,7 +142,8 @@ struct read_fields
             , result_(result)
             , read_(r)
             , value_(val)
-        {}
+        {
+        }
 
         template <class Idx>
         void operator()(Idx)
@@ -157,10 +156,10 @@ struct read_fields
     };
 
     template <typename T, typename V>
-    void operator()(varsize_field_wrapper<T,V>& w, reader const& r, uint8_t value)
+    void operator()(varsize_field_wrapper<T, V>& w, reader const& r, uint8_t value)
     {
         // std::cout << "r(varsize field wrapper)" << std::endl;
-        boost::mpl::for_each<range_c<T>>(read_field_visitor<T,V>(w.choice_, w.output_, r, value));
+        boost::mpl::for_each<range_c<T>>(read_field_visitor<T, V>(w.choice_, w.output_, r, value));
     }
 };
 
@@ -175,41 +174,41 @@ struct reader
 
     explicit reader(boost::asio::const_buffer b)
         : buf_(std::move(b))
-    {}
+    {
+    }
 
     // Read integral values
 
     template <typename T, typename P = void>
-    auto operator()(T& val, P* = nullptr) const
-        -> typename std::enable_if<std::is_integral<T>::value>::type
+    auto operator()(T& val, P* = nullptr) const ->
+        typename std::enable_if<std::is_integral<T>::value>::type
     {
         // std::cout << "r(integral value)" << std::endl;
-        val = *boost::asio::buffer_cast<T const*>(buf_);
+        val  = *boost::asio::buffer_cast<T const*>(buf_);
         buf_ = buf_ + sizeof(T);
     }
 
     template <typename T, typename P = void>
-    auto operator()(T& val, P* = nullptr) const
-        -> typename std::enable_if<is_endian<T>::value>::type
+    auto operator()(T& val, P* = nullptr) const ->
+        typename std::enable_if<is_endian<T>::value>::type
     {
         // std::cout << "r(integral value)" << std::endl;
-        val = *boost::asio::buffer_cast<T const*>(buf_);
+        val  = *boost::asio::buffer_cast<T const*>(buf_);
         buf_ = buf_ + sizeof(T);
     }
 
     template <typename T, size_t N, typename P = void>
-    auto operator()(field_flag<T, N>& val, P* = nullptr) const
-        -> void
+    auto operator()(field_flag<T, N>& val, P* = nullptr) const -> void
     {
         val.value = *boost::asio::buffer_cast<T const*>(buf_);
-        buf_ = buf_ + sizeof(T);
+        buf_      = buf_ + sizeof(T);
     }
 
     // Read enums
 
     template <typename T, typename P = void>
-    auto operator()(T& val, P* = nullptr) const
-        -> typename std::enable_if<std::is_enum<T>::value>::type
+    auto operator()(T& val, P* = nullptr) const ->
+        typename std::enable_if<std::is_enum<T>::value>::type
     {
         // std::cout << "r(enum)" << std::endl;
         typename std::underlying_type<T>::type v;
@@ -239,7 +238,7 @@ struct reader
         // std::cout << "r(longpascal string)" << std::endl;
         uint16_t length = 0;
         (*this)(length);
-        val = std::string(boost::asio::buffer_cast<char const*>(buf_), length);
+        val  = std::string(boost::asio::buffer_cast<char const*>(buf_), length);
         buf_ = buf_ + length;
     }
 
@@ -249,7 +248,7 @@ struct reader
         // std::cout << "r(longpascal string ref)" << std::endl;
         uint16_t length = 0;
         (*this)(length);
-        val = boost::string_ref(boost::asio::buffer_cast<char const*>(buf_), length);
+        val  = boost::string_ref(boost::asio::buffer_cast<char const*>(buf_), length);
         buf_ = buf_ + length;
     }
 
@@ -261,8 +260,7 @@ struct reader
         // std::cout << "r(vector)" << std::endl;
         uint16_t length;
         (*this)(length);
-        for (; length; --length)
-        {
+        for (; length; --length) {
             T val;
             (*this)(val);
             vals.emplace_back(std::move(val));
@@ -271,8 +269,8 @@ struct reader
 
     // Read map
 
-    template<class K, class V, typename P = void>
-    void operator()(std::unordered_map<K,V>& kvs, P* = nullptr)
+    template <class K, class V, typename P = void>
+    void operator()(std::unordered_map<K, V>& kvs, P* = nullptr)
     {
         // std::cout << "r(map)" << std::endl;
         uint16_t length;
@@ -290,8 +288,8 @@ struct reader
     // Must have a parent type otherwise we couldn't read it.
 
     template <typename Type, typename Index, size_t Mask, size_t Offset, typename P>
-    auto operator()(varsize_field_specification<Type,Index,Mask,Offset>& val, P* parent) const
-        -> typename std::enable_if<boost::fusion::traits::is_sequence<P>::value>::type
+    auto operator()(varsize_field_specification<Type, Index, Mask, Offset>& val, P* parent) const ->
+        typename std::enable_if<boost::fusion::traits::is_sequence<P>::value>::type
     {
         // std::cout << "r(varsize field spec)" << std::endl;
         assert(parent);
@@ -305,7 +303,7 @@ struct reader
     // This is called from the function above and does not need the parent.
 
     template <typename T, typename V, typename F>
-    void operator()(varsize_field_wrapper<T,V>& val, F flag_value) const
+    void operator()(varsize_field_wrapper<T, V>& val, F flag_value) const
     {
         read_fields()(val, *this, flag_value);
     }
@@ -314,8 +312,8 @@ struct reader
     // Must have a parent type otherwise we couldn't read it.
 
     template <typename Type, typename Index, size_t N, typename P>
-    auto operator()(optional_field_specification<Type,Index,N>& val, P* parent) const
-        -> typename std::enable_if<boost::fusion::traits::is_sequence<P>::value>::type
+    auto operator()(optional_field_specification<Type, Index, N>& val, P* parent) const ->
+        typename std::enable_if<boost::fusion::traits::is_sequence<P>::value>::type
     {
         // std::cout << "r(optional field spec)" << std::endl;
         assert(parent);
@@ -323,7 +321,7 @@ struct reader
         if (flag & (1 << N)) {
             Type v;
             (*this)(v);
-            val = optional_field_specification<Type,Index,N>(std::move(v));
+            val = optional_field_specification<Type, Index, N>(std::move(v));
         } else {
             val = boost::none;
         }
@@ -336,8 +334,8 @@ struct reader
     // Version with parent for sequence member of a sequence.
     //
     template <class T, typename P = void>
-    auto operator()(T& val, P* = nullptr) const
-        -> typename std::enable_if<boost::fusion::traits::is_sequence<T>::value>::type
+    auto operator()(T& val, P* = nullptr) const ->
+        typename std::enable_if<boost::fusion::traits::is_sequence<T>::value>::type
     {
         // std::cout << "r(sequence)" << std::endl;
         boost::fusion::for_each(val, [this, &val](auto& arg) { (*this)(arg, &val); });
@@ -346,7 +344,7 @@ struct reader
     // Read fixed-size array
 
     template <typename T, size_t N, typename P = void>
-    void operator()(std::array<T,N>& arr, P* = nullptr) const
+    void operator()(std::array<T, N>& arr, P* = nullptr) const
     {
         // std::cout << "r(fixarray)" << std::endl;
         for (auto& val : arr)
@@ -368,8 +366,10 @@ struct reader
     template <typename P = void>
     void operator()(rest_t& rest, P* = nullptr) const
     {
-        // std::cout << "Grabbing rest of the packet, size = " << boost::asio::buffer_size(buf_) << std::endl;
-        rest.data = std::string(boost::asio::buffer_cast<char const*>(buf_), boost::asio::buffer_size(buf_));
+        // std::cout << "Grabbing rest of the packet, size = " << boost::asio::buffer_size(buf_) <<
+        // std::endl;
+        rest.data = std::string(boost::asio::buffer_cast<char const*>(buf_),
+                                boost::asio::buffer_size(buf_));
         // hexdump(rest.data);
         buf_ = buf_ + boost::asio::buffer_size(buf_);
     }
@@ -378,11 +378,13 @@ struct reader
 namespace fusionary {
 
 template <typename T>
-boost::asio::const_buffer read(T& val, boost::asio::const_buffer b)
+boost::asio::const_buffer
+read(T& val, boost::asio::const_buffer b)
 {
     reader r(std::move(b));
     r(val);
-    // std::cout << "Remaining buffer space after read " << boost::asio::buffer_size(r.buf_) << " bytes" << std::endl;
+    // std::cout << "Remaining buffer space after read " << boost::asio::buffer_size(r.buf_) << "
+    // bytes" << std::endl;
     return r.buf_;
 }
 
@@ -398,29 +400,27 @@ struct writer
 
     explicit writer(boost::asio::mutable_buffer buf)
         : buf_(std::move(buf))
-    {}
+    {
+    }
 
     // Write integral values
 
     template <class T>
-    auto operator()(T const& val) const
-        -> typename std::enable_if<std::is_integral<T>::value>::type
+    auto operator()(T const& val) const -> typename std::enable_if<std::is_integral<T>::value>::type
     {
         boost::asio::buffer_copy(buf_, boost::asio::buffer(&val, sizeof(T)));
         buf_ = buf_ + sizeof(T);
     }
 
     template <typename T>
-    auto operator()(T const& val) const
-        -> typename std::enable_if<is_endian<T>::value>::type
+    auto operator()(T const& val) const -> typename std::enable_if<is_endian<T>::value>::type
     {
         boost::asio::buffer_copy(buf_, boost::asio::buffer(&val, sizeof(T)));
         buf_ = buf_ + sizeof(T);
     }
 
     template <typename T, size_t N>
-    auto operator()(field_flag<T, N> const& val) const
-        -> void
+    auto operator()(field_flag<T, N> const& val) const -> void
     {
         boost::asio::buffer_copy(buf_, boost::asio::buffer(&val.value, sizeof(T)));
         buf_ = buf_ + sizeof(T);
@@ -429,8 +429,7 @@ struct writer
     // Write enums
 
     template <class T>
-    auto operator()(T const& val) const
-        -> typename std::enable_if<std::is_enum<T>::value>::type
+    auto operator()(T const& val) const -> typename std::enable_if<std::is_enum<T>::value>::type
     {
         using utype = typename std::underlying_type<T>::type;
         (*this)(static_cast<utype>(val));
@@ -438,7 +437,7 @@ struct writer
 
     // Write constant markers
 
-    template<class T, T v>
+    template <class T, T v>
     void operator()(std::integral_constant<T, v>) const
     {
         using type = std::integral_constant<T, v>;
@@ -460,17 +459,17 @@ struct writer
     void operator()(std::vector<T> const& vals) const
     {
         (*this)(static_cast<uint16_t>(vals.size()));
-        for(auto&& val : vals)
+        for (auto&& val : vals)
             (*this)(val);
     }
 
     // Write map
 
-    template<class K, class V>
+    template <class K, class V>
     void operator()(std::unordered_map<K, V> const& kvs) const
     {
         (*this)(static_cast<uint16_t>(kvs.size()));
-        for(auto& kv : kvs) {
+        for (auto& kv : kvs) {
             (*this)(kv.first);
             (*this)(kv.second);
         }
@@ -478,14 +477,14 @@ struct writer
 
     // Write any ForwardRange
 
-    template<class T, class U>
+    template <class T, class U>
     void operator()(std::pair<T, U> const& val) const
     {
         (*this)(val.first);
         (*this)(val.second);
     }
 
-    template<typename T>
+    template <typename T>
     auto operator()(T const& vals) const ->
         typename std::enable_if<boost::has_range_const_iterator<T>::value>::type
     {
@@ -509,28 +508,26 @@ struct writer
     // Write fixed-size array
 
     template <typename T, size_t N>
-    void operator()(std::array<T,N> const& arr) const
+    void operator()(std::array<T, N> const& arr) const
     {
         for (auto& val : arr)
             (*this)(val);
     }
 
     template <typename Type, typename Index, size_t Mask, size_t Offset>
-    auto operator()(varsize_field_specification<Type,Index,Mask,Offset> const& val) const
-        -> void
+    auto operator()(varsize_field_specification<Type, Index, Mask, Offset> const& val) const -> void
     {
         (*this)(val.value);
     }
 
     template <typename T, typename V>
-    void operator()(varsize_field_wrapper<T,V> const& val) const
+    void operator()(varsize_field_wrapper<T, V> const& val) const
     {
         (*this)(val.output_);
     }
 
     template <typename Type, typename Index, size_t N>
-    auto operator()(optional_field_specification<Type,Index,N> const& val) const
-        -> void
+    auto operator()(optional_field_specification<Type, Index, N> const& val) const -> void
     {
         if (val) {
             (*this)(val.get());
@@ -548,7 +545,8 @@ struct writer
 namespace fusionary {
 
 template <typename T>
-boost::asio::mutable_buffer write(boost::asio::mutable_buffer b, T const& val)
+boost::asio::mutable_buffer
+write(boost::asio::mutable_buffer b, T const& val)
 {
     writer w(std::move(b));
     w(val);
