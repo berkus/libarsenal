@@ -15,7 +15,7 @@
 #include "arsenal/subrange.h"
 #include "arsenal/opaque_endian.h"
 #include "sss/framing/packet_format.h" // @fixme deps
-#include "sss/framing/frame_format.h" // @fixme deps
+#include "sss/framing/frame_format.h"  // @fixme deps
 #include "sss/framing/frames_reader.h" // @fixme deps
 
 using namespace std;
@@ -24,16 +24,21 @@ using namespace sodiumpp;
 
 namespace bufferpool {
 
-bool locked = false;
+bool locked           = false;
 char bufferPool[1280] = {0};
 
-void grabBuffer(asio::mutable_buffer& out) {
-    if (locked) throw logic_error("Grabbing already used buffer");
+void
+grabBuffer(asio::mutable_buffer& out)
+{
+    if (locked)
+        throw logic_error("Grabbing already used buffer");
     locked = true;
-    out = asio::mutable_buffer(bufferPool, sizeof(bufferPool));
+    out    = asio::mutable_buffer(bufferPool, sizeof(bufferPool));
 }
 
-void releaseBuffer(asio::mutable_buffer& in) {
+void
+releaseBuffer(asio::mutable_buffer& in)
+{
     locked = false;
 }
 
@@ -44,18 +49,20 @@ void releaseBuffer(asio::mutable_buffer& in) {
 //======================
 
 // Eh, clumsy.
-std::string string_cast(asio::mutable_buffer const& buf, asio::mutable_buffer const& end)
+std::string
+string_cast(asio::mutable_buffer const& buf, asio::mutable_buffer const& end)
 {
     return string(boost::asio::buffer_cast<char const*>(buf),
-        boost::asio::buffer_size(buf) - boost::asio::buffer_size(end));
+                  boost::asio::buffer_size(buf) - boost::asio::buffer_size(end));
 }
 
 template <typename T>
-std::string make_packet(T const& pkt)
+std::string
+make_packet(T const& pkt)
 {
     asio::mutable_buffer out;
     bufferpool::grabBuffer(out);
-    asio::mutable_buffer end = write(out, pkt);
+    asio::mutable_buffer end = fusionary::write(out, pkt);
     string result = string_cast(out, end);
     bufferpool::releaseBuffer(out);
     return result;
@@ -66,14 +73,14 @@ class kex_initiator
 {
     secret_key long_term_key;
     secret_key short_term_key;
-    struct server {
+    struct server
+    {
         string long_term_key; // == kex_responder.long_term_key.pk
         string short_term_key;
     } server;
 
 public:
-    kex_initiator()
-    {}
+    kex_initiator() {}
 
     void set_peer_pk(string pk) { server.long_term_key = pk; }
 
@@ -84,8 +91,8 @@ public:
 
         sss::channels::hello_packet_header pkt;
         pkt.initiator_shortterm_public_key = as_array<32>(short_term_key.pk.get());
-        pkt.box = as_array<80>(seal.box(long_term_key.pk.get()+string(32, '\0')));
-        pkt.nonce = as_array<8>(seal.nonce_sequential());
+        pkt.box                            = as_array<80>(seal.box(long_term_key.pk.get() + string(32, '\0')));
+        pkt.nonce                          = as_array<8>(seal.nonce_sequential());
 
         return make_packet(pkt);
     }
@@ -94,7 +101,7 @@ public:
     {
         sss::channels::cookie_packet_header cookie;
         asio::const_buffer buf(pkt.data(), pkt.size());
-        tie(cookie, ignore) = fusionary::read(cookie, buf);
+        fusionary::read(cookie, buf);
 
         // open cookie box
         string nonce = COOKIE_NONCE_PREFIX + as_string(cookie.nonce);
@@ -106,7 +113,7 @@ public:
         // hexdump(open);
 
         server.short_term_key = subrange(open, 0, 32);
-        string cookie_buf = subrange(open, 32, 96);
+        string cookie_buf     = subrange(open, 32, 96);
 
         return send_initiate(cookie_buf, reply);
     }
@@ -117,8 +124,8 @@ public:
 
         sss::channels::message_packet_header pkt;
         pkt.shortterm_public_key = as_array<32>(short_term_key.pk.get());
-        pkt.box = seal.box(payload);
-        pkt.nonce = as_array<8>(seal.nonce_sequential());
+        pkt.box                  = seal.box(payload);
+        pkt.nonce                = as_array<8>(seal.nonce_sequential());
 
         return make_packet(pkt);
     }
@@ -127,7 +134,7 @@ public:
     {
         sss::channels::message_packet_header msg;
         asio::const_buffer buf(pkt.data(), pkt.size());
-        tie(msg, buf) = fusionary::read(msg, buf);
+        buf = fusionary::read(msg, buf);
 
         string nonce = MESSAGE_NONCE_PREFIX + as_string(msg.nonce);
         unboxer<recv_nonce> unseal(as_string(msg.shortterm_public_key), short_term_key, nonce);
@@ -148,11 +155,11 @@ private:
         // Assemble initiate packet
         sss::channels::initiate_packet_header pkt;
         pkt.initiator_shortterm_public_key = as_array<32>(short_term_key.pk.get());
-        pkt.responder_cookie.nonce = as_array<16>(subrange(cookie, 0, 16));
-        pkt.responder_cookie.box = as_array<80>(subrange(cookie, 16));
+        pkt.responder_cookie.nonce         = as_array<16>(subrange(cookie, 0, 16));
+        pkt.responder_cookie.box           = as_array<80>(subrange(cookie, 16));
 
         boxer<nonce64> seal(server.short_term_key, short_term_key, INITIATE_NONCE_PREFIX);
-        pkt.box = seal.box(long_term_key.pk.get()+vouchSeal.nonce_sequential()+vouch+payload);
+        pkt.box = seal.box(long_term_key.pk.get() + vouchSeal.nonce_sequential() + vouch + payload);
         // @todo Round payload size to next or second next multiple of 16..
         pkt.nonce = as_array<8>(seal.nonce_sequential());
 
@@ -167,14 +174,14 @@ class kex_responder
     secret_key short_term_key;
     secret_key minute_key;
     set<string> cookie_cache;
-    struct client {
+    struct client
+    {
         string short_term_key;
     } client;
     std::string fixmeNeedToRebuildSessionPk;
 
 public:
-    kex_responder()
-    {}
+    kex_responder() {}
 
     string long_term_pk() const { return long_term_key.pk.get(); }
 
@@ -182,10 +189,10 @@ public:
     {
         sss::channels::hello_packet_header hello;
         asio::const_buffer buf(pkt.data(), pkt.size());
-        tie(hello, ignore) = fusionary::read(hello, buf);
+        fusionary::read(hello, buf);
 
         string clientKey = as_string(hello.initiator_shortterm_public_key);
-        string nonce = HELLO_NONCE_PREFIX + as_string(hello.nonce);
+        string nonce     = HELLO_NONCE_PREFIX + as_string(hello.nonce);
 
         unboxer<recv_nonce> unseal(clientKey, long_term_key, nonce);
         string open = unseal.unbox(as_string(hello.box));
@@ -208,13 +215,13 @@ public:
     {
         sss::channels::initiate_packet_header init;
         asio::const_buffer buf(pkt.data(), pkt.size());
-        tie(init, buf) = fusionary::read(init, buf);
+        buf = fusionary::read(init, buf);
 
         // Try to open the cookie
         string nonce = MINUTEKEY_NONCE_PREFIX + as_string(init.responder_cookie.nonce);
 
-        string cookie = crypto_secretbox_open(as_string(init.responder_cookie.box),
-            nonce, minute_key.get());
+        string cookie =
+            crypto_secretbox_open(as_string(init.responder_cookie.box), nonce, minute_key.get());
 
         // cout << "Opened INITIATE cookie box:" << endl;
         // hexdump(cookie);
@@ -223,7 +230,8 @@ public:
         assert(as_string(init.initiator_shortterm_public_key) == string(subrange(cookie, 0, 32)));
 
         // Extract server short-term secret key
-        short_term_key = secret_key(public_key(fixmeNeedToRebuildSessionPk), subrange(cookie, 32, 32));
+        short_term_key =
+            secret_key(public_key(fixmeNeedToRebuildSessionPk), subrange(cookie, 32, 32));
         // cout << "Constructed server short term key:" << endl
         //      << short_term_key << endl
         //      << "Client short term public key:" << endl
@@ -232,8 +240,8 @@ public:
         // Open the Initiate box using both short-term keys
         string initiateNonce = INITIATE_NONCE_PREFIX + as_string(init.nonce);
 
-        unboxer<recv_nonce> unseal(as_string(init.initiator_shortterm_public_key),
-            short_term_key, initiateNonce);
+        unboxer<recv_nonce> unseal(
+            as_string(init.initiator_shortterm_public_key), short_term_key, initiateNonce);
         string msg = unseal.unbox(as_string(init.box));
 
         // cout << "Opened INITIATE msg box:" << endl;
@@ -270,8 +278,8 @@ public:
 
         sss::channels::message_packet_header pkt;
         pkt.shortterm_public_key = as_array<32>(fixmeNeedToRebuildSessionPk);
-        pkt.box = seal.box(payload);
-        pkt.nonce = as_array<8>(seal.nonce_sequential());
+        pkt.box                  = seal.box(payload);
+        pkt.nonce                = as_array<8>(seal.nonce_sequential());
 
         return make_packet(pkt);
     }
@@ -280,7 +288,7 @@ public:
     {
         sss::channels::message_packet_header msg;
         asio::const_buffer buf(pkt.data(), pkt.size());
-        tie(msg, buf) = fusionary::read(msg, buf);
+        buf = fusionary::read(msg, buf);
 
         string nonce = MESSAGE_NONCE_PREFIX + as_string(msg.nonce);
         unboxer<recv_nonce> unseal(as_string(msg.shortterm_public_key), short_term_key, nonce);
@@ -302,8 +310,8 @@ private:
         // minute-key secretbox nonce
         random_nonce<8> minuteKeyNonce(MINUTEKEY_NONCE_PREFIX);
         // Client short-term public key + Server short-term secret key
-        cookie.box = as_array<80>(crypto_secretbox(clientKey + sessionKey.get(),
-            minuteKeyNonce.get(), minute_key.get()));
+        cookie.box = as_array<80>(
+            crypto_secretbox(clientKey + sessionKey.get(), minuteKeyNonce.get(), minute_key.get()));
 
         // Compressed cookie nonce
         cookie.nonce = as_array<16>(minuteKeyNonce.sequential());
@@ -312,14 +320,15 @@ private:
 
         // Server short-term public key + cookie
         // Box the cookies
-        packet.box = as_array<144>(seal.box(sessionKey.pk.get() + as_string(cookie)));
+        packet.box   = as_array<144>(seal.box(sessionKey.pk.get() + as_string(cookie)));
         packet.nonce = as_array<16>(seal.nonce_sequential());
 
         return make_packet(packet);
     }
 };
 
-int main(int argc, const char ** argv)
+int
+main(int argc, const char** argv)
 {
     kex_initiator client;
     kex_responder server;
@@ -343,8 +352,8 @@ int main(int argc, const char ** argv)
 
         // write(hdr, buf);
 
-        std::array<uint8_t,5> frame = {{0b00000001, 0x12, 0x34, 0x56, 0x78}};
-        msg = client.got_cookie(msg, as_string(frame));
+        std::array<uint8_t, 5> frame = {{0b00000001, 0x12, 0x34, 0x56, 0x78}};
+        msg                          = client.got_cookie(msg, as_string(frame));
 
         // cout << "INITIATE packet:" << endl;
         // hexdump(msg);
@@ -358,9 +367,9 @@ int main(int argc, const char ** argv)
         // hexdump(msg);
         client.got_message(msg);
         cout << "Exchange done." << endl;
-    } catch(const char* e) {
+    } catch (const char* e) {
         cout << "Exception: " << e << endl;
-    } catch(std::exception& ex) {
+    } catch (std::exception& ex) {
         cout << "Exception: " << ex.what() << endl;
     }
 }
