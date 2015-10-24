@@ -11,7 +11,7 @@
 #include <array>
 #include <iostream>
 #include "arsenal/fusionary.hpp"
-#include "arsenal/fusionary/pretty_print.hpp"
+// #include "arsenal/fusionary/pretty_print.hpp"
 #include "arsenal/hexdump.h"
 
 using namespace std;
