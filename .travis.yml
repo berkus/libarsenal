@@ -21,6 +21,7 @@ addons:
 cache:
   directories:
     - $HOME/libsodium
+    - $HOME/boost
 
 compiler:
   - clang
@@ -35,10 +36,10 @@ env:
   - BUILD_TYPE=Release
   - BUILD_TYPE=Debug
 
-cache: apt
-
 before_install:
-  - bash travis_build_libsodium.sh
+  - git clone https://github.com/berkus/travis-scripts.git travis-ci
+  - bash travis-ci/travis_build_libsodium.sh
+  - bash travis-ci/travis_build_boost.sh
   - git clone https://github.com/berkus/cmake-setup.git cmake
   - git clone https://github.com/berkus/endian.git endian
   - git clone https://github.com/berkus/sodiumpp.git sodiumpp
