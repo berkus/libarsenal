@@ -13,7 +13,6 @@ addons:
       - gcc-5
       - g++-5
       - cmake
-      - ninja-build
       - libc++-dev
       - libpulse-dev
       #- libsodium-dev waiting for source approval
@@ -45,7 +44,7 @@ before_install:
   - git clone https://github.com/berkus/sodiumpp.git sodiumpp
   #- pip install cpp-coveralls
 script:
-  - cmake -G "Ninja" -DTRAVIS_CI=YES -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DTEST_COVERAGE=YES -DBUILD_TESTING=YES -DSODIUM_PREFIX=$HOME/libsodium . && ninja-build && ASAN_OPTIONS=alloc_dealloc_mismatch=0 ctest
+  - cmake -G "Unix Makefiles" -DTRAVIS_CI=YES -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DTEST_COVERAGE=YES -DBUILD_TESTING=YES -DSODIUM_PREFIX=$HOME/libsodium . && make && ASAN_OPTIONS=alloc_dealloc_mismatch=0 ctest
 #after_success:
 #  - coveralls --build-root `pwd` --exclude boost_1_59_0 --exclude boost --exclude CMakeFiles --exclude 3rdparty --exclude ninja-build --exclude libcxx
 
