@@ -15,6 +15,8 @@
 #include <thread>
 #include <boost/thread/mutex.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/filesystem/path.hpp>
 #include "flurry.h"
 #include "byte_array_wrap.h"
 
@@ -70,6 +72,8 @@ public:
     nul_ostream() : std::ostream(this) {}
 };
 
+void initialize();
+
 /**
  * Base class for logging output.
  *
@@ -81,10 +85,18 @@ class logging
 {
     static int log_level;
     int actual_level; // if log_level >= actual_level, then log.
+
+    static bool initialized_;
+
 protected:
     static boost::mutex m;
-    static std::ostream& log_stream_;
+    static boost::iostreams::filtering_ostream log_stream_;
     static nul_ostream nul_stream_;
+    static boost::filesystem::path log_file_path;
+    static bool compress_log;
+
+    friend void initialize();
+    friend void shutdown();
 
     logging(int level) : actual_level(level) {
         m.lock(); // @todo Avoid locking the mutex if log line will not be printed anyway.
@@ -92,6 +104,7 @@ protected:
     ~logging() { stream() << std::endl; m.unlock(); }
 
     inline std::ostream& stream() const {
+        if (!initialized_) initialize();
         if (log_level >= actual_level) return log_stream_;
         return nul_stream_;
     }
@@ -121,7 +134,10 @@ enum class verbosity : int
     fatals = 0,
     warnings = 1,
     info = 2,
-    debug = 3
+    debug = 3,
+    detailed = 100,
+    meticulous = 200,
+    overwhelming = 255
 };
 
 inline void set_verbosity(verbosity level) { logging::set_verbosity(to_underlying(level)); }
