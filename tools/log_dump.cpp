@@ -6,12 +6,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See file LICENSE_1_0.txt or a copy at http://www.boost.org/LICENSE_1_0.txt)
 //
+#include <fstream>
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/positional_options.hpp>
+#include <boost/log/trivial.hpp>
 #include "arsenal/flurry.h"
-#include "arsenal/logging.h"
 #include "arsenal/byte_array_wrap.h"
 #include "arsenal/hexdump.h"
 

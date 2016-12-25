@@ -10,6 +10,6 @@
 
 namespace arsenal::logger {
 
-boost::mutex file_dump::m;
+std::mutex file_dump::m;
 
 } // arsenal::logger namespace

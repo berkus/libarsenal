@@ -9,9 +9,10 @@
 #define BOOST_TEST_MODULE Test_flurry_serialization
 #include <boost/test/unit_test.hpp>
 
+#include <boost/log/trivial.hpp>
 #include "arsenal/flurry.h"
-#include "arsenal/logging.h"
 #include "arsenal/byte_array_wrap.h"
+#include "arsenal/file_dump.h"
 
 using namespace std;
 using namespace arsenal;

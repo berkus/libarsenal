@@ -3,7 +3,7 @@
 #include <string>
 #include <sstream>
 #include <boost/filesystem.hpp>
-#include "arsenal/logging.h"
+#include <boost/log/trivial.hpp>
 
 namespace fs = boost::filesystem;
 
@@ -17,7 +17,7 @@ std::string settings_file_name(std::string orgname, std::string orgdomain, std::
     try {
         fs::create_directories(os.str());
     } catch(std::system_error& e) {
-        logger::warning() << "Cannot create config file directory " << os.str() << " - " << e.what();
+        BOOST_LOG_TRIVIAL(warning) << "Cannot create config file directory " << os.str() << " - " << e.what();
     }
     os << "/" << appname << ".config";
     return os.str();

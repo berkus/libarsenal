@@ -7,12 +7,13 @@
 // (See file LICENSE_1_0.txt or a copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 #define BOOST_TEST_MODULE Test_key_message_serialization
-#include <boost/test/unit_test.hpp>
 #include <fstream>
+#include <boost/test/unit_test.hpp>
+#include <boost/log/trivial.hpp>
 #include "arsenal/byte_array.h"
 #include "arsenal/byte_array_wrap.h"
 #include "arsenal/flurry.h"
-#include "arsenal/logging.h"
+#include "arsenal/file_dump.h"
 
 using namespace std;
 using namespace arsenal;

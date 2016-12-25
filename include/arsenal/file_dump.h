@@ -12,10 +12,8 @@
 #include <iomanip>
 #include <mutex>
 #include <thread>
-#include <boost/thread/mutex.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
-#include <boost/filesystem/path.hpp>
 #include "flurry.h"
 #include "byte_array_wrap.h"
 
@@ -27,7 +25,7 @@ namespace arsenal::logger {
  */
 class file_dump
 {
-    static boost::mutex m;
+    static std::mutex m;
 public:
     template <typename T>
     file_dump(T const& data, std::string const& comment, std::string const& filename = "dump.bin")
