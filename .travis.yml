@@ -14,13 +14,16 @@ addons:
       - g++-5
       - cmake
       - libc++-dev
+      - libboost-all-dev
       - libpulse-dev
       #- libsodium-dev waiting for source approval
       - libssl-dev
 
 cache:
   directories:
+    - $HOME/bin
     - $HOME/libsodium
+    - $HOME/libcxx
     - $HOME/boost
 
 compiler:
@@ -39,12 +42,15 @@ env:
 before_install:
   - git clone https://github.com/berkus/travis-scripts.git travis-ci
   - bash travis-ci/travis_build_libsodium.sh
+  - bash travis-ci/travis_build_libcxx.sh
   - bash travis-ci/travis_build_boost.sh
   - git clone https://github.com/berkus/cmake-setup.git cmake
   - git clone https://github.com/berkus/endian.git endian
   - git clone https://github.com/berkus/sodiumpp.git sodiumpp
   #- pip install cpp-coveralls
 script:
+  - echo $CC
+  - echo $CXX
   - cmake -G "Unix Makefiles" -DTRAVIS_CI=YES -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DTEST_COVERAGE=YES -DBUILD_TESTING=YES -DSODIUM_PREFIX=$HOME/libsodium . && make && ASAN_OPTIONS=alloc_dealloc_mismatch=0 ctest
 #after_success:
 #  - coveralls --build-root `pwd` --exclude boost_1_59_0 --exclude boost --exclude CMakeFiles --exclude 3rdparty --exclude ninja-build --exclude libcxx
