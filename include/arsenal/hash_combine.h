@@ -13,8 +13,7 @@
 namespace stdext {
 
 //
-// Implementation for hash_combine missing from boost/STL/C++11.
-// Not needed once C++14 is out, hopefully.
+// Implementation for hash_combine missing from boost/STL/C++17.
 //
 template <class T>
 inline void hash_combine(std::size_t& seed, const T& v)
