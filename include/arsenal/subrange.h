@@ -15,7 +15,7 @@ namespace arsenal
 {
 
 template <typename T>
-class subrange_impl
+class subrange_impl // @todo use std::string_view and ranges ts
 {
     T& container_;
     int start_offset_;

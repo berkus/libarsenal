@@ -90,9 +90,9 @@ byte_array from_base32(const std::string& src)
 
     for(i = 0, index = 0, offset = 0; i < len; i++)
     {
-        // Skip what we don't recognise
         int8_t tmp = base32Table[(uint8_t)src.at(i)];
 
+        // Skip what we don't recognise
         if(tmp == -1)
             continue;
 
