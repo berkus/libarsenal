@@ -11,6 +11,8 @@
 
 #include "arsenal/base32.h"
 
+using namespace arsenal;
+
 // Sources lengths must be in integer multiples of 5.
 BOOST_AUTO_TEST_CASE(tobase32_string)
 {

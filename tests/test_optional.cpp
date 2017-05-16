@@ -15,6 +15,7 @@
 #include "arsenal/logging.h"
 
 using namespace std;
+using namespace arsenal;
 
 BOOST_AUTO_TEST_CASE(serialize_and_deserialize)
 {

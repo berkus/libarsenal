@@ -20,7 +20,8 @@
 #include "flurry.h"
 #include "byte_array_wrap.h"
 
-namespace logger {
+namespace arsenal::logger
+{
 
 /**
  * Binary dump a container to the log binary file.
@@ -215,3 +216,4 @@ inline hex_output hex(int c, int w = 2, bool f = true, bool b = false) {
     return hex_output(c,w,f,b);
 }
 
+} // arsenal::logger namespace

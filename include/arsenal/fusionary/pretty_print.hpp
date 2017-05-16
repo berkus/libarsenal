@@ -6,7 +6,12 @@
 // Pretty printer
 //=================================================================================================
 
-namespace detail {
+namespace arsenal::fusionary
+{
+
+namespace detail
+{
+
     struct value_writer {
         std::ostream& os_;
 
@@ -91,3 +96,5 @@ detail::printer<T> pretty_print(T const& v)
 {
     return detail::printer<T>(v);
 }
+
+} // arsenal::fusionary namespace

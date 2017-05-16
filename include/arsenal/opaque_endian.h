@@ -11,6 +11,9 @@
 #include <boost/endian/conversion2.hpp>
 #include <functional> // for std::hash
 
+namespace arsenal
+{
+
 /*
  * Idea based on sortix wrapper class.
  */
@@ -60,19 +63,6 @@ using little_uint16_t = __endian_conversion<uint16_t, boost::endian2::little>;
 using little_uint32_t = __endian_conversion<uint32_t, boost::endian2::little>;
 using little_uint64_t = __endian_conversion<uint64_t, boost::endian2::little>;
 
-// Hash function specialization to use endian-types in std collections.
-namespace std {
-
-template <>
-struct hash<big_uint32_t>
-{
-    std::size_t operator()(big_uint32_t const& value) const {
-        return std::hash<uint32_t>()(value.operator uint32_t());
-    }
-};
-
-} // std namespace
-
 template <typename T>
 struct is_endian
 {
@@ -84,3 +74,18 @@ struct is_endian<__endian_conversion<T, reorder>>
 {
     static constexpr bool const value = true;
 };
+
+} // arsenal namespace
+
+// Hash function specialization to use endian-types in std collections.
+namespace std {
+
+template <>
+struct hash<arsenal::big_uint32_t>
+{
+    std::size_t operator()(arsenal::big_uint32_t const& value) const {
+        return std::hash<uint32_t>()(value.operator uint32_t());
+    }
+};
+
+} // std namespace

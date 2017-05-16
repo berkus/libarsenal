@@ -16,6 +16,9 @@
 #include <unordered_set>
 #include <boost/tr1/array.hpp>
 
+namespace arsenal
+{
+
 // The map types have find() member function for finding by key.
 template<class T> struct is_map_type : public std::false_type {};
 
@@ -58,6 +61,8 @@ set_to_vector(std::unordered_set<T> const& source)
     }
     return result;
 }
+
+} // arsenal namespace
 
 // Specialize tuple_size for boost::array<T,N>
 namespace std {

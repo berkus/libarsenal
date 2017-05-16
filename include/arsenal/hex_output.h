@@ -1,5 +1,8 @@
 #pragma once
 
+namespace arsenal::debug
+{
+
 /**
  * Helper to output a hexadecimal value with formatting to an iostream.
  * Usage: io << hex(value, 8, true, false)
@@ -21,3 +24,5 @@ inline std::ostream& operator<<(std::ostream& o, const hex_output& hs) {
 inline hex_output hex(int c, int w = 2, bool f = true, bool b = false) {
     return hex_output(c,w,f,b);
 }
+
+} // arsenal::debug namespace

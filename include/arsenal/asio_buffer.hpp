@@ -13,9 +13,7 @@
 #include <iomanip>
 #include <ostream>
 
-namespace boost {
-
-namespace asio {
+namespace boost::asio {
 
 inline std::ostream& operator << (std::ostream& os, const_buffer const& b)
 {
@@ -45,6 +43,4 @@ inline std::ostream& operator << (std::ostream& os, mutable_buffer const& b)
     return os;
 }
 
-}
-
-}
+} // boost::asio namespace

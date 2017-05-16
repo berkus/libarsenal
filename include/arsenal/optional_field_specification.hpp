@@ -6,6 +6,9 @@
 #include <bitset>
 #include <climits>
 
+namespace arsenal
+{
+
 // Variable size field or optional field flags
 template <typename T, size_t N = CHAR_BIT * sizeof(T)>
 struct field_flag
@@ -78,3 +81,4 @@ struct varsize_field_specification
     }
 };
 
+} // arsenal namespace

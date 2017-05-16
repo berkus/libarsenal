@@ -25,7 +25,7 @@
 #include "underlying.h"
 #include "opaque_endian.h"
 
-namespace flurry {
+namespace arsenal::flurry {
 
 //=================================================================================================
 // exceptions
@@ -544,4 +544,4 @@ inline flurry::iarchive& operator >> (flurry::iarchive& ia, std::map<K, V>& map)
     return ia;
 }
 
-} // flurry namespace
+} // arsenal::flurry namespace

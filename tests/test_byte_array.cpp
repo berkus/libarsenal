@@ -11,6 +11,8 @@
 
 #include "arsenal/byte_array.h"
 
+using namespace arsenal;
+
 // byte_array();
 BOOST_AUTO_TEST_CASE(default_allocation)
 {

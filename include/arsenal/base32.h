@@ -22,10 +22,10 @@
 #include <string>
 #include "byte_array.h"
 
-namespace encode
+namespace arsenal::encode
 {
 
 std::string to_base32(const byte_array& in);
 byte_array from_base32(const std::string& in);
 
-}
+} // arsenal::encode namespace

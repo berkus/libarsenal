@@ -45,7 +45,7 @@ const int8_t base32Table[] = {
 const char base32Alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 }
 
-namespace encode {
+namespace arsenal::encode {
 
 std::string to_base32(const byte_array& src)
 {
@@ -118,4 +118,4 @@ byte_array from_base32(const std::string& src)
     return dst;
 }
 
-}
+} // arsenal::encode namespace

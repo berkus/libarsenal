@@ -13,6 +13,9 @@
 #include <boost/range/iterator_range.hpp>
 #include "byte_array.h"
 
+namespace arsenal
+{
+
 /**
  * Wrap byte array in an input wrapping for boost.serialization or msgpack archives.
  * Archive type must accept an istream as constructor argument.
@@ -50,3 +53,5 @@ public:
 
     Archive& archive() { return oa; }
 };
+
+} // arsenal namespace

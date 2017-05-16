@@ -16,6 +16,7 @@
 #include "arsenal/hexdump.h"
 
 using namespace std;
+using namespace arsenal;
 namespace po = boost::program_options;
 
 int main(int argc, char** argv)
@@ -50,6 +51,6 @@ int main(int argc, char** argv)
         byte_array_iwrap<flurry::iarchive> read(data);
         read.archive() >> what >> stamp >> blob;
         cout << "*** BLOB " << blob.size() << " bytes *** " << stamp << ": " << what << endl;
-        hexdump(blob);
+        debug::hexdump(blob);
     }
 }

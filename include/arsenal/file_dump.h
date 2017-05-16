@@ -19,7 +19,7 @@
 #include "flurry.h"
 #include "byte_array_wrap.h"
 
-namespace logger {
+namespace arsenal::logger {
 
 /**
  * Binary dump a container to the log binary file.
@@ -48,4 +48,4 @@ public:
     ~file_dump() { m.unlock(); }
 };
 
-} // logger namespace
+} // arsenal::logger namespace

@@ -16,6 +16,7 @@
 #include "arsenal/any_int_cast.h"
 
 using namespace std;
+using namespace arsenal;
 
 BOOST_AUTO_TEST_CASE(serialize_boost_any)
 {

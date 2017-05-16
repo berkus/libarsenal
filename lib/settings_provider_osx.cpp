@@ -3,6 +3,9 @@
 #include <string>
 #include <sstream>
 
+namespace arsenal::detail
+{
+
 std::string settings_file_name(std::string orgname, std::string orgdomain, std::string appname)
 {
     std::ostringstream os;
@@ -10,3 +13,5 @@ std::string settings_file_name(std::string orgname, std::string orgdomain, std::
     os << orgdomain << "." << appname << ".config";
     return os.str();
 }
+
+} // arsenal::detail namespace

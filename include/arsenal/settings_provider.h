@@ -13,6 +13,9 @@
 #include <boost/any.hpp>
 #include "byte_array.h"
 
+namespace arsenal
+{
+
 /**
  * Settings provider is an interface to platform-specific key-value settings storage.
  * For example, on Linux it could be .rc file, on OSX it could be plists
@@ -77,3 +80,5 @@ public:
     boost::any get(std::string const& key);
     byte_array get_byte_array(std::string const& key);
 };
+
+} // arsenal namespace

@@ -8,8 +8,8 @@
 //
 #include "arsenal/file_dump.h"
 
-namespace logger {
+namespace arsenal::logger {
 
 boost::mutex file_dump::m;
 
-}
+} // arsenal::logger namespace

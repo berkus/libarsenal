@@ -2,6 +2,9 @@
 
 #include <boost/any.hpp>
 
+namespace arsenal
+{
+
 /**
  * Cast boost::any from any contained integer type to specified integer type T.
  * T may be not even an integer type, but contained value must be, otherwise a bad_any_cast
@@ -33,3 +36,5 @@ T any_int_cast(boost::any const& v)
     }
     throw boost::bad_any_cast();
 }
+
+} // arsenal namespace

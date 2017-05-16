@@ -11,6 +11,9 @@
 #include <queue>
 #include <deque>
 
+namespace arsenal
+{
+
 // Derive from queue and make c member public.
 template <class T, class C = std::deque<T>>
 struct pubqueue : std::queue<T, C>
@@ -36,3 +39,5 @@ template<class T, class C>
 C& get_c(std::queue<T, C> const& a) {
     return pubqueue<T,C>::get_c(a);
 }
+
+} // arsenal namespace

@@ -11,7 +11,7 @@
 #include <string>
 #include <cassert>
 
-namespace encode
+namespace arsenal::encode
 {
 
 /**
@@ -101,4 +101,4 @@ inline std::string from_proquint(std::string text)
     return buffer;
 }
 
-} // encode namespace
+} // arsenal::encode namespace

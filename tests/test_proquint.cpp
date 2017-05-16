@@ -11,6 +11,8 @@
 
 #include "arsenal/proquint.h"
 
+using namespace arsenal;
+
 BOOST_AUTO_TEST_CASE(basic_encoding)
 {
     std::string input{0x7f, 0x00, 0x00, 0x01};

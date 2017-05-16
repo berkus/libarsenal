@@ -10,6 +10,9 @@
 #include "arsenal/byte_array.h"
 #include "arsenal/logging.h"
 
+namespace arsenal
+{
+
 byte_array::byte_array()
     : value()
 {}
@@ -125,3 +128,5 @@ std::ostream& operator << (std::ostream& os, byte_array const& a)
     }
     return os;
 }
+
+} // arsenal namespace

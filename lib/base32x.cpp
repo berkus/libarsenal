@@ -43,9 +43,9 @@ const int8_t base32xTable[] = {
 
 const char base32xAlphabet[] = "abcdefghjklmnpqrstuvwxyz23456789";
 
-}
+} // anonymous namespace
 
-namespace encode {
+namespace arsenal::encode {
 
 // @todo Use transform_width<const char*,5,8> from boost::archive?
 std::string to_base32x(const std::string& src)
@@ -118,4 +118,4 @@ std::string from_base32x(const std::string& src)
     return dst;
 }
 
-}
+} // arsenal::encode namespace

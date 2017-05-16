@@ -4,7 +4,7 @@
 #include <boost/archive/iterators/ostream_iterator.hpp>
 #include <sstream>
 
-namespace encode
+namespace arsenal::encode
 {
 
 // From http://stackoverflow.com/questions/7053538/how-do-i-encode-a-string-to-base64-using-only-boost
@@ -36,4 +36,4 @@ std::string from_base64(const std::string& in)
     return std::string(); // @todo
 }
 
-}
+} // arsenal::encode namespace

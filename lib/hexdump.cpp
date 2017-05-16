@@ -4,12 +4,19 @@
 
 using namespace std;
 
+namespace arsenal::debug
+{
+
+namespace {
+
 inline char printable(char c)
 {
     if (c < 32) return '.';
     if (c > 126) return '.'; // 127 = DEL
     return c;
 }
+
+} // anonymous namespace
 
 // @todo Add formatting width
 // @todo Add lead indent printing
@@ -50,3 +57,4 @@ void hexdump(byte_array data, size_t octet_stride, size_t octet_split, size_t in
     cout << spaces << boost::format("%08x") % offset << endl;
 }
 
+} // arsenal::debug namespace

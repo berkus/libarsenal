@@ -14,6 +14,7 @@
 #include "arsenal/byte_array_wrap.h"
 
 using namespace std;
+using namespace arsenal;
 using namespace boost::posix_time;
 using namespace boost::date_time;
 
@@ -117,7 +118,7 @@ public:
         string spaces(indent_, ' ');
         cout << spaces << name_ << " *** BLOB " << rec_.data.size() << " bytes *** " << rec_.timestamp << ": "
             << rec_.title_or_text << endl;
-        hexdump(rec_.data, 16, 8, indent_);
+        debug::hexdump(rec_.data, 16, 8, indent_);
         cout << endl;
     }
 

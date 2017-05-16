@@ -15,9 +15,17 @@
 
 using namespace std;
 
+namespace arsenal
+{
+
+namespace detail
+{
+
 // Generate file name for settings file, this is platform-dependent.
 // @todo Make more complex structure allowing to share some data at org level and some per-app.
 string settings_file_name(string orgname, string orgdomain, string appname);
+
+} // detail namespace
 
 namespace {
 string organization_name_{"Atta"};
@@ -53,7 +61,7 @@ settings_provider::instance()
 
 settings_provider::settings_provider(settings_provider::private_tag)
 {
-    ifstream stream(settings_file_name(organization_name_, organization_domain_, application_name_),
+    ifstream stream(detail::settings_file_name(organization_name_, organization_domain_, application_name_),
                     ios::binary);
 
     if (stream) {
@@ -96,7 +104,7 @@ void
 settings_provider::sync()
 {
     ofstream stream( // @todo Atomicity of writes via temp file and move.
-        settings_file_name(organization_name_, organization_domain_, application_name_),
+        detail::settings_file_name(organization_name_, organization_domain_, application_name_),
         ios::binary | ios::trunc);
 
     if (stream) {
@@ -126,3 +134,5 @@ settings_provider::get_byte_array(string const& key)
     }
     return std::move(boost::any_cast<byte_array>(v));
 }
+
+} // arsenal namespace

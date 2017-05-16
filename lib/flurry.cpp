@@ -12,7 +12,7 @@
 
 using namespace std;
 
-namespace flurry {
+namespace arsenal::flurry {
 
 namespace {
 
@@ -1124,5 +1124,5 @@ void iarchive::load(boost::any& value)
     throw decode_error("invalid tag " + to_string(type));
 }
 
-} // flurry namespace
+} // arsenal::flurry namespace
 

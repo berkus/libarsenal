@@ -11,6 +11,9 @@
 #include <boost/range/adaptors.hpp>
 #include <boost/range/algorithm_ext/overwrite.hpp>
 
+namespace arsenal
+{
+
 template <typename T>
 class subrange_impl
 {
@@ -70,3 +73,5 @@ inline subrange_impl<T> subrange(T& base, int start)
 {
     return subrange_impl<T>(base, start, base.size() - start);
 }
+
+} // arsenal namespace

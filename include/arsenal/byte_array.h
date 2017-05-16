@@ -16,6 +16,9 @@
 #include <boost/utility/string_ref.hpp>
 #include "hash_combine.h"
 
+namespace arsenal
+{
+
 /**
  * Class mimicking Qt's QByteArray behavior using STL containers.
  */
@@ -147,15 +150,22 @@ public:
     inline const_iterator end() const { return value.end(); }
 };
 
+bool operator ==(const byte_array& a, const byte_array& b);
+bool operator !=(const byte_array& a, const byte_array& b);
+
+std::ostream& operator << (std::ostream& os, const byte_array& a);
+
+} // arsenal namespace
+
 namespace std {
 
 /**
  * Hash specialization for byte_array
  */
 template<>
-struct hash<byte_array> : public std::unary_function<byte_array, size_t>
+struct hash<arsenal::byte_array> : public std::unary_function<arsenal::byte_array, size_t>
 {
-    inline size_t operator()(const byte_array& a) const noexcept
+    inline size_t operator()(arsenal::byte_array const& a) const noexcept
     {
         // return std::hash_combine_range(a.begin(), a.end()); -- hopefully in c++1y
         // VEEERY bad implementation for now. @fixme
@@ -167,12 +177,7 @@ struct hash<byte_array> : public std::unary_function<byte_array, size_t>
     }
 };
 
-} // namespace std
-
-bool operator ==(const byte_array& a, const byte_array& b);
-bool operator !=(const byte_array& a, const byte_array& b);
-
-std::ostream& operator << (std::ostream& os, const byte_array& a);
+} // std namespace
 
 /**
 // Copy-on-write implementation:

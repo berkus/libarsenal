@@ -21,10 +21,10 @@
 
 #include <string>
 
-namespace encode
+namespace arsenal::encode
 {
 
 std::string to_base32x(std::string const& in);
 std::string from_base32x(std::string const& in);
 
-}
+} // arsenal::encode namespace

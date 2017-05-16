@@ -28,6 +28,9 @@
 
 // #include "arsenal/hexdump.h"//temp DEBUG
 
+namespace arsenal::fusionary
+{
+
 /*
 //=================================================================================================
 // Lazy reading
@@ -375,8 +378,6 @@ struct reader
     }
 };
 
-namespace fusionary {
-
 template <typename T>
 boost::asio::const_buffer
 read(T& val, boost::asio::const_buffer b)
@@ -387,8 +388,6 @@ read(T& val, boost::asio::const_buffer b)
     // bytes" << std::endl;
     return r.buf_;
 }
-
-} // fusionary namespace
 
 //=================================================================================================
 // Writer
@@ -542,8 +541,6 @@ struct writer
     }
 };
 
-namespace fusionary {
-
 template <typename T>
 boost::asio::mutable_buffer
 write(boost::asio::mutable_buffer b, T const& val)
@@ -553,4 +550,4 @@ write(boost::asio::mutable_buffer b, T const& val)
     return w.buf_;
 }
 
-} // fusionary namespace
+} // arsenal::fusionary namespace
