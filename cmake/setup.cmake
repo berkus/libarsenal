@@ -22,7 +22,12 @@ option(TEST_COVERAGE "Enable coverage information generation by the compiler" OF
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
 # Enable C++17
-set(CMAKE_CXX_FLAGS "-ferror-limit=3 ${CMAKE_CXX_FLAGS} -std=c++1z")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+message("Supported features = ${CMAKE_CXX_COMPILE_FEATURES}")
+
+set(CMAKE_CXX_FLAGS "-ferror-limit=3 ${CMAKE_CXX_FLAGS}")
 
 # and link libc++
 if (APPLE)
