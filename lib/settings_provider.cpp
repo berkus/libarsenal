@@ -28,8 +28,8 @@ string settings_file_name(string orgname, string orgdomain, string appname);
 } // detail namespace
 
 namespace {
-string organization_name_{"Atta"};
-string organization_domain_{"net.atta-metta"};
+string organization_name_{"Metta"};
+string organization_domain_{"systems.metta"};
 string application_name_{"Uvvy"};
 map<string, boost::any> data_;
 } // anonymous namespace
