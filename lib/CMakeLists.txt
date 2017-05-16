@@ -1,4 +1,4 @@
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-reorder") # boost, seriously?
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-reorder") # boost, seriously?
 
 set(arsenal_SOURCES
     base32.cpp
