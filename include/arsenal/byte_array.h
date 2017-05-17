@@ -11,6 +11,7 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include <functional>
 #include <boost/tr1/array.hpp>
 #include <boost/asio/buffer.hpp>
 #include <boost/utility/string_ref.hpp>
