@@ -15,7 +15,6 @@ This is a very small library of classes that are reused between several projects
 * flurry - msgpackv5-based (de-)serialization,
 * stdext::hash_combine - implements `hash_combine` which didn't make its way into the stdlib,
 * logging - flexible lightweight logging,
-* opaque_endian - opaque endianness-aware types `little_intXX`, `big_intXX` etc.,
 * pubqueue - C++ trick to access underlying container of `std::queue`,
 * settings_provider - a settings storage class abstracting platform-specific details,
 * underlying - convert an enum class type to its underlying storage type.

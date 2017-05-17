@@ -15,6 +15,8 @@
 #include "arsenal/hexdump.h"
 
 using namespace std;
+using namespace arsenal;
+using namespace arsenal::fusionary;
 namespace asio = boost::asio;
 namespace mpl = boost::mpl;
 

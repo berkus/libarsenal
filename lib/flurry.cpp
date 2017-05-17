@@ -7,10 +7,11 @@
 // (See file LICENSE_1_0.txt or a copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 #include "arsenal/flurry.h"
-#include "arsenal/opaque_endian.h"
 #include "arsenal/underlying.h"
+#include <boost/endian/arithmetic.hpp>
 
 using namespace std;
+using namespace boost::endian;
 
 namespace arsenal::flurry {
 

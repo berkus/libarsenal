@@ -1,14 +1,16 @@
 #define BOOST_TEST_MODULE Test_fusionary_types
 #include <boost/test/unit_test.hpp>
 
+#include <boost/endian/arithmetic.hpp>
 #include "arsenal/fusionary.hpp"
-#include "arsenal/opaque_endian.h"
 #include "arsenal/optional_field_specification.hpp"
 
 #include <iostream>
 
 using namespace boost::asio;
-using optional_test_field = optional_field_specification<uint32_t, field_index<0>, 0_bits_shift>;
+using namespace boost::endian;
+using namespace arsenal;
+using optional_test_field = arsenal::optional_field_specification<uint32_t, field_index<0>, 0_bits_shift>;
 
 BOOST_FUSION_DEFINE_STRUCT(
     (), test_optional_field_struct,
