@@ -29,6 +29,9 @@ message("Supported features = ${CMAKE_CXX_COMPILE_FEATURES}")
 
 if (UNIX)
 set(CMAKE_CXX_FLAGS "-ferror-limit=3 ${CMAKE_CXX_FLAGS}")
+else(UNIX)
+# Despite c++17 enable, msvc 2015 requires this flag:
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++latest")
 endif(UNIX)
 
 # and link libc++
