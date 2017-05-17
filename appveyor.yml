@@ -1,0 +1,38 @@
+# We use tags for releases
+skip_tags: false
+skip_commits:
+  files:
+    - doc/*
+    - README.md
+
+clone_folder: C:\projects\arsenal
+clone_depth: 5
+
+image:
+- Visual Studio 2015
+- Visual Studio 2017
+
+platform: x64
+configuration:
+  - Debug
+  - Release
+
+environment:
+  BOOST_ROOT: C:\Libraries\boost_1_63_0
+  BOOST_LIBRARYDIR: C:\Libraries\boost_1_63_0\lib64-msvc-14.0
+
+matrix:
+  exclude:
+    - platform: x86
+
+build:
+  parallel: true
+
+build_script:
+  - md _build_
+  - cd _build_
+  - cmake -G "Visual Studio 14 2015 Win64" -DCLANG=OFF -DBUILD_TESTING=ON ..
+  - cmake --build . --config %CONFIGURATION%
+
+test_script:
+  - ctest
