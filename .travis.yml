@@ -1,60 +1,26 @@
+sudo: required
+dist: trusty
+
 language: cpp
-sudo: false
 
-addons:
-  apt:
-    sources:
-      - boost-latest
-      - ubuntu-toolchain-r-test
-      - llvm-toolchain-precise-3.7
-      #- libsodium
-    packages:
-      - clang-3.7
-      - gcc-5
-      - g++-5
-      - cmake
-      - libc++-dev
-      - libboost-all-dev
-      - libpulse-dev
-      #- libsodium-dev waiting for source approval
-      - libssl-dev
-
-cache:
-  directories:
-    - $HOME/bin
-    - $HOME/libsodium
-    - $HOME/libcxx
-    - $HOME/boost
-
-compiler:
-  - clang
-  - gcc
-
-os:
-  - linux
-  - osx
-
-env:
-  - BUILD_TYPE=RelWithDebInfo
-  - BUILD_TYPE=Release
-  - BUILD_TYPE=Debug
-
-before_install:
-  - git clone https://github.com/berkus/travis-scripts.git travis-ci
-  - bash travis-ci/travis_build_libsodium.sh
-  - bash travis-ci/travis_build_libcxx.sh
-  - bash travis-ci/travis_build_boost.sh
-  #- pip install cpp-coveralls
-script:
-  - echo $CC
-  - echo $CXX
-  - cmake -G "Unix Makefiles" -DTRAVIS_CI=YES -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DTEST_COVERAGE=YES -DBUILD_TESTING=YES -DSODIUM_PREFIX=$HOME/libsodium . && make && ASAN_OPTIONS=alloc_dealloc_mismatch=0 ctest
-#after_success:
-#  - coveralls --build-root `pwd` --exclude boost_1_59_0 --exclude boost --exclude CMakeFiles --exclude 3rdparty --exclude ninja-build --exclude libcxx
+services: docker
 
 notifications:
-  recipients:
-    - berkus@atta-metta.net
+  recipients: berkus@metta.systems
   email:
     on_success: change
     on_failure: always
+
+matrix:
+  include:
+    - os: linux
+      env: BUILD_TYPE=Debug
+#    - os: osx
+
+before_install:
+  - docker pull berkus/docker-cpp-ci:latest
+
+script:
+  - mkdir _build_
+  - docker run --rm -v $PWD:/repo -v ~/.travis:/travis berkus/docker-cpp-ci /bin/sh -c "cd /repo/_build_; CC=clang CXX=clang++ cmake -G Ninja -DTRAVIS_CI=YES -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTING=ON ..; cmake --build .; ASAN_OPTIONS=alloc_dealloc_mismatch=0 ctest"
+
