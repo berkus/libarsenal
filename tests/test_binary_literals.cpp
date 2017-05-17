@@ -9,11 +9,9 @@
 #define BOOST_TEST_MODULE Test_binary_literals
 #include <boost/test/unit_test.hpp>
 
-#include "arsenal/binary_literal.h"
-
 BOOST_AUTO_TEST_CASE(equivalence_check)
 {
-    BOOST_CHECK(00000001_b == 1);
-    BOOST_CHECK(10000000_b == 128);
-    BOOST_CHECK(1000000000000001_b == 32769);
+    BOOST_CHECK(0b00000001 == 1);
+    BOOST_CHECK(0b10000000 == 128);
+    BOOST_CHECK(0b1000000000000001 == 32769);
 }
