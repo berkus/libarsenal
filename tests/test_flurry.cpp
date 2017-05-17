@@ -20,9 +20,9 @@ using namespace arsenal;
 BOOST_AUTO_TEST_CASE(serialize_basic_types)
 {
     byte_array data;
-    int8_t out_i8_1, in_i8_1 = -122;
+    int8_t out_i8_1, in_i8_1 = -128;
     int8_t out_i8_2, in_i8_2 = 42;
-    int8_t out_i8_3, in_i8_3 = 140;
+    int8_t out_i8_3, in_i8_3 = 127;
     int16_t out_i16_1, in_i16_1 = -122;
     int16_t out_i16_2, in_i16_2 = 42;
     int16_t out_i16_3, in_i16_3 = 140;
