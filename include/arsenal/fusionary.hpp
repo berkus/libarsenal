@@ -28,6 +28,16 @@
 
 // #include "arsenal/hexdump.h"//temp DEBUG
 
+constexpr unsigned int operator"" _bits_mask(unsigned long long bits)
+{
+    return (1 << bits) - 1;
+}
+
+constexpr unsigned int operator"" _bits_shift(unsigned long long bits)
+{
+    return bits;
+}
+
 namespace arsenal::fusionary
 {
 
@@ -93,16 +103,6 @@ struct reader
     }
 };
 */
-
-constexpr unsigned int operator"" _bits_mask(unsigned long long bits)
-{
-    return (1 << bits) - 1;
-}
-
-constexpr unsigned int operator"" _bits_shift(unsigned long long bits)
-{
-    return bits;
-}
 
 struct nothing_t
 {
