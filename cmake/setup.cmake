@@ -27,7 +27,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 message("Supported features = ${CMAKE_CXX_COMPILE_FEATURES}")
 
+if (UNIX)
 set(CMAKE_CXX_FLAGS "-ferror-limit=3 ${CMAKE_CXX_FLAGS}")
+endif(UNIX)
 
 # and link libc++
 if (APPLE)
@@ -36,8 +38,11 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
 endif()
 
 # Enable full error and warning reporting
+if (UNIX)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
-
+else(UNIX)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wall")
+endif(UNIX)
 # Test effect of global constructors in our code, global constructors are usually bad idea.
 # Cannot be enabled because boost uses them in boost.error_code
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wglobal-constructors")
