@@ -131,19 +131,20 @@ if (BUILD_TESTING)
     include(Dart)
 endif (BUILD_TESTING)
 
-# boost/asio depends on libboost_system
-list(APPEND BOOST_COMPONENTS system)
 # For logging we need boost/posix_time
 list(APPEND BOOST_COMPONENTS date_time)
 # Program_options used to parse cmdline args in some tests
 list(APPEND BOOST_COMPONENTS program_options)
-# Thread library used in some nat libs and tests
-list(APPEND BOOST_COMPONENTS thread)
 # Filesystem library used on Linux for creating config directories
 list(APPEND BOOST_COMPONENTS filesystem)
 
 list(APPEND BOOST_COMPONENTS iostreams)
 list(APPEND BOOST_COMPONENTS log)
+
+# Thread library used in some nat libs and tests
+list(APPEND BOOST_COMPONENTS thread)
+# boost/asio depends on libboost_system
+list(APPEND BOOST_COMPONENTS system)
 
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
