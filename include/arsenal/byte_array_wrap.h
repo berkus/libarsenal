@@ -28,7 +28,7 @@ class byte_array_iwrap
 
 public:
     byte_array_iwrap(byte_array const& data)
-        : in(boost::make_iterator_range(data.as_vector()))
+        : in(boost::make_iterator_range(data))
         , ia(in)
     {}
 
@@ -47,7 +47,7 @@ class byte_array_owrap
 
 public:
     byte_array_owrap(byte_array& data)
-        : out(boost::iostreams::back_inserter(data.as_vector()))
+        : out(boost::iostreams::back_inserter(data))
         , oa(out)
     {}
 
