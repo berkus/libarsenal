@@ -76,7 +76,9 @@ BOOST_AUTO_TEST_CASE(ctor_from_buffer)
 // byte_array(byte_array&& other);
 BOOST_AUTO_TEST_CASE(move_ctor)
 {
-    byte_array b(std::move(byte_array("hello")));
+    byte_array a("hello");
+    byte_array b(std::move(a));
+    BOOST_CHECK(a.is_empty());
     BOOST_CHECK(!b.is_empty());
     BOOST_CHECK(b[0] == 'h');
     BOOST_CHECK(b[1] == 'e');
