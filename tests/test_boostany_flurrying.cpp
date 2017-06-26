@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(serialize_boost_any)
             << in_short << in_ushort << in_double << in_float << in_bool;
     }
     BOOST_CHECK(data.size() == 36);
-    logger::file_dump(data, "serialize_boost_any");
+    debug::file_dump(data, "serialize_boost_any");
     {
         byte_array_iwrap<flurry::iarchive> read(data);
         read.archive() >> out_int32 >> out_uint32 >> out_int64 >> out_uint64 >> out_long >> out_ulong

@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(serialize_basic_types)
         write.archive() << in_e_1 << in_e_2;
         write.archive() << in_vec_1;
     }
-    logger::file_dump(data, "flurry test");
+    debug::file_dump(data, "flurry test");
     {
         byte_array_iwrap<flurry::iarchive> read(data);
         read.archive() >> t >> f;

@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(serialize_msgpack_types)
         write.archive() << true << false << 42 << 0xdeadbeefabba
                         << byte_array({'a', 'b', 'c', 'd', 'e'});
     }
-    logger::file_dump(data, "serialization test");
+    debug::file_dump(data, "serialization test");
 }
 
 // @todo
@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(serialize_and_deserialize)
 {
     byte_array data;// = generate_dh1_chunk();
 
-    logger::file_dump(data, "deserialization test");
+    debug::file_dump(data, "deserialization test");
 
     {
         // sss::negotiation::key_message m;
