@@ -132,7 +132,7 @@ settings_provider::get_byte_array(string const& key)
     if (v.type() == typeid(vector<char>)) {
         return boost::any_cast<vector<char>>(v);
     }
-    return std::move(boost::any_cast<byte_array>(v));
+    return boost::any_cast<byte_array>(v);
 }
 
 } // arsenal namespace
