@@ -8,7 +8,7 @@
 //
 #pragma once
 
-#include "arsenal/optional_field_specification.hpp"
+#include "arsenal/fusionary/optional_field_specification.hpp"
 #include "arsenal/opaque_endian.h"
 
 #include <cstddef>

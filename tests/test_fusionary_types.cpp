@@ -3,7 +3,6 @@
 
 #include <boost/endian/arithmetic.hpp>
 #include "arsenal/fusionary.hpp"
-#include "arsenal/optional_field_specification.hpp"
 
 #include <iostream>
 
