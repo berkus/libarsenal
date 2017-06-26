@@ -3,9 +3,9 @@
 // This file implements version v5 described at https://gist.github.com/frsyuki/5432559
 // It is byte-oriented and fits well for compact network serialization.
 //
-// Part of Metta OS. Check http://atta-metta.net for latest version.
+// Part of Metta OS. Check https://metta.systems for latest version.
 //
-// Copyright 2007 - 2014, Stanislav Karchebnyy <berkus@atta-metta.net>
+// Copyright 2007 - 2017, Stanislav Karchebnyy <berkus@metta.systems>
 //
 // Distributed under the Boost Software License, Version 1.0.
 // (See file LICENSE_1_0.txt or a copy at http://www.boost.org/LICENSE_1_0.txt)
