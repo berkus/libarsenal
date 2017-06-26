@@ -11,6 +11,8 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include <iomanip>
+#include <iostream>
 #include <functional>
 #include <boost/tr1/array.hpp>
 #include <boost/asio/buffer.hpp>
@@ -33,20 +35,36 @@ public:
     using container = std::string;
     using iterator = container::iterator;
     using const_iterator = container::const_iterator;
+    using value_type = container::value_type;
 
-    byte_array();
-    byte_array(byte_array const&);
+    // Constructors
+
+    byte_array() : value() {}
+
+    byte_array(byte_array const& other) : value(other.value) {}
+
+    byte_array(byte_array&&) = default;
     byte_array(std::string const& str) : value(str) {}
     byte_array(std::vector<char> const& v) : byte_array(v.data(), v.size()) {}
-    byte_array(char const* str);
-    byte_array(char const* data, size_t size);
-    byte_array(std::initializer_list<uint8_t> data);
+
+    byte_array(char const* str) : value(str, str+strlen(str)+1) {}
+
+    byte_array(char const* data, size_t size) : value(data, data+size) {}
+
+    byte_array(std::initializer_list<uint8_t> data)
+    {
+        resize(data.size());
+        uninitialized_copy(data.begin(), data.end(), value.begin());
+    }
+
     byte_array(boost::asio::const_buffer const& buf)
         : byte_array(boost::asio::buffer_cast<char const*>(buf), boost::asio::buffer_size(buf))
     {}
+
     byte_array(boost::asio::mutable_buffer const& buf)
         : byte_array(boost::asio::buffer_cast<char const*>(buf), boost::asio::buffer_size(buf))
     {}
+
     explicit byte_array(size_t size) { resize(size); }
 
     template <typename T, size_t N>
@@ -55,20 +73,47 @@ public:
     template <typename T, size_t N>
     byte_array(std::array<T, N> const& in) : value(in.begin(), in.begin() + N) {}
 
-    ~byte_array();
-    byte_array& operator = (byte_array const& other);
-    byte_array& operator = (byte_array&& other);
+    // Destructor
+
+    ~byte_array() {}
+
+    // Assignment operators
+
+    byte_array& operator = (byte_array const& other)
+    {
+        if (&other != this) {
+            value = other.value;
+        }
+        return *this;
+    }
+
+    byte_array& operator = (byte_array&& other)
+    {
+        if (&other != this) {
+            value = std::move(other.value);
+        }
+        return *this;
+    }
 
     inline bool is_empty() const { return size() == 0; }
     inline void clear() { value.clear(); }
 
-    char* data();
-    const char* data() const;
-    const char* const_data() const;
+    char* data() {
+        return &value[0];
+    }
+    const char* data() const {
+        return &value[0];
+    }
+    const char* const_data() const {
+        return &value[0];
+    }
     /**
      * @sa length(), capacity()
      */
-    size_t size() const;
+    size_t size() const {
+        return value.size();
+    }
+
     /**
      * @sa size(), capacity()
      */
@@ -80,9 +125,17 @@ public:
         value.resize(size);
     }
 
-    char at(int i) const;
-    char operator[](int i) const;
-    char& operator[](int i);
+    char at(int i) const {
+        return value.at(i);
+    }
+
+    char operator[](int i) const {
+        return value[i];
+    }
+
+    char& operator[](int i) {
+        return value[i];
+    }
 
     inline void append(char c) {
         value.push_back(c);
@@ -92,25 +145,59 @@ public:
         value.insert(value.end(), c.begin(), c.end());
     }
 
-    byte_array left(size_t size) const;
-    byte_array mid(int pos, size_t size = ~0) const;
-    byte_array right(size_t size) const;
+    template<class InputIt>
+    iterator insert( const_iterator pos, InputIt first, InputIt last )
+    {
+        return value.insert(pos, first, last);
+    }
+
+    byte_array left(size_t new_size) const
+    {
+        new_size = std::min(new_size, size());
+        return byte_array(const_data(), new_size);
+    }
+
+    byte_array mid(int pos, size_t new_size = ~0) const
+    {
+        new_size = std::min(new_size, size() - pos);
+        return byte_array(const_data() + pos, new_size);
+    }
+
+    byte_array right(size_t new_size) const
+    {
+        new_size = std::min(new_size, size());
+        return byte_array(const_data() + size() - new_size, new_size);
+    }
 
     /**
      * Fill entire array to char @a ch.
      * If the size is specified, resizes the array beforehand.
      */
-    byte_array& fill(char ch, int size = -1);
+    byte_array& fill(char ch, int size = -1)
+    {
+        if (size != -1) {
+            value.resize(size);
+        }
+        std::fill(value.begin(), value.end(), ch);
+        return *this;
+    }
+
+    /**
+     * Interpret contents of byte_array buffer as holding an array of n items of type T.
+     * Will ensure byte_array has enough capacity before returning the pointer to array start.
+     */
+    template <typename T>
+    T* as() {
+        if (sizeof(T) > size()) {
+            resize(sizeof(T));
+        }
+        return reinterpret_cast<T*>(data());
+    }
 
     /**
      * Interpret contents of byte_array buffer as if it was some arbitrary type.
      * Make sure byte_array has enough capacity to hold type T before calling this function.
      */
-    template <typename T>
-    T* as() {
-        return reinterpret_cast<T*>(data());
-    }
-
     template <typename T>
     T const* as() const {
         return reinterpret_cast<T const*>(data());
@@ -134,16 +221,17 @@ public:
      * wrap does not actually wrap the data, it creates
      * its own copy. XXX fix it
      */
-    static byte_array wrap(const char* data, size_t size);
+    static byte_array wrap(const char* data, size_t size) {
+        return byte_array(data, size);
+    }
 
     inline boost::string_ref
     string_view(size_t start_offset, size_t count = boost::string_ref::npos) const {
         return boost::string_ref(value).substr(start_offset, count);
     }
 
-    container& as_vector() { return value; }
-    container const& as_vector() const { return value; }
-    std::string as_string() const { return std::string(value.begin(), value.end()); }
+    std::string as_string() const { return value; }
+    std::vector<char> as_vector() const { return std::vector<char>(value.begin(), value.end()); }
 
     inline iterator begin() { return value.begin(); }
     inline const_iterator begin() const { return value.begin(); }
@@ -151,10 +239,24 @@ public:
     inline const_iterator end() const { return value.end(); }
 };
 
-bool operator ==(const byte_array& a, const byte_array& b);
-bool operator !=(const byte_array& a, const byte_array& b);
+inline
+bool operator ==(const byte_array& a, const byte_array& b) {
+    return a.value == b.value;
+}
 
-std::ostream& operator << (std::ostream& os, const byte_array& a);
+inline
+bool operator !=(const byte_array& a, const byte_array& b) {
+    return a.value != b.value;
+}
+
+inline
+std::ostream& operator << (std::ostream& os, const byte_array& a)
+{
+    for (size_t s = 0; s < a.size(); ++s) {
+        os << std::setfill('0') << std::hex << std::setw(2) << (int)(unsigned char)(a.at(s)) << ' ';
+    }
+    return os;
+}
 
 } // arsenal namespace
 

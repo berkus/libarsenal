@@ -4,7 +4,6 @@ set(arsenal_SOURCES
     base32.cpp
     base32x.cpp
     base64.cpp
-    byte_array.cpp
     hexdump.cpp
     logging.cpp
     flurry.cpp
